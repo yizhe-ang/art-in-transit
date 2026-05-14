@@ -3,6 +3,7 @@ import Map from "react-map-gl/maplibre"
 import { Canvas } from "react-three-map/maplibre"
 import Scene from "@/components/three/scene"
 import Rail from "@/components/three/rail"
+import loadImages from "@/components/three/loadImages"
 
 const center = [103.8475, 1.3011]
 const lowerLat = 1.23,
@@ -22,6 +23,11 @@ const Three = () => {
           bounds,
         }}
         mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+        onLoad={(event) => {
+          const map = event.target
+
+          loadImages(map)
+        }}
       >
         <Rail />
 

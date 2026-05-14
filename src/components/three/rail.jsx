@@ -195,8 +195,8 @@ const Rail = () => {
         <Layer {...linesCase} />
         <Layer {...lines} />
         <Layer {...linesLabel} />
-        <Layer {...stationsPoint} />
-        {/* <Layer {...stationsPointLabel} /> */}
+        {/* <Layer {...stationsPoint} /> */}
+        <Layer {...stationsPointLabel} />
         {/* <Layer {...stationsLabelNonEn} /> */}
         {/* <Layer {...stationsLabel} /> */}
       </Source>
