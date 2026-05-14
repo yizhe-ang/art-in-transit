@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "scrape:gallery": "node scripts/scrape-lta-gallery.mjs",
+    "scrape:bloomberg": "node scripts/scrape-bloomberg-art-in-transit.mjs",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview"
   },
