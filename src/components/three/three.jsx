@@ -8,7 +8,6 @@ import Scene from "@/components/three/scene"
 const Three = () => {
   return (
     <>
-      return{" "}
       <Map
         canvasContextAttributes={{
           antialias: true,
@@ -21,7 +20,12 @@ const Three = () => {
         }}
         mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
       >
-        <Canvas latitude={51} longitude={0}>
+        <Canvas
+          latitude={51}
+          longitude={0}
+          overlay
+          renderer
+        >
           <Scene />
         </Canvas>
       </Map>

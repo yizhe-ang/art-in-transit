@@ -8,10 +8,10 @@ const Scene = () => {
         <Box position={[-1.2, 1, 0]} />
         <Box position={[1.2, 1, 0]} />
 
-        {/* <mesh>
-          <meshBasicNodeMaterial />
+        <mesh>
+          <meshBasicMaterial />
           <boxGeometry />
-        </mesh> */}
+        </mesh>
       </object3D>
     </>
   )
