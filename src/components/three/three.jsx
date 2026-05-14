@@ -1,9 +1,15 @@
 import "maplibre-gl/dist/maplibre-gl.css"
-import { extend, useFrame } from "@react-three/fiber"
-import { useRef, useState } from "react"
 import Map from "react-map-gl/maplibre"
 import { Canvas } from "react-three-map/maplibre"
 import Scene from "@/components/three/scene"
+import Rail from "@/components/three/rail"
+
+const center = [103.8475, 1.3011]
+const lowerLat = 1.23,
+  upperLat = 1.475,
+  lowerLong = 103.59,
+  upperLong = 104.05
+const bounds = [lowerLong, lowerLat, upperLong, upperLat]
 
 const Three = () => {
   return (
@@ -13,18 +19,18 @@ const Three = () => {
           antialias: true,
         }}
         initialViewState={{
-          latitude: 51,
-          longitude: 0,
-          zoom: 13,
-          pitch: 60,
+          bounds,
         }}
         mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
       >
+        <Rail />
+
         <Canvas
-          latitude={51}
-          longitude={0}
+          latitude={center[1]}
+          longitude={center[0]}
           overlay
           renderer
+          // background="sunset"
         >
           <Scene />
         </Canvas>

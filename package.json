@@ -14,7 +14,6 @@
   "dependencies": {
     "@base-ui/react": "^1.4.1",
     "@fontsource-variable/inter": "^5.2.8",
-    "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^10.0.0-alpha.2",
     "@tailwindcss/vite": "^4.2.1",
     "class-variance-authority": "^0.7.1",
@@ -24,7 +23,7 @@
     "maplibre-gl": "^5.24.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-three-map": "^1.0.0",
+    "react-three-map": "github:yizhe-ang/react-three-map#support-r3f-v10",
     "shadcn": "^4.7.0",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.2.1",
