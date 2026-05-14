@@ -4,6 +4,7 @@ import { Canvas } from "react-three-map/maplibre"
 import Scene from "@/components/three/scene"
 import Rail from "@/components/three/rail"
 import loadImages from "@/components/three/loadImages"
+import { useState } from "react"
 
 const center = [103.8475, 1.3011]
 const lowerLat = 1.23,
@@ -13,6 +14,8 @@ const lowerLat = 1.23,
 const bounds = [lowerLong, lowerLat, upperLong, upperLat]
 
 const Three = () => {
+  const [imagesLoaded, setImagesLoaded] = useState(false)
+
   return (
     <>
       <Map
@@ -26,10 +29,12 @@ const Three = () => {
         onLoad={(event) => {
           const map = event.target
 
-          loadImages(map)
+          loadImages(map).then(() => {
+            setImagesLoaded(true)
+          })
         }}
       >
-        <Rail />
+        {imagesLoaded && <Rail />}
 
         <Canvas
           latitude={center[1]}

@@ -62,7 +62,7 @@ const linesLabel = {
   layout: {
     "symbol-placement": "line",
     "text-field": ["get", "name"],
-    "text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"],
+    // "text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"],
     "text-letter-spacing": 0.1,
     "text-size": ["interpolate", ["linear"], ["zoom"], 13, 12, 22, 16],
     "text-pitch-alignment": "viewport",
@@ -107,7 +107,7 @@ const stationsPointLabel = {
     "symbol-avoid-edges": true,
     "text-field": ["get", "name"],
     "text-size": ["interpolate", ["linear"], ["zoom"], 10, 10, 13, 12],
-    "text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"],
+    // "text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"],
     "text-variable-anchor": ["left", "right"],
     "text-radial-offset": [
       "interpolate",
@@ -149,7 +149,7 @@ const stationsLabelNonEn = {
       },
     ],
     "text-size": ["interpolate", ["linear"], ["zoom"], 13, 12, 16, 16],
-    "text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"],
+    // "text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"],
     "text-anchor": "top",
     "text-offset": [0, 0.8],
     "text-max-width": 20,
@@ -171,7 +171,7 @@ const stationsLabel = {
   layout: {
     "text-field": ["get", "name"],
     "text-size": ["interpolate", ["linear"], ["zoom"], 13, 12, 16, 16],
-    "text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"],
+    // "text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"],
     "text-anchor": "bottom",
     "text-offset": [0, -0.8],
     "text-max-width": 20,
@@ -195,10 +195,10 @@ const Rail = () => {
         <Layer {...linesCase} />
         <Layer {...lines} />
         <Layer {...linesLabel} />
-        {/* <Layer {...stationsPoint} /> */}
+        <Layer {...stationsPoint} />
         <Layer {...stationsPointLabel} />
-        {/* <Layer {...stationsLabelNonEn} /> */}
-        {/* <Layer {...stationsLabel} /> */}
+        <Layer {...stationsLabelNonEn} />
+        <Layer {...stationsLabel} />
       </Source>
     </>
   )
