@@ -6,6 +6,8 @@ export const bounds = [lowerLong, lowerLat, upperLong, upperLat]
 
 export const center = [103.8475, 1.3011]
 
+export const origin = { longitude: center[0], latitude: center[1], altitude: 0 }
+
 export const lineColors = {
   orangered: "#d42e12",
   mediumseagreen: "#009645",

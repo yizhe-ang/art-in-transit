@@ -2,12 +2,10 @@ import { useMemo } from "react"
 import * as THREE from "three"
 import { coordsToVector3 } from "react-three-map/maplibre"
 import rail from "@/data/sg-rail.geo.json"
-import { center, lineColors } from "@/components/map/constants"
+import { origin, lineColors } from "@/components/map/constants"
 import { useLocalNodes, useUniforms } from "@react-three/fiber/webgpu"
 import { folder, useControls } from "leva"
 import { float, select, uv } from "three/tsl"
-
-const origin = { longitude: center[0], latitude: center[1], altitude: 0 }
 
 function getLineParts(feature) {
   if (feature.geometry.type === "LineString") {
