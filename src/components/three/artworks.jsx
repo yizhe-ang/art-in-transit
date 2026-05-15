@@ -16,7 +16,7 @@ import {
 
 const COUNT = data.artworks.length
 const ALTITUDE = 20
-const SIZE = 500
+const SIZE = 1500
 
 const Artworks = () => {
   // TODO: Refactor this out somewhere?
@@ -62,6 +62,7 @@ const Artworks = () => {
     return geometry
   }, [])
 
+  // TODO: To remain same size regardless of zoom
   const positionNode = useMemo(() => {
     const positionNode = positionLocal.add(positions.toAttribute())
 
@@ -69,7 +70,9 @@ const Artworks = () => {
   }, [positions])
 
   const colorNode = useMemo(() => {
-    const colorNode = texture(artworksTexture, uv()).depth(int(instanceIndex))
+    const colorNode = texture(artworksTexture, uv().flipY()).depth(
+      int(instanceIndex)
+    )
 
     return colorNode
   }, [artworksTexture])
