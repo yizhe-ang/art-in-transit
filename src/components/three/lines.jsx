@@ -3,6 +3,8 @@ import * as THREE from "three"
 import { coordsToVector3 } from "react-three-map/maplibre"
 import rail from "@/data/sg-rail.geo.json"
 import { center, lineColors } from "@/components/map/constants"
+import { useLocalNodes, useUniforms } from "@react-three/fiber/webgpu"
+import { folder, useControls } from "leva"
 
 const origin = { longitude: center[0], latitude: center[1], altitude: 0 }
 
@@ -50,7 +52,21 @@ const Lines = () => {
     })
   }, [])
 
-  console.log(routes)
+  const { drawT } = useControls({
+    lines: folder({
+      drawT: { value: 0, min: 0, max: 1, step: 0.01 },
+    }),
+  })
+
+  const { uDrawT } = useUniforms({
+    uDrawT: drawT,
+  })
+
+  const { colorNode } = useLocalNodes(({ uniforms }) => {
+    return {
+
+    }
+  })
 
   return (
     <>
