@@ -1,5 +1,4 @@
 import data from "@/data/bloomberg-art-in-transit-gallery.json"
-import { useLocalNodes, useUniforms } from "@react-three/fiber/webgpu"
 import { instancedArray, positionLocal } from "three/tsl"
 import { origin } from "@/components/map/constants"
 import { coordsToVector3 } from "react-three-map/maplibre"
@@ -32,24 +31,24 @@ const Artworks = () => {
     return instancedArray(array, "vec3")
   }, [])
 
-  const { positionNode } = useLocalNodes(() => {
-    const positionNode = positionLocal.add(positions.toAttribute())
-
-    return {
-      positionNode,
-    }
-  })
-
   const geometry = useMemo(() => {
     const geometry = new THREE.PlaneGeometry(SIZE, SIZE)
     geometry.rotateX(-Math.PI / 2)
     return geometry
   }, [])
 
+  const nodes = useMemo(() => {
+    const positionNode = positionLocal.add(positions.toAttribute())
+
+    return {
+      positionNode,
+    }
+  }, [positions])
+
   return (
     <>
       <instancedMesh args={[geometry, undefined, COUNT]} frustumCulled={false}>
-        <meshPhysicalNodeMaterial positionNode={positionNode} />
+        <meshPhysicalNodeMaterial {...nodes} />
       </instancedMesh>
     </>
   )

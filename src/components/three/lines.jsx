@@ -3,9 +3,8 @@ import * as THREE from "three"
 import { coordsToVector3 } from "react-three-map/maplibre"
 import rail from "@/data/sg-rail.geo.json"
 import { origin, lineColors } from "@/components/map/constants"
-import { useLocalNodes, useUniforms } from "@react-three/fiber/webgpu"
 import { folder, useControls } from "leva"
-import { float, select, uv } from "three/tsl"
+import { float, select, uniform, uv } from "three/tsl"
 
 function getLineParts(feature) {
   if (feature.geometry.type === "LineString") {
@@ -51,23 +50,14 @@ const Lines = () => {
     })
   }, [])
 
-  const { drawT } = useControls({
-    lines: folder({
-      drawT: { value: 0, min: 0, max: 1, step: 0.01 },
-    }),
-  })
+  const u = useMemo(() => {
+    return {
+      drawT: uniform(0),
+    }
+  }, [])
 
-  useUniforms(
-    {
-      uDrawT: drawT,
-    },
-    "lines"
-  )
-
-  const { opacityNode, alphaTestNode } = useLocalNodes(({ uniforms }) => {
-    const { uDrawT } = uniforms.lines
-
-    const isDrawn = uv().x.lessThanEqual(uDrawT)
+  const nodes = useMemo(() => {
+    const isDrawn = uv().x.lessThanEqual(u.drawT)
 
     const opacityNode = select(isDrawn, float(1), float(0))
 
@@ -77,6 +67,20 @@ const Lines = () => {
       opacityNode,
       alphaTestNode,
     }
+  }, [u])
+
+  useControls({
+    lines: folder({
+      drawT: {
+        value: 0,
+        min: 0,
+        max: 1,
+        step: 0.01,
+        onChange: (value) => {
+          u.drawT.value = value
+        },
+      },
+    }),
   })
 
   return (
@@ -85,12 +89,7 @@ const Lines = () => {
         {routes.map((route) => (
           <mesh key={route.id}>
             <tubeGeometry args={[route.curve, route.segments, 35, 6, false]} />
-            <meshBasicNodeMaterial
-              color={route.color}
-              opacityNode={opacityNode}
-              alphaTestNode={alphaTestNode}
-              transparent
-            />
+            <meshBasicNodeMaterial color={route.color} transparent {...nodes} />
           </mesh>
         ))}
       </group>

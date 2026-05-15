@@ -1,6 +1,10 @@
 import { Canvas } from "react-three-map/maplibre"
 import Scene from "@/components/three/scene"
 import { center } from "@/components/map/constants"
+import * as THREE from "three/webgpu"
+import { extend } from "@react-three/fiber"
+
+extend(THREE)
 
 const Three = () => {
   return (
@@ -9,8 +13,11 @@ const Three = () => {
         latitude={center[1]}
         longitude={center[0]}
         overlay
-        renderer
-        // background="sunset"
+        gl={async (props) => {
+          const renderer = new THREE.WebGPURenderer(props)
+          await renderer.init()
+          return renderer
+        }}
       >
         <Scene />
       </Canvas>
