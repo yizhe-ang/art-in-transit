@@ -5,6 +5,7 @@ import rail from "@/data/sg-rail.geo.json"
 import { center, lineColors } from "@/components/map/constants"
 import { useLocalNodes, useUniforms } from "@react-three/fiber/webgpu"
 import { folder, useControls } from "leva"
+import { float, select, uv } from "three/tsl"
 
 const origin = { longitude: center[0], latitude: center[1], altitude: 0 }
 
@@ -62,9 +63,16 @@ const Lines = () => {
     uDrawT: drawT,
   })
 
-  const { colorNode } = useLocalNodes(({ uniforms }) => {
-    return {
+  const { opacityNode, alphaTestNode } = useLocalNodes(({ uniforms }) => {
+    const isDrawn = uv().x.lessThanEqual(uDrawT)
 
+    const opacityNode = select(isDrawn, float(1), float(0))
+
+    const alphaTestNode = float(0.5)
+
+    return {
+      opacityNode,
+      alphaTestNode,
     }
   })
 
@@ -74,7 +82,12 @@ const Lines = () => {
         {routes.map((route) => (
           <mesh key={route.id}>
             <tubeGeometry args={[route.curve, route.segments, 35, 6, false]} />
-            <meshBasicNodeMaterial color={route.color} roughness={0.45} />
+            <meshBasicNodeMaterial
+              color={route.color}
+              opacityNode={opacityNode}
+              alphaTestNode={alphaTestNode}
+              transparent
+            />
           </mesh>
         ))}
       </group>
