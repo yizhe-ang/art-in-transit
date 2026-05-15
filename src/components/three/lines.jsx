@@ -59,11 +59,16 @@ const Lines = () => {
     }),
   })
 
-  const { uDrawT } = useUniforms({
-    uDrawT: drawT,
-  })
+  useUniforms(
+    {
+      uDrawT: drawT,
+    },
+    "lines"
+  )
 
   const { opacityNode, alphaTestNode } = useLocalNodes(({ uniforms }) => {
+    const { uDrawT } = uniforms.lines
+
     const isDrawn = uv().x.lessThanEqual(uDrawT)
 
     const opacityNode = select(isDrawn, float(1), float(0))
