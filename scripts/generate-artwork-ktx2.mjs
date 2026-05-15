@@ -44,6 +44,113 @@ function sourceFilePath(index, url) {
   return path.join(SOURCE_DIR, `${paddedIndex}-${hash(url)}${extensionForUrl(url)}`)
 }
 
+function parsePngDimensions(buffer) {
+  const pngSignature = "89504e470d0a1a0a"
+
+  if (buffer.subarray(0, 8).toString("hex") !== pngSignature) {
+    return null
+  }
+
+  return {
+    width: buffer.readUInt32BE(16),
+    height: buffer.readUInt32BE(20),
+  }
+}
+
+function parseJpegDimensions(buffer) {
+  if (buffer[0] !== 0xff || buffer[1] !== 0xd8) {
+    return null
+  }
+
+  let offset = 2
+
+  while (offset < buffer.length) {
+    if (buffer[offset] !== 0xff) {
+      offset += 1
+      continue
+    }
+
+    while (buffer[offset] === 0xff) {
+      offset += 1
+    }
+
+    const marker = buffer[offset]
+    offset += 1
+
+    if (marker === 0xd9 || marker === 0xda) {
+      break
+    }
+
+    if (offset + 2 > buffer.length) {
+      break
+    }
+
+    const segmentLength = buffer.readUInt16BE(offset)
+
+    if (segmentLength < 2 || offset + segmentLength > buffer.length) {
+      break
+    }
+
+    const isStartOfFrame =
+      (marker >= 0xc0 && marker <= 0xcf) &&
+      marker !== 0xc4 &&
+      marker !== 0xc8 &&
+      marker !== 0xcc
+
+    if (isStartOfFrame) {
+      return {
+        width: buffer.readUInt16BE(offset + 5),
+        height: buffer.readUInt16BE(offset + 3),
+      }
+    }
+
+    offset += segmentLength
+  }
+
+  return null
+}
+
+function parsePpmDimensions(buffer) {
+  if (buffer.subarray(0, 2).toString("ascii") !== "P6") {
+    return null
+  }
+
+  const header = buffer.subarray(0, 128).toString("ascii")
+  const tokens = header
+    .replace(/#[^\n\r]*/g, "")
+    .trim()
+    .split(/\s+/)
+
+  if (tokens[0] !== "P6" || tokens.length < 4) {
+    return null
+  }
+
+  return {
+    width: Number.parseInt(tokens[1], 10),
+    height: Number.parseInt(tokens[2], 10),
+  }
+}
+
+async function readImageDimensions(filePath) {
+  const buffer = await readFile(filePath)
+  const dimensions =
+    parsePngDimensions(buffer) ??
+    parseJpegDimensions(buffer) ??
+    parsePpmDimensions(buffer)
+
+  if (
+    !dimensions ||
+    !Number.isFinite(dimensions.width) ||
+    !Number.isFinite(dimensions.height) ||
+    dimensions.width <= 0 ||
+    dimensions.height <= 0
+  ) {
+    throw new Error(`Unsupported image dimensions for ${path.relative(ROOT_DIR, filePath)}`)
+  }
+
+  return dimensions
+}
+
 async function fileExists(filePath) {
   try {
     const stats = await stat(filePath)
@@ -177,6 +284,18 @@ async function main() {
       console.warn(`Layer ${index} fell back to placeholder: ${error}`)
     }
 
+    let dimensions = { width: 1, height: 1 }
+
+    try {
+      dimensions = await readImageDimensions(sourcePath)
+    } catch (dimensionError) {
+      console.warn(
+        `Layer ${index} fell back to square aspect ratio: ${dimensionError.message}`
+      )
+    }
+
+    const aspectRatio = dimensions.width / dimensions.height
+
     layerFiles.push(sourcePath)
     entries.push({
       layer: index,
@@ -186,6 +305,9 @@ async function main() {
       artist: artwork.artist ?? null,
       imageUrl,
       sourcePath: path.relative(ROOT_DIR, sourcePath),
+      width: dimensions.width,
+      height: dimensions.height,
+      aspectRatio,
       status,
       error,
     })

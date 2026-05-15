@@ -1,4 +1,5 @@
 import data from "@/data/bloomberg-art-in-transit-gallery.json"
+import manifest from "@/data/artwork-texture-manifest.json"
 import { origin } from "@/components/map/constants"
 import { coordsToVector3 } from "react-three-map/maplibre"
 import { useEffect, useMemo } from "react"
@@ -6,7 +7,6 @@ import * as THREE from "three/webgpu"
 import { useLoader, useThree } from "@react-three/fiber"
 import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js"
 import {
-  billboarding,
   instancedArray,
   instanceIndex,
   int,
@@ -59,6 +59,18 @@ const Artworks = () => {
     return instancedArray(array, "vec3")
   }, [])
 
+  const scales = useMemo(() => {
+    const array = new Float32Array(COUNT * 3)
+
+    manifest.entries.forEach((entry, index) => {
+      array[index * 3 + 0] = entry.aspectRatio ?? 1
+      array[index * 3 + 1] = 1
+      array[index * 3 + 2] = 1
+    })
+
+    return instancedArray(array, "vec3")
+  }, [])
+
   const geometry = useMemo(() => {
     const geometry = new THREE.PlaneGeometry(SIZE, SIZE)
     geometry.rotateX(-Math.PI / 2)
@@ -70,10 +82,12 @@ const Artworks = () => {
 
   // TODO: To remain same size regardless of zoom
   const positionNode = useMemo(() => {
-    const positionNode = positionLocal.add(positions.toAttribute())
+    const positionNode = positionLocal
+      .mul(scales.toAttribute())
+      .add(positions.toAttribute())
 
     return positionNode
-  }, [positions])
+  }, [positions, scales])
 
   const colorNode = useMemo(() => {
     const colorNode = texture(artworksTexture, uv().flipY()).depth(
