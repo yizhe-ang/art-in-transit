@@ -1,6 +1,6 @@
 import MapImpl from "react-map-gl/maplibre"
 import "maplibre-gl/dist/maplibre-gl.css"
-import Rail from "@/components/three/rail"
+import Rail from "@/components/map/rail"
 import loadImages from "@/components/map/loadImages"
 import { useState } from "react"
 import Three from "@/components/three/three"
