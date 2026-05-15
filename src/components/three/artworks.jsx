@@ -1,15 +1,25 @@
 import data from "@/data/bloomberg-art-in-transit-gallery.json"
-import { instancedArray, positionLocal } from "three/tsl"
 import { origin } from "@/components/map/constants"
 import { coordsToVector3 } from "react-three-map/maplibre"
 import { useMemo } from "react"
 import * as THREE from "three/webgpu"
+import { useKTX2 } from "@react-three/drei"
+import {
+  instanceIndex,
+  instancedArray,
+  int,
+  positionLocal,
+  texture,
+  uv,
+} from "three/tsl"
 
 const COUNT = data.artworks.length
 const ALTITUDE = 20
 const SIZE = 500
 
 const Artworks = () => {
+  const artworksTexture = useKTX2("/artworks/artworks.ktx2", "/basis/")
+
   const positions = useMemo(() => {
     const array = new Float32Array(COUNT * 3)
 

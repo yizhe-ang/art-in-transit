@@ -13,7 +13,7 @@ const Scene = () => {
 
       <Lines />
 
-      {/* <Artworks /> */}
+      <Artworks />
     </>
   )
 }
