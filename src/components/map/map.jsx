@@ -27,7 +27,7 @@ const Map = () => {
           })
         }}
       >
-        {/* {imagesLoaded && <Rail />} */}
+        {imagesLoaded && <Rail />}
 
         <Three />
       </MapImpl>

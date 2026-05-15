@@ -6,6 +6,7 @@ import * as THREE from "three/webgpu"
 import { useLoader, useThree } from "@react-three/fiber"
 import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js"
 import {
+  billboarding,
   instancedArray,
   instanceIndex,
   int,
@@ -17,6 +18,8 @@ import {
 const COUNT = data.artworks.length
 const ALTITUDE = 20
 const SIZE = 1500
+
+// TODO: Gpu picking
 
 const Artworks = () => {
   // TODO: Refactor this out somewhere?
@@ -61,6 +64,9 @@ const Artworks = () => {
     geometry.rotateX(-Math.PI / 2)
     return geometry
   }, [])
+
+  // TODO: Billboard them?
+  // TODO: Use sprite?
 
   // TODO: To remain same size regardless of zoom
   const positionNode = useMemo(() => {
