@@ -4,10 +4,11 @@ import { instancedArray, positionLocal } from "three/tsl"
 import { origin } from "@/components/map/constants"
 import { coordsToVector3 } from "react-three-map/maplibre"
 import { useMemo } from "react"
+import * as THREE from "three/webgpu"
 
 const COUNT = data.artworks.length
 const ALTITUDE = 20
-const SIZE = 120
+const SIZE = 500
 
 const Artworks = () => {
   const positions = useMemo(() => {
@@ -39,10 +40,15 @@ const Artworks = () => {
     }
   })
 
+  const geometry = useMemo(() => {
+    const geometry = new THREE.PlaneGeometry(SIZE, SIZE)
+    geometry.rotateX(-Math.PI / 2)
+    return geometry
+  }, [])
+
   return (
     <>
-      <instancedMesh args={[undefined, undefined, COUNT]} frustumCulled={false}>
-        <planeGeometry args={[SIZE, SIZE]} />
+      <instancedMesh args={[geometry, undefined, COUNT]} frustumCulled={false}>
         <meshPhysicalNodeMaterial positionNode={positionNode} />
       </instancedMesh>
     </>
