@@ -1,12 +1,13 @@
 import data from "@/data/bloomberg-art-in-transit-gallery.json"
 import { origin } from "@/components/map/constants"
 import { coordsToVector3 } from "react-three-map/maplibre"
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import * as THREE from "three/webgpu"
-import { useKTX2 } from "@react-three/drei"
+import { useLoader, useThree } from "@react-three/fiber"
+import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js"
 import {
-  instanceIndex,
   instancedArray,
+  instanceIndex,
   int,
   positionLocal,
   texture,
@@ -18,7 +19,21 @@ const ALTITUDE = 20
 const SIZE = 500
 
 const Artworks = () => {
-  const artworksTexture = useKTX2("/artworks/artworks.ktx2", "/basis/")
+  // TODO: Refactor this out somewhere?
+  const gl = useThree((state) => state.gl)
+  const artworksTexture = useLoader(
+    KTX2Loader,
+    "/artworks/artworks.ktx2",
+    (loader) => {
+      loader.setTranscoderPath("/basis/")
+      loader.detectSupport(gl)
+    }
+  )
+
+  // TODO: Do I actually need this?
+  useEffect(() => {
+    gl.initTexture?.(artworksTexture)
+  }, [gl, artworksTexture])
 
   const positions = useMemo(() => {
     const array = new Float32Array(COUNT * 3)
@@ -47,18 +62,25 @@ const Artworks = () => {
     return geometry
   }, [])
 
-  const nodes = useMemo(() => {
+  const positionNode = useMemo(() => {
     const positionNode = positionLocal.add(positions.toAttribute())
 
-    return {
-      positionNode,
-    }
+    return positionNode
   }, [positions])
+
+  const colorNode = useMemo(() => {
+    const colorNode = texture(artworksTexture, uv()).depth(int(instanceIndex))
+
+    return colorNode
+  }, [artworksTexture])
 
   return (
     <>
       <instancedMesh args={[geometry, undefined, COUNT]} frustumCulled={false}>
-        <meshPhysicalNodeMaterial {...nodes} />
+        <meshBasicNodeMaterial
+          positionNode={positionNode}
+          colorNode={colorNode}
+        />
       </instancedMesh>
     </>
   )
