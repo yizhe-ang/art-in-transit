@@ -77,6 +77,10 @@ function absoluteUrl(value, baseUrl = SOURCE_URL) {
   return new URL(value, baseUrl).href
 }
 
+function mapUrlForItem(itemUrl) {
+  return `${itemUrl.replace(/\/$/, "")}/map`
+}
+
 function parseStation(stationLabel) {
   const normalized = stationLabel.replace(/\s+/g, " ").trim()
   const [, code, name] = normalized.match(/^([A-Z]{1,3}\d+[A-Z]?)\s+(.+)$/) ?? []
@@ -198,13 +202,43 @@ function parseCaptions(html) {
   return unique(captions)
 }
 
+function parseMapCoordinates(html) {
+  const normalizedHtml = decodeEntities(html).replace(/[\\]+"/g, '"')
+  const [, latitude, longitude] =
+    normalizedHtml.match(
+      /"mapMarkers"\s*:\s*\[\s*\{[\s\S]*?"position"\s*:\s*\{\s*"lat"\s*:\s*(-?\d+(?:\.\d+)?),\s*"lng"\s*:\s*(-?\d+(?:\.\d+)?)/,
+    ) ?? []
+
+  const parsedLatitude = Number.parseFloat(latitude)
+  const parsedLongitude = Number.parseFloat(longitude)
+
+  if (!Number.isFinite(parsedLatitude) || !Number.isFinite(parsedLongitude)) {
+    return {
+      latitude: null,
+      longitude: null,
+    }
+  }
+
+  return {
+    latitude: parsedLatitude,
+    longitude: parsedLongitude,
+  }
+}
+
 async function enrichArtwork(candidate) {
   await sleep(REQUEST_DELAY_MS)
   const html = await fetchHtml(candidate.itemUrl)
   const articleHtml = parseArticle(html)
+  const mapUrl = mapUrlForItem(candidate.itemUrl)
+
+  await sleep(REQUEST_DELAY_MS)
+  const mapHtml = await fetchHtml(mapUrl)
+  const coordinates = parseMapCoordinates(mapHtml)
 
   return {
     ...candidate,
+    mapUrl,
+    ...coordinates,
     artist: parseArtist(articleHtml, candidate.stationLabel),
     description: parseDescription(articleHtml),
     imageUrls: parseImageUrls(html),
@@ -253,6 +287,17 @@ for (const candidate of candidates) {
 const missingDescriptions = artworks.filter((artwork) => !artwork.description).length
 if (missingDescriptions > 0) {
   throw new Error(`${missingDescriptions} artwork(s) were missing descriptions.`)
+}
+
+const missingCoordinates = artworks.filter(
+  (artwork) => !Number.isFinite(artwork.latitude) || !Number.isFinite(artwork.longitude),
+)
+if (missingCoordinates.length > 0) {
+  const missingCoordinateList = missingCoordinates
+    .map((artwork) => `- ${artwork.artworkTitle}: ${artwork.mapUrl}`)
+    .join("\n")
+
+  throw new Error(`${missingCoordinates.length} artwork(s) were missing coordinates:\n${missingCoordinateList}`)
 }
 
 await mkdir(new URL(".", OUTPUT_PATH), { recursive: true })
