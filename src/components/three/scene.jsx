@@ -1,3 +1,5 @@
+import Artworks from "@/components/three/artworks"
+
 const Scene = () => {
   return (
     <>
@@ -10,6 +12,8 @@ const Scene = () => {
           <meshPhysicalNodeMaterial />
           <boxGeometry />
         </mesh>
+
+        <Artworks />
       </object3D>
     </>
   )
