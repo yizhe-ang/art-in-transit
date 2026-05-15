@@ -4,12 +4,7 @@ import Rail from "@/components/map/rail"
 import loadImages from "@/components/map/loadImages"
 import { useState } from "react"
 import Three from "@/components/three/three"
-
-const lowerLat = 1.23,
-  upperLat = 1.475,
-  lowerLong = 103.59,
-  upperLong = 104.05
-const bounds = [lowerLong, lowerLat, upperLong, upperLat]
+import { bounds } from "@/components/map/constants"
 
 const Map = () => {
   const [imagesLoaded, setImagesLoaded] = useState(false)

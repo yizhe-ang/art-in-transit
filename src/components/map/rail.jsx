@@ -1,17 +1,9 @@
 import { Source, Layer } from "react-map-gl/maplibre"
 import rail from "@/data/sg-rail.geo.json"
+import { lineColors } from "@/components/map/constants"
 
 // TODO: Tune beforeId
 
-const lineColors = {
-  orangered: "#d42e12",
-  mediumseagreen: "#009645",
-  orange: "#fa9e0d",
-  saddlebrown: "#9D5B25",
-  darkmagenta: "#9900aa",
-  darkslateblue: "#005ec4",
-  gray: "#748477",
-}
 const lineColorsExpression = [
   "match",
   ["get", "line_color"],

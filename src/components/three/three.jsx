@@ -1,7 +1,6 @@
 import { Canvas } from "react-three-map/maplibre"
 import Scene from "@/components/three/scene"
-
-const center = [103.8475, 1.3011]
+import { center } from "@/components/map/constants"
 
 const Three = () => {
   return (
