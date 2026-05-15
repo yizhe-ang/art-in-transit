@@ -1,10 +1,10 @@
-import Three from "@/components/three/Three"
+import Map from "@/components/map/map"
 
 export function App() {
   return (
     <>
       <div className="fixed inset-0">
-        <Three />
+        <Map />
       </div>
     </>
   )
