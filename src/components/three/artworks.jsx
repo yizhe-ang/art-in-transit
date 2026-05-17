@@ -16,6 +16,7 @@ import { useLoader, useThree } from "@react-three/fiber"
 import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js"
 import { folder, useControls } from "leva"
 import {
+  billboarding,
   instancedArray,
   instanceIndex,
   int,
@@ -204,7 +205,7 @@ const Artworks = () => {
 
   const geometry = useMemo(() => {
     const geometry = new THREE.PlaneGeometry(SIZE, SIZE)
-    geometry.rotateX(-Math.PI / 2)
+    // geometry.rotateX(-Math.PI / 2)
     return geometry
   }, [])
 
@@ -217,12 +218,19 @@ const Artworks = () => {
 
   // TODO: To remain same size regardless of zoom
   const positionNode = useMemo(() => {
-    const positionNode = positionLocal
-      .mul(scales.toAttribute())
-      .add(positions.toAttribute())
+    const positionNode = positionLocal.mul(scales.toAttribute())
+    // .add(positions.toAttribute())
 
     return positionNode
-  }, [positions, scales])
+  }, [scales])
+
+  const vertexNode = useMemo(() => {
+    return billboarding({
+      position: positions.toAttribute(),
+      horizontal: true,
+      vertical: true,
+    })
+  }, [positions])
 
   // TODO: Slight opacity, painted reveal on hover
 
@@ -239,6 +247,7 @@ const Artworks = () => {
       <instancedMesh args={[geometry, undefined, COUNT]} frustumCulled={false}>
         <meshBasicNodeMaterial
           positionNode={positionNode}
+          vertexNode={vertexNode}
           colorNode={colorNode}
         />
       </instancedMesh>
