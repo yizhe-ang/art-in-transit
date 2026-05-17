@@ -33,6 +33,8 @@ const SIZE = 1800
 const MIN_ZOOM_SCALE = 0.25
 const DEFAULT_LINE_STAGGER = 0.08
 
+// TODO: Some shadow? Ambient occlusion?
+
 // TODO: Gpu picking
 function getArtworkPosition(artwork) {
   return new THREE.Vector3(
