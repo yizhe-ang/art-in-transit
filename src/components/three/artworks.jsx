@@ -227,7 +227,7 @@ const Artworks = () => {
   const vertexNode = useMemo(() => {
     return billboarding({
       position: positions.toAttribute(),
-      horizontal: true,
+      horizontal: false,
       vertical: true,
     })
   }, [positions])
