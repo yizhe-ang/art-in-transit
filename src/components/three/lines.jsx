@@ -1,7 +1,14 @@
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { buildRailRoutes } from "@/components/three/rail-routes"
 import { folder, useControls } from "leva"
 import { float, select, uniform, uv } from "three/tsl"
+
+const drawTUniform = uniform(0)
+
+const lineNodes = {
+  opacityNode: select(uv().x.lessThanEqual(drawTUniform), float(1), float(0)),
+  alphaTestNode: float(0.5),
+}
 
 const Lines = () => {
   const routes = useMemo(() => {
@@ -19,24 +26,9 @@ const Lines = () => {
     }),
   })
 
-  const u = useMemo(() => {
-    return {
-      drawT: uniform(drawT),
-    }
+  useEffect(() => {
+    drawTUniform.value = drawT
   }, [drawT])
-
-  const nodes = useMemo(() => {
-    const isDrawn = uv().x.lessThanEqual(u.drawT)
-
-    const opacityNode = select(isDrawn, float(1), float(0))
-
-    const alphaTestNode = float(0.5)
-
-    return {
-      opacityNode,
-      alphaTestNode,
-    }
-  }, [u])
 
   return (
     <>
@@ -44,7 +36,11 @@ const Lines = () => {
         {routes.map((route) => (
           <mesh key={route.id}>
             <tubeGeometry args={[route.curve, route.segments, 35, 6, false]} />
-            <meshBasicNodeMaterial color={route.color} transparent {...nodes} />
+            <meshBasicNodeMaterial
+              color={route.color}
+              transparent
+              {...lineNodes}
+            />
           </mesh>
         ))}
       </group>
