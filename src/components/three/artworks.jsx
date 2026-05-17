@@ -93,6 +93,8 @@ const Artworks = () => {
     return positionNode
   }, [positions, scales])
 
+  // TODO: Slight opacity, painted reveal on hover
+
   const colorNode = useMemo(() => {
     const colorNode = texture(artworksTexture, uv().flipY()).depth(
       int(instanceIndex)
