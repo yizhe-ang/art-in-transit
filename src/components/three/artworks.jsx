@@ -12,7 +12,8 @@ import {
 import { coordsToVector3 } from "react-three-map/maplibre"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import * as THREE from "three/webgpu"
-import { useLoader, useThree } from "@react-three/fiber"
+import { useLoader, useThree, useFrame } from "@react-three/fiber"
+import { useMap } from "react-three-map/maplibre"
 import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js"
 import { folder, useControls } from "leva"
 import {
@@ -23,11 +24,13 @@ import {
   positionLocal,
   texture,
   uv,
+  uniform,
 } from "three/tsl"
 
 const COUNT = data.artworks.length
 const ALTITUDE = 20
-const SIZE = 1500
+const SIZE = 1800
+const MIN_ZOOM_SCALE = 0.25
 const DEFAULT_LINE_STAGGER = 0.08
 
 // TODO: Gpu picking
@@ -66,6 +69,9 @@ function setPositionAt(array, index, position) {
 const Artworks = () => {
   // TODO: Refactor this out somewhere?
   const gl = useThree((state) => state.gl)
+  const map = useMap()
+  const referenceZoomRef = useRef(null)
+
   const artworksTexture = useLoader(
     KTX2Loader,
     "/artworks/artworks.ktx2",
@@ -191,6 +197,24 @@ const Artworks = () => {
     updateArtworkPositions(progress, lineStagger)
   }, [lineStagger, progress, updateArtworkPositions])
 
+  const zoomScale = useMemo(() => uniform(1), [])
+
+  useFrame(() => {
+    if (!map) return
+
+    const zoom = map.getZoom()
+
+    if (referenceZoomRef.current === null) {
+      referenceZoomRef.current = zoom
+    }
+
+    zoomScale.value = THREE.MathUtils.clamp(
+      Math.pow(2, referenceZoomRef.current - zoom),
+      MIN_ZOOM_SCALE,
+      1
+    )
+  })
+
   const scales = useMemo(() => {
     const array = new Float32Array(COUNT * 3)
 
@@ -215,11 +239,10 @@ const Artworks = () => {
 
   // TODO: To remain same size regardless of zoom
   const positionNode = useMemo(() => {
-    const positionNode = positionLocal.mul(scales.toAttribute())
-    // .add(positions.toAttribute())
+    const positionNode = positionLocal.mul(scales.toAttribute()).mul(zoomScale)
 
     return positionNode
-  }, [scales])
+  }, [scales, zoomScale])
 
   const vertexNode = useMemo(() => {
     return billboarding({
