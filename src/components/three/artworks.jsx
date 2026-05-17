@@ -77,6 +77,10 @@ const Artworks = () => {
     return geometry
   }, [])
 
+  // TODO: Velocity of user's scroll should correspond with the
+  // bending of the artworks etc. vroom vroom. Like a train accelerating.
+  // Look towards webgl image galleries for inspiration
+
   // TODO: Billboard them?
   // TODO: Use sprite?
 
