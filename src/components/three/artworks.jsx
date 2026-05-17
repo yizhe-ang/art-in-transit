@@ -213,9 +213,6 @@ const Artworks = () => {
   // bending of the artworks etc. vroom vroom. Like a train accelerating.
   // Look towards webgl image galleries for inspiration
 
-  // TODO: Billboard them?
-  // TODO: Use sprite?
-
   // TODO: To remain same size regardless of zoom
   const positionNode = useMemo(() => {
     const positionNode = positionLocal.mul(scales.toAttribute())
