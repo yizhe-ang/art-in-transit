@@ -29,6 +29,7 @@ import {
   texture,
   uv,
   uniform,
+  float,
 } from "three/tsl"
 
 const COUNT = data.artworks.length
@@ -217,6 +218,11 @@ const Artworks = () => {
     return colorNode
   }, [artworksTexture])
 
+  const opacityNode = useMemo(() => {
+    return float(0.9)
+  }, [])
+
+  // Interactions / picking
   const handleArtworkHoverChange = useCallback((pickedId, previousPickedId) => {
     // console.debug("Artwork hover changed", { pickedId, previousPickedId })
   }, [])
@@ -247,9 +253,11 @@ const Artworks = () => {
     <>
       <instancedMesh args={[geometry, undefined, COUNT]} frustumCulled={false}>
         <meshBasicNodeMaterial
+          transparent
           positionNode={positionNode}
           vertexNode={vertexNode}
           colorNode={colorNode}
+          opacityNode={opacityNode}
         />
       </instancedMesh>
     </>
