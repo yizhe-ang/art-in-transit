@@ -12,6 +12,7 @@ import {
   createArtworkLinePositionArray,
   updateArtworkLineProgress,
 } from "@/components/three/artworks/line-progress"
+import { useArtworkGpuPicking } from "@/components/three/artworks/gpu-picking"
 import { coordsToVector3 } from "react-three-map/maplibre"
 import { useEffect, useMemo, useRef } from "react"
 import * as THREE from "three/webgpu"
@@ -28,22 +29,17 @@ import {
   texture,
   uv,
   uniform,
-  Fn,
-  uint,
-  vec3,
 } from "three/tsl"
-
-const PICK_ID_BYTE = 256
 
 const COUNT = data.artworks.length
 const ALTITUDE = 20
 const SIZE = 1800
 const MIN_ZOOM_SCALE = 0.25
 const DEFAULT_LINE_STAGGER = 0.2
+const artworkZoomScale = uniform(1)
 
 // TODO: Some shadow? Ambient occlusion?
 
-// TODO: Gpu picking
 function getArtworkPosition(artwork) {
   return new THREE.Vector3(
     ...coordsToVector3(
@@ -58,13 +54,10 @@ function getArtworkPosition(artwork) {
 }
 
 const Artworks = () => {
-  // TODO: Refactor this out somewhere?
   const gl = useThree((state) => state.gl)
   const map = useMap()
 
   const referenceZoomRef = useRef(null)
-  const pickedId = useRef()
-  const prevPickedId = useRef()
 
   const artworksTexture = useLoader(
     KTX2Loader,
@@ -159,8 +152,6 @@ const Artworks = () => {
     })
   }, [artworkRoutes, lineStagger, progress])
 
-  const zoomScale = useMemo(() => uniform(1), [])
-
   useFrame(() => {
     if (!map) return
 
@@ -170,7 +161,7 @@ const Artworks = () => {
       referenceZoomRef.current = zoom
     }
 
-    zoomScale.value = THREE.MathUtils.clamp(
+    artworkZoomScale.value = THREE.MathUtils.clamp(
       Math.pow(2, referenceZoomRef.current - zoom),
       MIN_ZOOM_SCALE,
       1
@@ -201,10 +192,12 @@ const Artworks = () => {
 
   // TODO: To remain same size regardless of zoom
   const positionNode = useMemo(() => {
-    const positionNode = positionLocal.mul(scales.toAttribute()).mul(zoomScale)
+    const positionNode = positionLocal
+      .mul(scales.toAttribute())
+      .mul(artworkZoomScale)
 
     return positionNode
-  }, [scales, zoomScale])
+  }, [scales])
 
   const vertexNode = useMemo(() => {
     return billboarding({
@@ -224,80 +217,11 @@ const Artworks = () => {
     return colorNode
   }, [artworksTexture])
 
-  // Picking
-  const pickingScene = useMemo(() => new THREE.Scene(), [])
-  const pickingTexture = useMemo(() => new THREE.RenderTarget(1, 1), [])
-
-  const { pickingMesh } = useMemo(() => {
-    const material = new THREE.MeshBasicNodeMaterial({
-      depthWrite: true,
-      depthTest: true,
-      toneMapped: false,
-    })
-
-    material.positionNode = positionNode
-    material.vertexNode = vertexNode
-
-    // FIXME:
-    material.colorNode = Fn(() => {
-      const pickId = instanceIndex.add(uint(1))
-      const byte = uint(PICK_ID_BYTE)
-
-      return vec3(
-        pickId.mod(byte).toFloat().div(255),
-        pickId.div(byte).mod(byte).toFloat().div(255),
-        pickId.div(uint(65536)).mod(byte).toFloat().div(255)
-      )
-    })()
-
-    const mesh = new THREE.InstancedMesh(geometry, material, COUNT)
-    mesh.frustumCulled = false
-
-    return { pickingMesh: mesh }
-  }, [geometry, positionNode, vertexNode])
-
-  useEffect(() => {
-    pickingScene.add(pickingMesh)
-
-    return () => {
-      pickingScene.remove(pickingMesh)
-      pickingMesh.material.dispose()
-    }
-  }, [pickingMesh, pickingScene])
-
-  useFrame(({ gl, camera, pointer, size }) => {
-    const mouseX = ((pointer.x + 1) / 2) * size.width
-    const mouseY = ((1 - pointer.y) / 2) * size.height
-
-    const pixelRatio = gl.getPixelRatio()
-
-    camera.setViewOffset(
-      gl.domElement.width, // full width
-      gl.domElement.height, // full top
-      Math.floor(mouseX * pixelRatio), // rect x
-      Math.floor(mouseY * pixelRatio), // rect y
-      1, // rect width
-      1 // rect height
-    )
-
-    gl.setRenderTarget(pickingTexture)
-
-    gl.render(pickingScene, camera)
-
-    // Restore active render target to canvas
-    gl.setRenderTarget(null)
-
-    // Clear the view offset so rendering returns to normal
-    camera.clearViewOffset()
-
-    gl.readRenderTargetPixelsAsync(pickingTexture, 0, 0, 1, 1, 0).then(
-      (pixelBuffer) => {
-        pickedId.current =
-          (pixelBuffer[0] << 16) | (pixelBuffer[1] << 8) | pixelBuffer[2]
-      }
-    )
-
-    console.log(pickedId.current)
+  useArtworkGpuPicking({
+    geometry,
+    positionNode,
+    vertexNode,
+    count: COUNT,
   })
 
   return (
