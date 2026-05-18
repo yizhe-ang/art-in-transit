@@ -14,7 +14,7 @@ import {
 } from "@/components/three/artworks/line-progress"
 import { useArtworkGpuPicking } from "@/components/three/artworks/gpu-picking"
 import { coordsToVector3 } from "react-three-map/maplibre"
-import { useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import * as THREE from "three/webgpu"
 import { useLoader, useThree, useFrame } from "@react-three/fiber"
 import { useMap } from "react-three-map/maplibre"
@@ -217,11 +217,21 @@ const Artworks = () => {
     return colorNode
   }, [artworksTexture])
 
+  const handleArtworkHoverChange = useCallback((pickedId, previousPickedId) => {
+    console.debug("Artwork hover changed", { pickedId, previousPickedId })
+  }, [])
+
+  const handleArtworkClick = useCallback((pickedId) => {
+    console.debug("Artwork clicked", { pickedId })
+  }, [])
+
   useArtworkGpuPicking({
     geometry,
     positionNode,
     vertexNode,
     count: COUNT,
+    onHoverChange: handleArtworkHoverChange,
+    onClick: handleArtworkClick,
   })
 
   return (

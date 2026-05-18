@@ -1,9 +1,15 @@
 import { useEffect, useMemo, useRef } from "react"
-import { useFrame } from "@react-three/fiber"
+import { useFrame, useThree } from "@react-three/fiber"
+import { useMap } from "react-three-map/maplibre"
 import * as THREE from "three/webgpu"
 import { Fn, instanceIndex, uint, vec3 } from "three/tsl"
 
 const PICK_ID_BYTE = 256
+const INITIAL_POINTER = {
+  x: 0,
+  y: 0,
+  version: 0,
+}
 
 function decodePickId(pixel) {
   const pickId = pixel[0] + pixel[1] * PICK_ID_BYTE + pixel[2] * 65536
@@ -71,13 +77,109 @@ function createPickingColorNode() {
   })()
 }
 
+function getPointerFromEvent(event, canvas, version) {
+  const rect = canvas.getBoundingClientRect()
+  const x = ((event.clientX - rect.left) / rect.width) * 2 - 1
+  const y = -(((event.clientY - rect.top) / rect.height) * 2 - 1)
+
+  return { x, y, version }
+}
+
+function getPickingPixel(pointer, width, height) {
+  return {
+    x: THREE.MathUtils.clamp(
+      Math.floor(((pointer.x + 1) / 2) * width),
+      0,
+      width - 1
+    ),
+    y: THREE.MathUtils.clamp(
+      Math.floor(((pointer.y + 1) / 2) * height),
+      0,
+      height - 1
+    ),
+  }
+}
+
+function runPick({
+  gl,
+  camera,
+  pointer,
+  pickingCamera,
+  pickingCropMatrix,
+  pickingScene,
+  pickingTexture,
+}) {
+  const canvas = gl.domElement
+  const width = canvas.width
+  const height = canvas.height
+
+  if (width === 0 || height === 0) {
+    return null
+  }
+
+  const pixel = getPickingPixel(pointer, width, height)
+
+  const currentRenderTarget = gl.getRenderTarget()
+  const currentViewport = new THREE.Vector4()
+  const currentScissor = new THREE.Vector4()
+  const currentScissorTest = gl.getScissorTest()
+  const currentClearColor = gl.getClearColor(new THREE.Color())
+  const currentClearAlpha = gl.getClearAlpha()
+
+  gl.getViewport(currentViewport)
+  gl.getScissor(currentScissor)
+
+  copyCameraForPicking(camera, pickingCamera)
+  cropCameraProjectionToPixel(
+    pickingCamera,
+    width,
+    height,
+    pixel.x,
+    pixel.y,
+    pickingCropMatrix
+  )
+
+  try {
+    gl.setRenderTarget(pickingTexture)
+    gl.setViewport(0, 0, 1, 1)
+    gl.setScissor(0, 0, 1, 1)
+    gl.setScissorTest(true)
+    gl.setClearColor(0x000000, 0)
+    gl.clear(true, true, false)
+    gl.render(pickingScene, pickingCamera)
+
+    return gl.readRenderTargetPixelsAsync(pickingTexture, 0, 0, 1, 1)
+  } finally {
+    gl.setRenderTarget(currentRenderTarget)
+    gl.setViewport(currentViewport)
+    gl.setScissor(currentScissor)
+    gl.setScissorTest(currentScissorTest)
+    gl.setClearColor(currentClearColor, currentClearAlpha)
+  }
+}
+
 export function useArtworkGpuPicking({
   geometry,
   positionNode,
   vertexNode,
   count,
+  enabled = true,
+  onHoverChange,
+  onClick,
 }) {
-  const pickedIdRef = useRef()
+  const gl = useThree((state) => state.gl)
+  const map = useMap()
+  const hoveredIdRef = useRef(null)
+  const enabledRef = useRef(enabled)
+  const onHoverChangeRef = useRef(onHoverChange)
+  const onClickRef = useRef(onClick)
+  const pointerRef = useRef(INITIAL_POINTER)
+  const pointerVersionRef = useRef(0)
+  const hoverDirtyRef = useRef(false)
+  const clickPointerRef = useRef(null)
+  const pickInFlightRef = useRef(false)
+  const pickRequestIdRef = useRef(0)
+  const isMountedRef = useRef(true)
   const pickingCameraRef = useRef(new THREE.PerspectiveCamera())
   const pickingCropMatrixRef = useRef(new THREE.Matrix4())
 
@@ -125,78 +227,184 @@ export function useArtworkGpuPicking({
 
   useEffect(() => {
     return () => {
+      isMountedRef.current = false
       pickingTexture.dispose()
     }
   }, [pickingTexture])
 
-  useFrame(({ gl, camera, pointer }) => {
-    const canvas = gl.domElement
-    const width = canvas.width
-    const height = canvas.height
+  useEffect(() => {
+    isMountedRef.current = true
+  }, [])
 
-    if (width === 0 || height === 0) return
+  useEffect(() => {
+    onHoverChangeRef.current = onHoverChange
+  }, [onHoverChange])
 
-    const pixelX = THREE.MathUtils.clamp(
-      Math.floor(((pointer.x + 1) / 2) * width),
-      0,
-      width - 1
-    )
-    const pixelY = THREE.MathUtils.clamp(
-      Math.floor(((pointer.y + 1) / 2) * height),
-      0,
-      height - 1
-    )
-    const pickingCamera = pickingCameraRef.current
+  useEffect(() => {
+    enabledRef.current = enabled
+  }, [enabled])
 
-    const currentRenderTarget = gl.getRenderTarget()
-    const currentViewport = new THREE.Vector4()
-    const currentScissor = new THREE.Vector4()
-    const currentScissorTest = gl.getScissorTest()
-    const currentClearColor = gl.getClearColor(new THREE.Color())
-    const currentClearAlpha = gl.getClearAlpha()
+  useEffect(() => {
+    onClickRef.current = onClick
+  }, [onClick])
 
-    gl.getViewport(currentViewport)
-    gl.getScissor(currentScissor)
+  useEffect(() => {
+    const canvas = map?.getCanvas?.() ?? gl.domElement
+    const eventTarget = canvas.parentElement ?? gl.domElement
 
-    copyCameraForPicking(camera, pickingCamera)
-    cropCameraProjectionToPixel(
-      pickingCamera,
-      width,
-      height,
-      pixelX,
-      pixelY,
-      pickingCropMatrixRef.current
-    )
+    const clearHover = () => {
+      pointerVersionRef.current += 1
+      pointerRef.current = {
+        ...pointerRef.current,
+        version: pointerVersionRef.current,
+      }
+      hoverDirtyRef.current = false
+      clickPointerRef.current = null
 
-    try {
-      gl.setRenderTarget(pickingTexture)
-      gl.setViewport(0, 0, 1, 1)
-      gl.setScissor(0, 0, 1, 1)
-      gl.setScissorTest(true)
-      gl.setClearColor(0x000000, 0)
-      gl.clear(true, true, false)
-      gl.render(pickingScene, pickingCamera)
+      if (hoveredIdRef.current === null) return
 
-      gl.readRenderTargetPixelsAsync(pickingTexture, 0, 0, 1, 1).then(
-        (pixelBuffer) => {
-          pickedIdRef.current = decodePickId(pixelBuffer)
-        },
-        (error) => {
-          console.error("Artwork pick read failed", error)
-        }
-      )
-    } catch (error) {
-      console.error("Artwork picking failed", error)
-    } finally {
-      gl.setRenderTarget(currentRenderTarget)
-      gl.setViewport(currentViewport)
-      gl.setScissor(currentScissor)
-      gl.setScissorTest(currentScissorTest)
-      gl.setClearColor(currentClearColor, currentClearAlpha)
+      const previousId = hoveredIdRef.current
+      hoveredIdRef.current = null
+      onHoverChangeRef.current?.(null, previousId)
     }
 
-    console.log(pickedIdRef.current)
+    const handlePointerMove = (event) => {
+      if (!enabled) return
+
+      pointerVersionRef.current += 1
+      pointerRef.current = getPointerFromEvent(
+        event,
+        canvas,
+        pointerVersionRef.current
+      )
+      hoverDirtyRef.current = true
+    }
+
+    const handlePointerLeave = () => {
+      clearHover()
+    }
+
+    const handleClick = (event) => {
+      if (!enabled) return
+
+      pointerVersionRef.current += 1
+      pointerRef.current = getPointerFromEvent(
+        event,
+        canvas,
+        pointerVersionRef.current
+      )
+      clickPointerRef.current = pointerRef.current
+    }
+
+    if (!enabled) {
+      pickRequestIdRef.current += 1
+      pickInFlightRef.current = false
+      clearHover()
+      return undefined
+    }
+
+    eventTarget.addEventListener("pointermove", handlePointerMove)
+    eventTarget.addEventListener("pointerleave", handlePointerLeave)
+    eventTarget.addEventListener("click", handleClick)
+
+    return () => {
+      eventTarget.removeEventListener("pointermove", handlePointerMove)
+      eventTarget.removeEventListener("pointerleave", handlePointerLeave)
+      eventTarget.removeEventListener("click", handleClick)
+    }
+  }, [enabled, gl, map])
+
+  useFrame(({ gl, camera }) => {
+    if (!enabled || pickInFlightRef.current) return
+
+    const clickPointer = clickPointerRef.current
+    const shouldPickClick = clickPointer !== null
+    const shouldPickHover = hoverDirtyRef.current
+
+    if (!shouldPickClick && !shouldPickHover) return
+
+    const kind = shouldPickClick ? "click" : "hover"
+    const pointer = shouldPickClick ? clickPointer : pointerRef.current
+    const requestId = pickRequestIdRef.current + 1
+
+    pickRequestIdRef.current = requestId
+    pickInFlightRef.current = true
+
+    if (shouldPickClick) {
+      clickPointerRef.current = null
+    } else {
+      hoverDirtyRef.current = false
+    }
+
+    let pixelRead
+
+    try {
+      pixelRead = runPick({
+        gl,
+        camera,
+        pointer,
+        pickingCamera: pickingCameraRef.current,
+        pickingCropMatrix: pickingCropMatrixRef.current,
+        pickingScene,
+        pickingTexture,
+      })
+    } catch (error) {
+      pickInFlightRef.current = false
+      console.error("Artwork picking failed", error)
+      return
+    }
+
+    if (pixelRead === null) {
+      pickInFlightRef.current = false
+      return
+    }
+
+    pixelRead.then(
+      (pixelBuffer) => {
+        if (
+          !enabledRef.current ||
+          !isMountedRef.current ||
+          pickRequestIdRef.current !== requestId
+        ) {
+          return
+        }
+
+        const pickedId = decodePickId(pixelBuffer)
+
+        if (kind === "click") {
+          onClickRef.current?.(pickedId)
+          return
+        }
+
+        if (pointer.version !== pointerRef.current.version) {
+          return
+        }
+
+        if (pickedId === hoveredIdRef.current) return
+
+        const previousId = hoveredIdRef.current
+        hoveredIdRef.current = pickedId
+        onHoverChangeRef.current?.(pickedId, previousId)
+      },
+      (error) => {
+        if (
+          !enabledRef.current ||
+          !isMountedRef.current ||
+          pickRequestIdRef.current !== requestId
+        ) {
+          return
+        }
+
+        console.error("Artwork pick read failed", error)
+      }
+    ).finally(() => {
+      if (!isMountedRef.current || pickRequestIdRef.current !== requestId) {
+        return
+      }
+
+      pickInFlightRef.current = false
+    })
   })
 
-  return { pickedIdRef }
+  return { hoveredIdRef }
 }
