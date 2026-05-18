@@ -7,10 +7,13 @@ import {
   getArtworkStationCode,
   getClosestPointOnRoute,
   getLineNameForStationCode,
-  getPointAtDistance,
 } from "@/components/three/rail-routes"
+import {
+  createArtworkLinePositionArray,
+  updateArtworkLineProgress,
+} from "@/components/three/artwork-line-progress"
 import { coordsToVector3 } from "react-three-map/maplibre"
-import { useCallback, useEffect, useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import * as THREE from "three/webgpu"
 import { useLoader, useThree, useFrame } from "@react-three/fiber"
 import { useMap } from "react-three-map/maplibre"
@@ -47,25 +50,6 @@ function getArtworkPosition(artwork) {
       origin
     )
   )
-}
-
-function getLineProgress(progress, lineIndex, lineStagger) {
-  if (lineIndex < 0) {
-    return progress
-  }
-
-  const maxStagger = 0.95 / Math.max(1, LINE_ORDER.length - 1)
-  const stagger = THREE.MathUtils.clamp(lineStagger, 0, maxStagger)
-  const lineStart = lineIndex * stagger
-  const lineDuration = 1 - (LINE_ORDER.length - 1) * stagger
-
-  return THREE.MathUtils.clamp((progress - lineStart) / lineDuration, 0, 1)
-}
-
-function setPositionAt(array, index, position) {
-  array[index * 3 + 0] = position.x
-  array[index * 3 + 1] = position.y
-  array[index * 3 + 2] = position.z
 }
 
 const Artworks = () => {
@@ -132,16 +116,7 @@ const Artworks = () => {
   }, [])
 
   const positions = useMemo(() => {
-    const array = new Float32Array(COUNT * 3)
-
-    artworkRoutes.forEach((artworkRoute, index) => {
-      setPositionAt(
-        array,
-        index,
-        artworkRoute.route?.points[0] ?? artworkRoute.finalPosition
-      )
-    })
-
+    const array = createArtworkLinePositionArray(artworkRoutes)
     return instancedArray(array, "vec3")
   }, [artworkRoutes])
   const positionsRef = useRef(positions)
@@ -149,34 +124,6 @@ const Artworks = () => {
   useEffect(() => {
     positionsRef.current = positions
   }, [positions])
-
-  const updateArtworkPositions = useCallback(
-    (progress, lineStagger) => {
-      const positionBuffer = positionsRef.current.value
-      const array = positionBuffer.array
-      const currentPosition = new THREE.Vector3()
-
-      artworkRoutes.forEach((artworkRoute, index) => {
-        const lineProgress = getLineProgress(
-          progress,
-          artworkRoute.lineIndex,
-          lineStagger
-        )
-
-        if (!artworkRoute.route || lineProgress >= 1) {
-          setPositionAt(array, index, artworkRoute.finalPosition)
-          return
-        }
-
-        const distance = artworkRoute.targetDistance * lineProgress
-        getPointAtDistance(artworkRoute.route, distance, currentPosition)
-        setPositionAt(array, index, currentPosition)
-      })
-
-      positionBuffer.needsUpdate = true
-    },
-    [artworkRoutes]
-  )
 
   const { progress, lineStagger } = useControls({
     artworks: folder({
@@ -196,8 +143,13 @@ const Artworks = () => {
   })
 
   useEffect(() => {
-    updateArtworkPositions(progress, lineStagger)
-  }, [lineStagger, progress, updateArtworkPositions])
+    updateArtworkLineProgress({
+      positions: positionsRef.current,
+      artworkRoutes,
+      progress,
+      lineStagger,
+    })
+  }, [artworkRoutes, lineStagger, progress])
 
   const zoomScale = useMemo(() => uniform(1), [])
 
