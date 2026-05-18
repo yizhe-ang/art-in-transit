@@ -218,11 +218,20 @@ const Artworks = () => {
   }, [artworksTexture])
 
   const handleArtworkHoverChange = useCallback((pickedId, previousPickedId) => {
-    console.debug("Artwork hover changed", { pickedId, previousPickedId })
+    // console.debug("Artwork hover changed", { pickedId, previousPickedId })
   }, [])
 
   const handleArtworkClick = useCallback((pickedId) => {
-    console.debug("Artwork clicked", { pickedId })
+    if (pickedId === null) {
+      console.log("Artwork clicked", { pickedId, artwork: null })
+      return
+    }
+
+    console.log("Artwork clicked", {
+      pickedId,
+      artwork: data.artworks[pickedId],
+      texture: manifest.entries[pickedId],
+    })
   }, [])
 
   useArtworkGpuPicking({
