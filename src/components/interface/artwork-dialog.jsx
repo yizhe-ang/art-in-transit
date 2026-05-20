@@ -34,20 +34,20 @@ const ArtworkDialog = () => {
 
   return (
     <Dialog open={openArtworkDialog} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[calc(100vh-2rem)] gap-0 overflow-hidden rounded-lg p-0 sm:max-w-lg">
+      <DialogContent className="h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] gap-0 overflow-hidden rounded-lg p-0 sm:max-w-[calc(100vw-2rem)] bg-transparent">
         {selectedArtwork && (
-          <div className="flex min-h-0 flex-col">
+          <div className="flex min-h-0 flex-1 flex-col">
             {imageUrl && (
-              <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+              <div className="relative min-h-0 flex-1 overflow-hidden">
                 <img
                   src={imageUrl}
                   alt={selectedArtwork.imageAlt ?? title ?? "Artwork"}
-                  className="size-full object-cover"
+                  className="h-full w-full object-contain"
                 />
               </div>
             )}
 
-            <div className="grid gap-5 p-5">
+            <div className="grid shrink-0 gap-5 p-5 bg-muted">
               <div className="grid gap-2 pr-8">
                 {station && (
                   <p className="text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
