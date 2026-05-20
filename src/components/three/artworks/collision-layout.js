@@ -2,14 +2,12 @@ import { useEffect, useRef } from "react"
 import { useFrame } from "@react-three/fiber"
 import { useMap } from "react-three-map/maplibre"
 import * as THREE from "three/webgpu"
-import { uniform } from "three/tsl"
+import { artworkZoomScale } from "@/components/three/artworks/zoom-scale"
 import { updateArtworkCollisionLayout } from "@/components/three/artworks/layout"
 
 const MIN_ZOOM_SCALE = 0.25
 const LAYOUT_ZOOM_EPSILON = 0.02
 const LAYOUT_SCALE_EPSILON = 0.002
-
-export const artworkZoomScale = uniform(1)
 
 export function useArtworkCollisionLayout({
   enabled,

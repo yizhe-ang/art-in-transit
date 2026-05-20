@@ -16,8 +16,8 @@ import {
 import { useArtworkGpuPicking } from "@/components/three/artworks/gpu-picking"
 import {
   artworkZoomScale,
-  useArtworkCollisionLayout,
-} from "@/components/three/artworks/collision-layout"
+  useArtworkZoomScale,
+} from "@/components/three/artworks/zoom-scale"
 import { coordsToVector3 } from "react-three-map/maplibre"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import * as THREE from "three/webgpu"
@@ -39,17 +39,12 @@ const COUNT = data.artworks.length
 const ALTITUDE = 20
 const SIZE = 1800
 const DEFAULT_LINE_STAGGER = 0.2
+const CLUSTER_OFFSET = SIZE * 0.18
+const COORDINATE_KEY_PRECISION = 6
 
 // TODO: Border corresponding to line color?
 
 // TODO: Some shadow? Ambient occlusion?
-
-// TODO: Use d3-force to prevent them from overlapping?
-
-// TODO: Positioning
-// 1. Small offsets
-// 2. Strict no overlap
-// 3. Cluster stacks
 
 // TODO: Layouts
 // 1. Embeddings, grid (see diagram chasing)
@@ -70,12 +65,95 @@ function getArtworkPosition(artwork) {
   )
 }
 
-const Artworks = ({ useCollisionLayout = false }) => {
+function getArtworkClusterKey(artwork) {
+  const stationCode = getArtworkStationCode(artwork)
+
+  if (stationCode) {
+    return `station:${stationCode}`
+  }
+
+  return `coord:${Number(artwork.longitude).toFixed(
+    COORDINATE_KEY_PRECISION
+  )},${Number(artwork.latitude).toFixed(COORDINATE_KEY_PRECISION)}`
+}
+
+function getRouteDirectionAtDistance(route, distance, target) {
+  if (!route?.points?.length) {
+    return target.set(1, 0, 0)
+  }
+
+  for (let index = 1; index < route.points.length; index += 1) {
+    const endDistance = route.cumulativeLengths[index]
+
+    if (distance <= endDistance) {
+      target.subVectors(route.points[index], route.points[index - 1])
+      target.y = 0
+
+      if (target.lengthSq() > 0) {
+        return target.normalize()
+      }
+    }
+  }
+
+  target.subVectors(
+    route.points[route.points.length - 1],
+    route.points[Math.max(0, route.points.length - 2)]
+  )
+  target.y = 0
+
+  return target.lengthSq() > 0 ? target.normalize() : target.set(1, 0, 0)
+}
+
+function getClusterOffset({ index, count, direction, target }) {
+  if (count <= 1) {
+    return target.set(0, 0, 0)
+  }
+
+  const along = direction
+  const across = new THREE.Vector3(-along.z, 0, along.x)
+
+  if (across.lengthSq() === 0) {
+    across.set(1, 0, 0)
+  } else {
+    across.normalize()
+  }
+
+  target.set(0, 0, 0)
+
+  if (count === 2) {
+    return target.addScaledVector(
+      across,
+      (index === 0 ? -1 : 1) * CLUSTER_OFFSET
+    )
+  }
+
+  if (count === 3) {
+    const offsets = [
+      [-0.9, -0.25],
+      [0.9, -0.25],
+      [0, 0.65],
+    ]
+    const [acrossScale, alongScale] = offsets[index]
+
+    return target
+      .addScaledVector(across, acrossScale * CLUSTER_OFFSET)
+      .addScaledVector(along, alongScale * CLUSTER_OFFSET)
+  }
+
+  const angle = -Math.PI / 2 + (index / count) * Math.PI * 2
+  const radius = CLUSTER_OFFSET * 1.1
+
+  return target
+    .addScaledVector(across, Math.cos(angle) * radius)
+    .addScaledVector(along, Math.sin(angle) * radius)
+}
+
+const Artworks = () => {
   const gl = useThree((state) => state.gl)
-  const camera = useThree((state) => state.camera)
-  const size = useThree((state) => state.size)
   const setOpenArtworkDialog = useStore((state) => state.setOpenArtworkDialog)
   const setSelectedArtwork = useStore((state) => state.setSelectedArtwork)
+
+  useArtworkZoomScale()
 
   const artworksTexture = useLoader(
     KTX2Loader,
@@ -103,7 +181,7 @@ const Artworks = ({ useCollisionLayout = false }) => {
       return groups
     }, new Map())
 
-    return data.artworks.map((artwork) => {
+    const artworkRouteItems = data.artworks.map((artwork) => {
       const finalPosition = getArtworkPosition(artwork)
       const stationCode = getArtworkStationCode(artwork)
       const lineName = getLineNameForStationCode(stationCode)
@@ -126,12 +204,45 @@ const Artworks = ({ useCollisionLayout = false }) => {
       })
 
       return {
+        clusterKey: getArtworkClusterKey(artwork),
         finalPosition,
         lineIndex,
         route: selectedRoute,
         targetDistance: selectedClosestPoint?.distanceAlong ?? 0,
       }
     })
+
+    const clusterGroups = artworkRouteItems.reduce((groups, artworkRoute) => {
+      const group = groups.get(artworkRoute.clusterKey) ?? []
+      group.push(artworkRoute)
+      groups.set(artworkRoute.clusterKey, group)
+      return groups
+    }, new Map())
+    const direction = new THREE.Vector3()
+    const offset = new THREE.Vector3()
+
+    clusterGroups.forEach((group) => {
+      if (group.length <= 1) return
+
+      group.forEach((artworkRoute, index) => {
+        getRouteDirectionAtDistance(
+          artworkRoute.route,
+          artworkRoute.targetDistance,
+          direction
+        )
+        getClusterOffset({
+          index,
+          count: group.length,
+          direction,
+          target: offset,
+        })
+        artworkRoute.finalPosition = artworkRoute.finalPosition
+          .clone()
+          .add(offset)
+      })
+    })
+
+    return artworkRouteItems
   }, [])
 
   const animatedPositions = useMemo(() => {
@@ -166,15 +277,7 @@ const Artworks = ({ useCollisionLayout = false }) => {
     renderPositionsRef.current = renderPositions
   }, [renderPositions])
 
-  const {
-    progress,
-    lineStagger,
-    collisionLayoutEnabled,
-    collisionPadding,
-    collisionIterations,
-    collisionAnchorStrength,
-    collisionMaxOffset,
-  } = useControls({
+  const { progress, lineStagger } = useControls({
     artworks: folder({
       progress: {
         value: 1,
@@ -187,31 +290,6 @@ const Artworks = ({ useCollisionLayout = false }) => {
         min: 0,
         max: 0.2,
         step: 0.01,
-      },
-      collisionLayoutEnabled: useCollisionLayout,
-      collisionPadding: {
-        value: 12,
-        min: 0,
-        max: 80,
-        step: 1,
-      },
-      collisionIterations: {
-        value: 4,
-        min: 1,
-        max: 12,
-        step: 1,
-      },
-      collisionAnchorStrength: {
-        value: 0.18,
-        min: 0,
-        max: 0.8,
-        step: 0.01,
-      },
-      collisionMaxOffset: {
-        value: 160,
-        min: 0,
-        max: 500,
-        step: 1,
       },
     }),
   })
@@ -245,22 +323,6 @@ const Artworks = ({ useCollisionLayout = false }) => {
 
     return array
   }, [])
-
-  useArtworkCollisionLayout({
-    enabled: useCollisionLayout && collisionLayoutEnabled,
-    progress,
-    renderPositionsRef,
-    finalPositionArray,
-    aspectRatios,
-    camera,
-    viewport: size,
-    baseSize: SIZE,
-    altitude: ALTITUDE,
-    padding: collisionPadding,
-    iterations: collisionIterations,
-    anchorStrength: collisionAnchorStrength,
-    maxOffset: collisionMaxOffset,
-  })
 
   const scales = useMemo(() => {
     const array = new Float32Array(COUNT * 3)
