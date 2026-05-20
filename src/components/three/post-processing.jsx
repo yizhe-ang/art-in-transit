@@ -1,28 +1,30 @@
 import { useMemo } from "react"
 import * as THREE from "three/webgpu"
-import { pass } from "three/tsl"
+import { pass, screenUV, texture } from "three/tsl"
 import { useFrame, useThree } from "@react-three/fiber"
 import { dotScreen } from "three/addons/tsl/display/DotScreenNode.js"
+import { useTexture } from "@react-three/drei"
 
 const PostProcessing = () => {
   const renderer = useThree((state) => state.gl)
   const scene = useThree((state) => state.scene)
   const camera = useThree((state) => state.camera)
 
+  const paperTexture = useTexture("/textures/paper.jpg")
+
   const renderPipeline = useMemo(() => {
     const renderPipeline = new THREE.RenderPipeline(renderer)
 
     const scenePass = pass(scene, camera)
-    const scenePassColor = scenePass.getTextureNode() // get the rendered image
 
-    // const dotScreenPass = dotScreen(scenePassColor)
-    // dotScreenPass.scale.value = 0.01
+    const paper = texture(paperTexture, screenUV)
 
-    renderPipeline.outputNode = scenePass
-    // renderPipeline.outputNode = dotScreenPass
+    const outputNode = scenePass.mul(paper)
+
+    renderPipeline.outputNode = outputNode
 
     return renderPipeline
-  }, [renderer, scene, camera])
+  }, [renderer, scene, camera, paperTexture])
 
   useFrame(() => {
     renderPipeline.render()
