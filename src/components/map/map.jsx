@@ -5,6 +5,7 @@ import loadImages from "@/components/map/loadImages"
 import { useState } from "react"
 import Three from "@/components/three/three"
 import { bounds } from "@/components/map/constants"
+import PaperOverlay from "@/components/map/paper-overlay"
 
 const Map = () => {
   const [imagesLoaded, setImagesLoaded] = useState(false)
@@ -28,6 +29,8 @@ const Map = () => {
         }}
       >
         {imagesLoaded && <Rail />}
+
+        <PaperOverlay />
 
         <Three />
       </MapImpl>
