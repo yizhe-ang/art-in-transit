@@ -3,6 +3,8 @@ import { useStore } from "@/store"
 
 // TODO: Include photo credits too? To give proper credits to people involved.
 
+// TODO: Include year
+
 // TODO: Animate from three.js scene to dom
 // TODO: Allow zoom controls
 
