@@ -6,14 +6,9 @@ import Lights from "@/components/three/lights"
 const Scene = () => {
   return (
     <>
-      <Lights />
+      {/* <Lights /> */}
 
-      {/* <mesh>
-          <meshPhysicalNodeMaterial />
-          <boxGeometry />
-        </mesh> */}
-
-      <Ground />
+      {/* <Ground /> */}
 
       <Lines />
 
