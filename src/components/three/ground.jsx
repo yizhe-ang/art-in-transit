@@ -1,5 +1,7 @@
 import * as THREE from "three/webgpu"
 
+// TODO: Have a normal map?
+
 const SIZE = 60_000
 
 const Ground = () => {
@@ -11,7 +13,7 @@ const Ground = () => {
       frustumCulled={false}
     >
       <planeGeometry args={[SIZE, SIZE]} />
-      <meshBasicNodeMaterial
+      <meshPhysicalNodeMaterial
         // color="red"
         side={THREE.DoubleSide}
       />
