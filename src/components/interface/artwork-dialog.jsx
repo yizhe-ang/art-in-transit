@@ -4,7 +4,7 @@ import {
   ZoomInIcon,
   ZoomOutIcon,
 } from "lucide-react"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch"
 
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -20,12 +20,31 @@ const ArtworkImageViewer = ({
   imageUrl,
   stopPointerPropagation,
 }) => {
+  const imageRef = useRef(null)
   const [isPanningArtwork, setIsPanningArtwork] = useState(false)
+
+  const handleViewerPointerDown = (event) => {
+    const imageBounds = imageRef.current?.getBoundingClientRect()
+
+    if (!imageBounds) {
+      return
+    }
+
+    const isPointerInsideImage =
+      event.clientX >= imageBounds.left &&
+      event.clientX <= imageBounds.right &&
+      event.clientY >= imageBounds.top &&
+      event.clientY <= imageBounds.bottom
+
+    if (isPointerInsideImage) {
+      stopPointerPropagation(event)
+    }
+  }
 
   return (
     <div
       className="relative flex min-h-0 flex-1 items-center justify-center overflow-visible"
-      onPointerDown={stopPointerPropagation}
+      onPointerDown={handleViewerPointerDown}
     >
       <TransformWrapper
         key={imageUrl}
@@ -93,6 +112,7 @@ const ArtworkImageViewer = ({
               contentClass="flex size-full items-center justify-center"
             >
               <img
+                ref={imageRef}
                 src={imageUrl}
                 alt={imageAlt}
                 className="max-h-full max-w-full touch-none object-contain select-none"
