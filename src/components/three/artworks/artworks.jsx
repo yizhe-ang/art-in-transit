@@ -40,6 +40,8 @@ const ALTITUDE = 20
 const SIZE = 1800
 const DEFAULT_LINE_STAGGER = 0.2
 
+// TODO: Border corresponding to line color?
+
 // TODO: Some shadow? Ambient occlusion?
 
 // TODO: Use d3-force to prevent them from overlapping?
