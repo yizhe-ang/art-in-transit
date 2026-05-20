@@ -30,6 +30,7 @@ import {
   instancedArray,
   instanceIndex,
   int,
+  mix,
   or,
   positionLocal,
   select,
@@ -45,6 +46,8 @@ const ALTITUDE = 20
 const SIZE = 1800
 const DEFAULT_LINE_STAGGER = 0.2
 const CLUSTER_OFFSET = SIZE * 0.18
+const LINE_ROW_COLUMN_GAP = SIZE * 2.05
+const LINE_ROW_GAP = SIZE * 1.6
 const COORDINATE_KEY_PRECISION = 6
 const DEFAULT_BORDER_WIDTH = 0.035
 const DEFAULT_BORDER_INTENSITY = 1
@@ -55,6 +58,7 @@ const FALLBACK_LINE_COLOR = "#748477"
 const borderWidthUniform = uniform(DEFAULT_BORDER_WIDTH)
 const borderIntensityUniform = uniform(DEFAULT_BORDER_INTENSITY)
 const borderOpacityUniform = uniform(DEFAULT_BORDER_OPACITY)
+const lineLayoutProgressUniform = uniform(0)
 
 // TODO: Some shadow? Ambient occlusion?
 
@@ -87,6 +91,68 @@ function getArtworkClusterKey(artwork) {
   return `coord:${Number(artwork.longitude).toFixed(
     COORDINATE_KEY_PRECISION
   )},${Number(artwork.latitude).toFixed(COORDINATE_KEY_PRECISION)}`
+}
+
+function getStationSortNumber(stationCode) {
+  return Number(stationCode?.match(/^[A-Z]+(\d+)/)?.[1] ?? Infinity)
+}
+
+function compareArtworkStations(a, b) {
+  return (
+    getStationSortNumber(a.stationCode) - getStationSortNumber(b.stationCode) ||
+    (a.stationCode ?? "").localeCompare(b.stationCode ?? "") ||
+    a.originalIndex - b.originalIndex
+  )
+}
+
+function setLineRowPositionAt(array, index, x, z) {
+  array[index * 3 + 0] = x
+  array[index * 3 + 1] = ALTITUDE
+  array[index * 3 + 2] = z
+}
+
+function createArtworkLineRowPositionArray(artworkRoutes) {
+  const array = new Float32Array(artworkRoutes.length * 3)
+  const rows = LINE_ORDER.map((lineName, lineIndex) => ({
+    lineIndex,
+    lineName,
+    items: [],
+  }))
+  const fallbackRow = {
+    lineIndex: FALLBACK_LINE_INDEX,
+    lineName: "Fallback",
+    items: [],
+  }
+
+  artworkRoutes.forEach((artworkRoute, originalIndex) => {
+    const row = rows[artworkRoute.lineIndex] ?? fallbackRow
+    row.items.push({
+      ...artworkRoute,
+      originalIndex,
+    })
+  })
+
+  if (fallbackRow.items.length > 0) {
+    rows.push(fallbackRow)
+  }
+
+  const rowCenterOffset = (rows.length - 1) * LINE_ROW_GAP * 0.5
+
+  rows.forEach((row, rowIndex) => {
+    const sortedItems = [...row.items].sort(compareArtworkStations)
+    const z = rowCenterOffset - rowIndex * LINE_ROW_GAP
+
+    sortedItems.forEach((artworkRoute, columnIndex) => {
+      setLineRowPositionAt(
+        array,
+        artworkRoute.originalIndex,
+        columnIndex * LINE_ROW_COLUMN_GAP,
+        z
+      )
+    })
+  })
+
+  return array
 }
 
 function getRouteDirectionAtDistance(route, distance, target) {
@@ -231,6 +297,7 @@ const Artworks = () => {
         finalPosition,
         lineIndex: lineIndex === -1 ? FALLBACK_LINE_INDEX : lineIndex,
         route: selectedRoute,
+        stationCode,
         targetDistance: selectedClosestPoint?.distanceAlong ?? 0,
       }
     })
@@ -280,6 +347,11 @@ const Artworks = () => {
   }, [artworkRoutes])
   const renderPositionsRef = useRef(renderPositions)
 
+  const lineRowPositions = useMemo(() => {
+    const array = createArtworkLineRowPositionArray(artworkRoutes)
+    return instancedArray(array, "vec3")
+  }, [artworkRoutes])
+
   const finalPositionArray = useMemo(() => {
     const array = new Float32Array(COUNT * 3)
 
@@ -300,8 +372,14 @@ const Artworks = () => {
     renderPositionsRef.current = renderPositions
   }, [renderPositions])
 
-  const { progress, lineStagger, borderWidth, borderIntensity, borderOpacity } =
-    useControls({
+  const {
+    progress,
+    lineStagger,
+    lineLayoutProgress,
+    borderWidth,
+    borderIntensity,
+    borderOpacity,
+  } = useControls({
       artworks: folder({
         progress: {
           value: 1,
@@ -313,6 +391,12 @@ const Artworks = () => {
           value: DEFAULT_LINE_STAGGER,
           min: 0,
           max: 0.2,
+          step: 0.01,
+        },
+        lineLayoutProgress: {
+          value: 0,
+          min: 0,
+          max: 1,
           step: 0.01,
         },
         borderWidth: {
@@ -341,6 +425,10 @@ const Artworks = () => {
     borderIntensityUniform.value = borderIntensity
     borderOpacityUniform.value = borderOpacity
   }, [borderIntensity, borderOpacity, borderWidth])
+
+  useEffect(() => {
+    lineLayoutProgressUniform.value = lineLayoutProgress
+  }, [lineLayoutProgress])
 
   useEffect(() => {
     updateArtworkLineProgress({
@@ -414,20 +502,29 @@ const Artworks = () => {
 
   // TODO: To remain same size regardless of zoom
   const positionNode = useMemo(() => {
+    const zoomScale = mix(
+      artworkZoomScale,
+      float(1),
+      lineLayoutProgressUniform
+    )
     const positionNode = positionLocal
       .mul(scales.toAttribute())
-      .mul(artworkZoomScale)
+      .mul(zoomScale)
 
     return positionNode
   }, [scales])
 
   const vertexNode = useMemo(() => {
     return billboarding({
-      position: renderPositions.toAttribute(),
+      position: mix(
+        renderPositions.toAttribute(),
+        lineRowPositions.toAttribute(),
+        lineLayoutProgressUniform
+      ),
       horizontal: false,
       vertical: true,
     })
-  }, [renderPositions])
+  }, [lineRowPositions, renderPositions])
 
   const colorNode = useMemo(() => {
     const uvNode = uv()
