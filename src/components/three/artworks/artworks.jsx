@@ -51,6 +51,12 @@ const DEFAULT_LINE_STAGGER = 0.2
 // 2. Strict no overlap
 // 3. Cluster stacks
 
+// TODO: Layouts
+// 1. Embeddings, grid (see diagram chasing)
+// 2. Line by line
+// 3. Time
+// 4. Look at the metadata and figure out
+
 function getArtworkPosition(artwork) {
   return new THREE.Vector3(
     ...coordsToVector3(

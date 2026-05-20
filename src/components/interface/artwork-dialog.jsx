@@ -15,11 +15,9 @@ import { useStore } from "@/store"
 
 // TODO: The image in three.js should animate to the dialog position (like a layout animation)
 
-const ArtworkImageViewer = ({
-  imageAlt,
-  imageUrl,
-  stopPointerPropagation,
-}) => {
+// TODO: Should allow scrubbing through artworks of the same line (left-right)
+
+const ArtworkImageViewer = ({ imageAlt, imageUrl, stopPointerPropagation }) => {
   const imageRef = useRef(null)
 
   const handleViewerPointerDown = (event) => {
@@ -132,8 +130,7 @@ const ArtworkDialog = () => {
     selectedArtwork?.imageUrls?.[0] ?? selectedArtwork?.thumbnailUrl
   const title = selectedArtwork?.artworkTitle
   const artist = selectedArtwork?.artist
-  const station =
-    selectedArtwork?.stationLabel ?? selectedArtwork?.stationName
+  const station = selectedArtwork?.stationLabel ?? selectedArtwork?.stationName
   const readMoreUrl = selectedArtwork?.itemUrl
 
   const handleOpenChange = (open) => {
@@ -154,7 +151,7 @@ const ArtworkDialog = () => {
 
   return (
     <Dialog open={openArtworkDialog} onOpenChange={handleOpenChange}>
-      <DialogContent className="h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] gap-0 overflow-visible rounded-lg p-0 sm:max-w-[calc(100vw-2rem)] bg-transparent">
+      <DialogContent className="h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] gap-0 overflow-visible rounded-lg bg-transparent p-0 sm:max-w-[calc(100vw-2rem)]">
         {selectedArtwork && (
           <div
             className="flex min-h-0 flex-1 flex-col"
