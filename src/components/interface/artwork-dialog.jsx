@@ -1,6 +1,8 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useStore } from "@/store"
 
+// TODO: Include photo credits too? To give proper credits to people involved.
+
 // TODO: Animate from three.js scene to dom
 // TODO: Allow zoom controls
 
@@ -11,7 +13,7 @@ const ArtworkDialog = () => {
   return (
     <Dialog open={openArtworkDialog} onOpenChange={setOpenArtworkDialog}>
       <DialogContent>
-        <div className="h-screen w-screen bg-red-400">
+        <div className="">
         </div>
       </DialogContent>
     </Dialog>
