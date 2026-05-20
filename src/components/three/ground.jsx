@@ -4,13 +4,16 @@ const SIZE = 60_000
 
 const Ground = () => {
   return (
-    <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, -100, 0]}>
+    <mesh
+      receiveShadow
+      rotation={[-Math.PI / 2, 0, 0]}
+      position={[0, 0, 0]}
+      frustumCulled={false}
+    >
       <planeGeometry args={[SIZE, SIZE]} />
       <meshBasicNodeMaterial
         // color="red"
         side={THREE.DoubleSide}
-        transparent
-        opacity={0.5}
       />
     </mesh>
   )
