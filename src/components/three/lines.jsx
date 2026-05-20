@@ -3,6 +3,8 @@ import { buildRailRoutes } from "@/components/three/rail-routes"
 import { folder, useControls } from "leva"
 import { float, select, uniform, uv } from "three/tsl"
 
+// TODO: These should have a pencil / brush texture
+
 const drawTUniform = uniform(0)
 
 const lineNodes = {

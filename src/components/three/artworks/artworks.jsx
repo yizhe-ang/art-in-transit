@@ -208,8 +208,6 @@ const Artworks = () => {
     })
   }, [positions])
 
-  // TODO: Slight opacity, painted reveal on hover
-
   const colorNode = useMemo(() => {
     const colorNode = texture(artworksTexture, uv().flipY()).depth(
       int(instanceIndex)
@@ -217,6 +215,9 @@ const Artworks = () => {
 
     return colorNode
   }, [artworksTexture])
+
+  // TODO: Slight opacity, painted reveal on hover
+  // Or just do a screen-space effect
 
   const opacityNode = useMemo(() => {
     return float(0.9)
