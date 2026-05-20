@@ -1,9 +1,38 @@
-// https://tympanus.net/codrops/2026/03/23/building-a-dual-scene-fluid-x-ray-reveal-effect-in-three-js/
-
-import { texture, vec2, Fn, uv, mul, float } from "three/tsl"
 import * as THREE from "three/webgpu"
+import { MeshBasicNodeMaterial } from "three/webgpu"
+import {
+  vec2,
+  vec3,
+  float,
+  sub,
+  mul,
+  add,
+  min,
+  uv,
+  texture,
+  uniform,
+  Fn,
+} from "three/tsl"
+import { fbm } from "@/lib/fbm"
+
+function getAspectVector(width, height) {
+  const aspect = height / width
+
+  return width < height
+    ? new THREE.Vector2(1.0, 1.0 / aspect)
+    : new THREE.Vector2(aspect, 1.0)
+}
 
 export default class FluidSim {
+  constructor(width, height) {
+    this.width = width
+    this.height = height
+    this.aspectVecNode = uniform(getAspectVector(width, height))
+
+    this.#createRenderTargets()
+    this.#createFBOScene()
+  }
+
   #createRenderTargets() {
     const opts = {
       minFilter: THREE.LinearFilter,
@@ -24,7 +53,7 @@ export default class FluidSim {
 
     this.inputNode = texture(new THREE.Texture())
 
-    const material = new THREE.MeshBasicNodeMaterial()
+    const material = new MeshBasicNodeMaterial()
     material.colorNode = this.#createFluidShader()
 
     const geo = new THREE.PlaneGeometry(2, 2)
@@ -35,6 +64,52 @@ export default class FluidSim {
     }
     this.fboQuad = new THREE.Mesh(geo, material)
     this.fboScene.add(this.fboQuad)
+  }
+
+  #createFluidShader() {
+    const blendDarken = Fn(([base, blend]) => min(blend, base))
+
+    return Fn(() => {
+      const uvCoord = uv()
+      const disp = mul(
+        mul(fbm(mul(uvCoord, 20.0)), this.aspectVecNode),
+        0.01
+      )
+
+      // Sample previous frame with noise displacement (fluid spreading)
+      const texel = this.prevNode.sample(uvCoord)
+      const texel2 = this.prevNode.sample(
+        vec2(add(uvCoord.x, disp.x), uvCoord.y)
+      )
+      const texel3 = this.prevNode.sample(
+        vec2(sub(uvCoord.x, disp.x), uvCoord.y)
+      )
+      const texel4 = this.prevNode.sample(
+        vec2(uvCoord.x, add(uvCoord.y, disp.y))
+      )
+      const texel5 = this.prevNode.sample(
+        vec2(uvCoord.x, sub(uvCoord.y, disp.y))
+      )
+
+      // Take darkest of neighborhood
+      const floodcolor = texel.rgb.toVar()
+      floodcolor.assign(blendDarken(floodcolor, texel2.rgb))
+      floodcolor.assign(blendDarken(floodcolor, texel3.rgb))
+      floodcolor.assign(blendDarken(floodcolor, texel4.rgb))
+      floodcolor.assign(blendDarken(floodcolor, texel5.rgb))
+
+      // Blend with new trail input (flip Y — canvas texture has opposite Y to render targets in WebGPU)
+      const flippedUV = vec2(uvCoord.x, sub(float(1.0), uvCoord.y))
+      const input = this.inputNode.sample(flippedUV)
+      const combined = blendDarken(floodcolor, input.rgb)
+
+      // Fade back to white
+      return min(vec3(1.0), add(combined, vec3(0.015)))
+    })()
+  }
+
+  get texture() {
+    return this.maskNode
   }
 
   update(renderer, trailTexture) {
@@ -54,15 +129,18 @@ export default class FluidSim {
     this.targetB = temp
   }
 
-  #createFluidShader() {
-    const aspect = this.height / this.width
-    const aspectVec =
-      this.width < this.height ? vec2(1.0, 1.0 / aspect) : vec2(aspect, 1.0)
+  onResize(width, height) {
+    this.width = width
+    this.height = height
+    this.aspectVecNode.value.copy(getAspectVector(width, height))
+    this.targetA.setSize(width, height)
+    this.targetB.setSize(width, height)
+  }
 
-
-    return Fn(() => {
-      const uvCoord = uv()
-      const disp = mul(mul(fbm(mul(uvCoord, 20.0), float(4)), aspectVec), 0.01)
-    })
+  dispose() {
+    this.targetA.dispose()
+    this.targetB.dispose()
+    this.fboQuad.material.dispose()
+    this.fboQuad.geometry.dispose()
   }
 }

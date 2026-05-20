@@ -21,11 +21,12 @@ import {
 import { coordsToVector3 } from "react-three-map/maplibre"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import * as THREE from "three/webgpu"
-import { useLoader, useThree } from "@react-three/fiber"
+import { useFrame, useLoader, useThree } from "@react-three/fiber"
 import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js"
 import { folder, useControls } from "leva"
 import {
   billboarding,
+  equal,
   float,
   instancedArray,
   instanceIndex,
@@ -52,6 +53,10 @@ const COORDINATE_KEY_PRECISION = 6
 const DEFAULT_BORDER_WIDTH = 0.035
 const DEFAULT_BORDER_INTENSITY = 1
 const DEFAULT_BORDER_OPACITY = 0.75
+const HOVER_SCALE = 1.18
+const HOVER_TRANSITION_DAMPING = 14
+const HOVER_TRANSITION_EPSILON = 0.001
+const NO_HOVERED_ARTWORK_ID = -1
 const FALLBACK_LINE_INDEX = LINE_ORDER.length
 const FALLBACK_LINE_COLOR = "#748477"
 
@@ -59,6 +64,11 @@ const borderWidthUniform = uniform(DEFAULT_BORDER_WIDTH)
 const borderIntensityUniform = uniform(DEFAULT_BORDER_INTENSITY)
 const borderOpacityUniform = uniform(DEFAULT_BORDER_OPACITY)
 const lineLayoutProgressUniform = uniform(0)
+const hoveredArtworkIdUniform = uniform(NO_HOVERED_ARTWORK_ID, "int")
+const previousHoveredArtworkIdUniform = uniform(NO_HOVERED_ARTWORK_ID, "int")
+const hoverTransitionUniform = uniform(1)
+const hoveredArtworkStartInfluenceUniform = uniform(0)
+const previousHoveredArtworkStartInfluenceUniform = uniform(0)
 
 // TODO: Some shadow? Ambient occlusion?
 
@@ -230,8 +240,68 @@ const Artworks = () => {
   const gl = useThree((state) => state.gl)
   const setOpenArtworkDialog = useStore((state) => state.setOpenArtworkDialog)
   const setSelectedArtwork = useStore((state) => state.setSelectedArtwork)
+  const hoverAnimationActiveRef = useRef(false)
 
   useArtworkZoomScale()
+
+  const getArtworkHoverInfluence = useCallback((artworkId) => {
+    if (artworkId === null || artworkId === NO_HOVERED_ARTWORK_ID) {
+      return 0
+    }
+
+    const transition = hoverTransitionUniform.value
+
+    if (artworkId === hoveredArtworkIdUniform.value) {
+      return THREE.MathUtils.lerp(
+        hoveredArtworkStartInfluenceUniform.value,
+        1,
+        transition
+      )
+    }
+
+    if (artworkId === previousHoveredArtworkIdUniform.value) {
+      return THREE.MathUtils.lerp(
+        previousHoveredArtworkStartInfluenceUniform.value,
+        0,
+        transition
+      )
+    }
+
+    return 0
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      hoveredArtworkIdUniform.value = NO_HOVERED_ARTWORK_ID
+      previousHoveredArtworkIdUniform.value = NO_HOVERED_ARTWORK_ID
+      hoverTransitionUniform.value = 1
+      hoveredArtworkStartInfluenceUniform.value = 0
+      previousHoveredArtworkStartInfluenceUniform.value = 0
+      hoverAnimationActiveRef.current = false
+    }
+  }, [])
+
+  useFrame((_, delta) => {
+    if (!hoverAnimationActiveRef.current) return
+
+    hoverTransitionUniform.value = THREE.MathUtils.damp(
+      hoverTransitionUniform.value,
+      1,
+      HOVER_TRANSITION_DAMPING,
+      delta
+    )
+
+    if (1 - hoverTransitionUniform.value > HOVER_TRANSITION_EPSILON) {
+      return
+    }
+
+    hoverTransitionUniform.value = 1
+    previousHoveredArtworkIdUniform.value = NO_HOVERED_ARTWORK_ID
+    previousHoveredArtworkStartInfluenceUniform.value = 0
+    hoveredArtworkStartInfluenceUniform.value =
+      hoveredArtworkIdUniform.value === NO_HOVERED_ARTWORK_ID ? 0 : 1
+    hoverAnimationActiveRef.current = false
+  })
 
   const artworksTexture = useLoader(
     KTX2Loader,
@@ -507,9 +577,34 @@ const Artworks = () => {
       float(1),
       lineLayoutProgressUniform
     )
+    const artworkIndex = int(instanceIndex)
+    const hoveredInfluence = select(
+      equal(artworkIndex, hoveredArtworkIdUniform),
+      mix(
+        hoveredArtworkStartInfluenceUniform,
+        float(1),
+        hoverTransitionUniform
+      ),
+      float(0)
+    )
+    const previousHoveredInfluence = select(
+      equal(artworkIndex, previousHoveredArtworkIdUniform),
+      mix(
+        previousHoveredArtworkStartInfluenceUniform,
+        float(0),
+        hoverTransitionUniform
+      ),
+      float(0)
+    )
+    const hoverScale = mix(
+      float(1),
+      float(HOVER_SCALE),
+      hoveredInfluence.add(previousHoveredInfluence)
+    )
     const positionNode = positionLocal
       .mul(scales.toAttribute())
       .mul(zoomScale)
+      .mul(hoverScale)
 
     return positionNode
   }, [scales])
@@ -563,9 +658,29 @@ const Artworks = () => {
   }, [])
 
   // Interactions / picking
-  const handleArtworkHoverChange = useCallback(() => {
-    // console.debug("Artwork hover changed", { pickedId, previousPickedId })
-  }, [])
+  const handleArtworkHoverChange = useCallback(
+    (pickedId, previousPickedId) => {
+      const previousTransitionArtworkId =
+        previousHoveredArtworkIdUniform.value
+      const nextPreviousPickedId =
+        previousPickedId ??
+        (previousTransitionArtworkId !== NO_HOVERED_ARTWORK_ID &&
+        previousTransitionArtworkId !== pickedId
+          ? previousTransitionArtworkId
+          : null)
+
+      hoveredArtworkStartInfluenceUniform.value =
+        getArtworkHoverInfluence(pickedId)
+      previousHoveredArtworkStartInfluenceUniform.value =
+        getArtworkHoverInfluence(nextPreviousPickedId)
+      hoveredArtworkIdUniform.value = pickedId ?? NO_HOVERED_ARTWORK_ID
+      previousHoveredArtworkIdUniform.value =
+        nextPreviousPickedId ?? NO_HOVERED_ARTWORK_ID
+      hoverTransitionUniform.value = 0
+      hoverAnimationActiveRef.current = true
+    },
+    [getArtworkHoverInfluence]
+  )
 
   const handleArtworkClick = useCallback(
     (pickedId) => {

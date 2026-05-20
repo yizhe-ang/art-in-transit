@@ -166,10 +166,14 @@ function parseArticle(html) {
   return firstMatch(html, /<article\b[^>]*>([\s\S]*?)<\/article>/i) ?? ""
 }
 
-function parseArtist(articleHtml, stationLabel) {
-  const sections = [...articleHtml.matchAll(/<section\b[^>]*class="[^"]*text-md[^"]*"[^>]*>([\s\S]*?)<\/section>/g)]
+function parseArticleMetadataSections(articleHtml) {
+  return [...articleHtml.matchAll(/<section\b[^>]*class="[^"]*text-md[^"]*"[^>]*>([\s\S]*?)<\/section>/g)]
     .map(([, sectionHtml]) => stripTags(sectionHtml))
     .filter(Boolean)
+}
+
+function parseArtist(articleHtml, stationLabel) {
+  const sections = parseArticleMetadataSections(articleHtml)
 
   return sections.find((section) => section !== stationLabel) ?? null
 }
@@ -181,6 +185,24 @@ function parseDescription(articleHtml) {
   )
 
   return descriptionHtml ? stripTags(descriptionHtml) : null
+}
+
+function parseYear(articleHtml, stationLabel) {
+  const metadataSectionPattern = /<section\b[^>]*class="[^"]*text-md[^"]*"[^>]*>([\s\S]*?)<\/section>/g
+  const artistSection = [...articleHtml.matchAll(metadataSectionPattern)].find(
+    ([, sectionHtml]) => stripTags(sectionHtml) !== stationLabel,
+  )
+
+  if (!artistSection) {
+    return null
+  }
+
+  const afterArtist = articleHtml.slice(artistSection.index + artistSection[0].length)
+  const beforeMapLink = firstMatch(afterArtist, /^([\s\S]*?)<a\b[^>]*href="[^"]*\/map"[^>]*>/i) ?? afterArtist
+  const yearText = stripTags(beforeMapLink)
+  const [, year] = yearText.match(/(?:^|\D)((?:19|20)\d{2})(?!\d)/) ?? []
+
+  return year ?? null
 }
 
 function parseImageUrls(html) {
@@ -206,7 +228,7 @@ function parseMapCoordinates(html) {
   const normalizedHtml = decodeEntities(html).replace(/[\\]+"/g, '"')
   const [, latitude, longitude] =
     normalizedHtml.match(
-      /"mapMarkers"\s*:\s*\[\s*\{[\s\S]*?"position"\s*:\s*\{\s*"lat"\s*:\s*(-?\d+(?:\.\d+)?),\s*"lng"\s*:\s*(-?\d+(?:\.\d+)?)/,
+      /"mapMarkers"\s*:\s*\[\s*\{[\s\S]*?"position"\s*:\s*\{[\s\S]*?"lat"\s*:\s*(-?\d+(?:\.\d+)?),[\s\S]*?"lng"\s*:\s*(-?\d+(?:\.\d+)?)/,
     ) ?? []
 
   const parsedLatitude = Number.parseFloat(latitude)
@@ -230,6 +252,7 @@ async function enrichArtwork(candidate) {
   const html = await fetchHtml(candidate.itemUrl)
   const articleHtml = parseArticle(html)
   const mapUrl = mapUrlForItem(candidate.itemUrl)
+  const description = parseDescription(articleHtml)
 
   await sleep(REQUEST_DELAY_MS)
   const mapHtml = await fetchHtml(mapUrl)
@@ -240,7 +263,8 @@ async function enrichArtwork(candidate) {
     mapUrl,
     ...coordinates,
     artist: parseArtist(articleHtml, candidate.stationLabel),
-    description: parseDescription(articleHtml),
+    description,
+    year: parseYear(articleHtml, candidate.stationLabel),
     imageUrls: parseImageUrls(html),
     captions: parseCaptions(html),
     sourceTitle: parseSourceTitle(html),

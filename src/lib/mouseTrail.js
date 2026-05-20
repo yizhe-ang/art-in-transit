@@ -1,8 +1,21 @@
-// https://tympanus.net/codrops/2026/03/23/building-a-dual-scene-fluid-x-ray-reveal-effect-in-three-js/
-
-import * as THREE from "three/webgpu"
+import * as THREE from "three"
 
 export default class MouseTrail {
+  constructor(width, height) {
+    this.currentX = null
+    this.currentY = null
+    this.lastX = null
+    this.lastY = null
+    this.opacity = 0
+    this.lerpSpeed = 0.075
+    this.fadeInSpeed = 0.1
+    this.fadeOutSpeed = 0.1
+    this.moveThreshold = 0.5
+
+    this.#createCanvas(width, height)
+    this.#createTexture()
+  }
+
   #createCanvas(width, height) {
     this.canvas = document.createElement("canvas")
     this.canvas.width = width
@@ -23,7 +36,7 @@ export default class MouseTrail {
 
   update(mouseX, mouseY) {
     const targetX = mouseX * this.canvas.width
-    const targetY = mouseY * this.canvas.height
+    const targetY = (1 - mouseY) * this.canvas.height
 
     if (this.currentX === null) {
       this.currentX = targetX
@@ -42,11 +55,48 @@ export default class MouseTrail {
     this.texture.needsUpdate = true
   }
 
-  #draw() {
-    const { canvas, ctx, lineWidth } = this
+  reset() {
+    this.currentX = null
+    this.currentY = null
+    this.lastX = null
+    this.lastY = null
+    this.opacity = 0
+    this.#clear()
+    this.texture.needsUpdate = true
+  }
 
-    ctx.fillStyle = "white"
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
+  resize(width, height) {
+    if (this.canvas.width === width && this.canvas.height === height) {
+      return
+    }
+
+    this.canvas.width = width
+    this.canvas.height = height
+    this.lineWidth = Math.max(width * 0.2, 100)
+    this.reset()
+  }
+
+  #lerp(targetX, targetY) {
+    this.currentX += (targetX - this.currentX) * this.lerpSpeed
+    this.currentY += (targetY - this.currentY) * this.lerpSpeed
+  }
+
+  #updateOpacity() {
+    const dx = this.currentX - this.lastX
+    const dy = this.currentY - this.lastY
+    const dist = Math.sqrt(dx * dx + dy * dy)
+
+    if (dist > this.moveThreshold) {
+      this.opacity = Math.min(1, this.opacity + this.fadeInSpeed)
+    } else {
+      this.opacity = Math.max(0, this.opacity - this.fadeOutSpeed)
+    }
+  }
+
+  #draw() {
+    const { ctx, lineWidth } = this
+
+    this.#clear()
 
     if (this.opacity > 0.01) {
       ctx.beginPath()
@@ -57,5 +107,16 @@ export default class MouseTrail {
       ctx.strokeStyle = `rgba(0, 0, 0, ${this.opacity})`
       ctx.stroke()
     }
+  }
+
+  #clear() {
+    const { canvas, ctx } = this
+
+    ctx.fillStyle = "white"
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+  }
+
+  dispose() {
+    this.texture.dispose()
   }
 }
