@@ -1,21 +1,33 @@
 import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
   ExternalLinkIcon,
   RotateCcwIcon,
+  XIcon,
   ZoomInIcon,
   ZoomOutIcon,
 } from "lucide-react"
-import { useRef } from "react"
+import { useMemo, useRef } from "react"
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch"
 
 import { Button, buttonVariants } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import data from "@/data/bloomberg-art-in-transit-gallery.json"
+import {
+  LINE_ORDER,
+  getArtworkStationCode,
+  getLineNameForStationCode,
+} from "@/components/three/rail-routes"
 import { useStore } from "@/store"
 
 // TODO: Include photo credits too? To give proper credits to people involved.
 
 // TODO: The image in three.js should animate to the dialog position (like a layout animation)
-
-// TODO: Should allow scrubbing through artworks of the same line (left-right)
 
 const ArtworkImageViewer = ({ imageAlt, imageUrl, stopPointerPropagation }) => {
   const imageRef = useRef(null)
@@ -66,36 +78,52 @@ const ArtworkImageViewer = ({ imageAlt, imageUrl, stopPointerPropagation }) => {
         {({ zoomIn, zoomOut, resetTransform }) => (
           <>
             <div
-              className="artwork-zoom-controls absolute top-3 right-3 z-10 flex gap-1 rounded-lg bg-background/80 p-1 shadow-sm ring-1 ring-foreground/10 backdrop-blur"
+              className="artwork-zoom-controls absolute top-3 right-3 z-10 flex gap-2"
               onPointerDown={stopPointerPropagation}
             >
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Zoom in"
-                onClick={() => zoomIn()}
+              <div className="flex gap-1 rounded-lg bg-background/80 p-1 shadow-sm ring-1 ring-foreground/10 backdrop-blur">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Zoom in"
+                  onClick={() => zoomIn()}
+                >
+                  <ZoomInIcon />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Zoom out"
+                  onClick={() => zoomOut()}
+                >
+                  <ZoomOutIcon />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Reset zoom"
+                  onClick={() => resetTransform()}
+                >
+                  <RotateCcwIcon />
+                </Button>
+              </div>
+
+              <DialogClose
+                render={
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Close artwork"
+                    className="bg-background/90 shadow-sm ring-1 ring-foreground/10 backdrop-blur hover:bg-destructive/10 hover:text-destructive"
+                  />
+                }
               >
-                <ZoomInIcon />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Zoom out"
-                onClick={() => zoomOut()}
-              >
-                <ZoomOutIcon />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Reset zoom"
-                onClick={() => resetTransform()}
-              >
-                <RotateCcwIcon />
-              </Button>
+                <XIcon />
+              </DialogClose>
             </div>
 
             <TransformComponent
@@ -120,11 +148,38 @@ const ArtworkImageViewer = ({ imageAlt, imageUrl, stopPointerPropagation }) => {
   )
 }
 
+function getArtworkKey(artwork) {
+  return artwork?.itemUrl ?? artwork?.sourceTitle ?? artwork?.artworkTitle
+}
+
+function getArtworkLineName(artwork) {
+  return getLineNameForStationCode(getArtworkStationCode(artwork))
+}
+
+function getLineArtworkSequence() {
+  const artworksByLine = LINE_ORDER.reduce((groups, lineName) => {
+    groups.set(lineName, [])
+    return groups
+  }, new Map())
+
+  data.artworks.forEach((artwork) => {
+    const lineName = getArtworkLineName(artwork)
+    const lineArtworks = artworksByLine.get(lineName)
+
+    if (lineArtworks) {
+      lineArtworks.push(artwork)
+    }
+  })
+
+  return LINE_ORDER.flatMap((lineName) => artworksByLine.get(lineName) ?? [])
+}
+
 const ArtworkDialog = () => {
   const openArtworkDialog = useStore((state) => state.openArtworkDialog)
   const setOpenArtworkDialog = useStore((state) => state.setOpenArtworkDialog)
   const selectedArtwork = useStore((state) => state.selectedArtwork)
   const setSelectedArtwork = useStore((state) => state.setSelectedArtwork)
+  const artworkSequence = useMemo(() => getLineArtworkSequence(), [])
 
   const imageUrl =
     selectedArtwork?.imageUrls?.[0] ?? selectedArtwork?.thumbnailUrl
@@ -149,21 +204,81 @@ const ArtworkDialog = () => {
     event.stopPropagation()
   }
 
+  const handleNavigateArtwork = (direction) => {
+    if (!selectedArtwork || artworkSequence.length === 0) {
+      return
+    }
+
+    const selectedArtworkKey = getArtworkKey(selectedArtwork)
+    const selectedIndex = artworkSequence.findIndex((artwork) => {
+      return getArtworkKey(artwork) === selectedArtworkKey
+    })
+    const currentIndex = selectedIndex === -1 ? 0 : selectedIndex
+    const nextIndex =
+      (currentIndex + direction + artworkSequence.length) %
+      artworkSequence.length
+
+    setSelectedArtwork(artworkSequence[nextIndex])
+  }
+
+  const handlePreviousArtworkPointerDown = (event) => {
+    stopPointerPropagation(event)
+    handleNavigateArtwork(-1)
+  }
+
+  const handleNextArtworkPointerDown = (event) => {
+    stopPointerPropagation(event)
+    handleNavigateArtwork(1)
+  }
+
   return (
     <Dialog open={openArtworkDialog} onOpenChange={handleOpenChange}>
-      <DialogContent className="h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] gap-0 overflow-visible rounded-lg bg-transparent p-0 sm:max-w-[calc(100vw-2rem)]">
+      <DialogContent
+        showCloseButton={false}
+        className="h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] gap-0 overflow-visible rounded-lg bg-transparent p-0 sm:max-w-[calc(100vw-2rem)]"
+      >
         {selectedArtwork && (
           <div
             className="flex min-h-0 flex-1 flex-col"
             onPointerDown={handleBackgroundPointerDown}
           >
             {imageUrl && (
-              <ArtworkImageViewer
-                key={imageUrl}
-                imageAlt={selectedArtwork.imageAlt ?? title ?? "Artwork"}
-                imageUrl={imageUrl}
-                stopPointerPropagation={stopPointerPropagation}
-              />
+              <div className="relative flex min-h-0 flex-1">
+                <ArtworkImageViewer
+                  key={imageUrl}
+                  imageAlt={selectedArtwork.imageAlt ?? title ?? "Artwork"}
+                  imageUrl={imageUrl}
+                  stopPointerPropagation={stopPointerPropagation}
+                />
+
+                {artworkSequence.length > 1 && (
+                  <div
+                    className="pointer-events-none absolute inset-x-3 top-1/2 z-10 flex -translate-y-1/2 justify-between sm:inset-x-5"
+                    aria-label="Artwork navigation"
+                  >
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="icon"
+                      aria-label="Previous artwork"
+                      className="pointer-events-auto rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur"
+                      onPointerDown={handlePreviousArtworkPointerDown}
+                    >
+                      <ChevronLeftIcon />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="icon"
+                      aria-label="Next artwork"
+                      className="pointer-events-auto rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur"
+                      onPointerDown={handleNextArtworkPointerDown}
+                    >
+                      <ChevronRightIcon />
+                    </Button>
+                  </div>
+                )}
+              </div>
             )}
 
             <div className="flex shrink-0 justify-center">

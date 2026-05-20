@@ -26,13 +26,18 @@ import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js"
 import { folder, useControls } from "leva"
 import {
   billboarding,
+  float,
   instancedArray,
   instanceIndex,
   int,
+  or,
   positionLocal,
+  select,
   texture,
+  uniform,
+  uniformArray,
   uv,
-  float,
+  vec4,
 } from "three/tsl"
 
 const COUNT = data.artworks.length
@@ -41,8 +46,15 @@ const SIZE = 1800
 const DEFAULT_LINE_STAGGER = 0.2
 const CLUSTER_OFFSET = SIZE * 0.18
 const COORDINATE_KEY_PRECISION = 6
+const DEFAULT_BORDER_WIDTH = 0.035
+const DEFAULT_BORDER_INTENSITY = 1
+const DEFAULT_BORDER_OPACITY = 0.75
+const FALLBACK_LINE_INDEX = LINE_ORDER.length
+const FALLBACK_LINE_COLOR = "#748477"
 
-// TODO: Border corresponding to line color?
+const borderWidthUniform = uniform(DEFAULT_BORDER_WIDTH)
+const borderIntensityUniform = uniform(DEFAULT_BORDER_INTENSITY)
+const borderOpacityUniform = uniform(DEFAULT_BORDER_OPACITY)
 
 // TODO: Some shadow? Ambient occlusion?
 
@@ -169,17 +181,28 @@ const Artworks = () => {
     gl.initTexture?.(artworksTexture)
   }, [gl, artworksTexture])
 
-  const artworkRoutes = useMemo(() => {
+  const { artworkRoutes, lineBorderColors } = useMemo(() => {
     const routes = buildRailRoutes({
       altitude: ALTITUDE,
       lineNames: LINE_ORDER,
     })
+    const lineColorByName = new Map()
     const routesByLine = routes.reduce((groups, route) => {
       const lineRoutes = groups.get(route.name) ?? []
       lineRoutes.push(route)
       groups.set(route.name, lineRoutes)
+
+      if (!lineColorByName.has(route.name)) {
+        lineColorByName.set(route.name, route.color)
+      }
+
       return groups
     }, new Map())
+    const lineBorderColors = LINE_ORDER.map((lineName) => {
+      return new THREE.Color(lineColorByName.get(lineName) ?? FALLBACK_LINE_COLOR)
+    })
+
+    lineBorderColors.push(new THREE.Color(FALLBACK_LINE_COLOR))
 
     const artworkRouteItems = data.artworks.map((artwork) => {
       const finalPosition = getArtworkPosition(artwork)
@@ -206,7 +229,7 @@ const Artworks = () => {
       return {
         clusterKey: getArtworkClusterKey(artwork),
         finalPosition,
-        lineIndex,
+        lineIndex: lineIndex === -1 ? FALLBACK_LINE_INDEX : lineIndex,
         route: selectedRoute,
         targetDistance: selectedClosestPoint?.distanceAlong ?? 0,
       }
@@ -242,7 +265,7 @@ const Artworks = () => {
       })
     })
 
-    return artworkRouteItems
+    return { artworkRoutes: artworkRouteItems, lineBorderColors }
   }, [])
 
   const animatedPositions = useMemo(() => {
@@ -277,22 +300,47 @@ const Artworks = () => {
     renderPositionsRef.current = renderPositions
   }, [renderPositions])
 
-  const { progress, lineStagger } = useControls({
-    artworks: folder({
-      progress: {
-        value: 1,
-        min: 0,
-        max: 1,
-        step: 0.01,
-      },
-      lineStagger: {
-        value: DEFAULT_LINE_STAGGER,
-        min: 0,
-        max: 0.2,
-        step: 0.01,
-      },
-    }),
-  })
+  const { progress, lineStagger, borderWidth, borderIntensity, borderOpacity } =
+    useControls({
+      artworks: folder({
+        progress: {
+          value: 1,
+          min: 0,
+          max: 1,
+          step: 0.01,
+        },
+        lineStagger: {
+          value: DEFAULT_LINE_STAGGER,
+          min: 0,
+          max: 0.2,
+          step: 0.01,
+        },
+        borderWidth: {
+          value: DEFAULT_BORDER_WIDTH,
+          min: 0,
+          max: 0.12,
+          step: 0.001,
+        },
+        borderIntensity: {
+          value: DEFAULT_BORDER_INTENSITY,
+          min: 0,
+          max: 2,
+          step: 0.01,
+        },
+        borderOpacity: {
+          value: DEFAULT_BORDER_OPACITY,
+          min: 0,
+          max: 1,
+          step: 0.01,
+        },
+      }),
+    })
+
+  useEffect(() => {
+    borderWidthUniform.value = borderWidth
+    borderIntensityUniform.value = borderIntensity
+    borderOpacityUniform.value = borderOpacity
+  }, [borderIntensity, borderOpacity, borderWidth])
 
   useEffect(() => {
     updateArtworkLineProgress({
@@ -336,6 +384,24 @@ const Artworks = () => {
     return instancedArray(array, "vec3")
   }, [aspectRatios])
 
+  const aspectRatioAttributes = useMemo(() => {
+    return instancedArray(aspectRatios, "float")
+  }, [aspectRatios])
+
+  const lineIds = useMemo(() => {
+    const array = new Int32Array(COUNT)
+
+    artworkRoutes.forEach((artworkRoute, index) => {
+      array[index] = artworkRoute.lineIndex
+    })
+
+    return instancedArray(array, "int")
+  }, [artworkRoutes])
+
+  const lineBorderColorUniforms = useMemo(() => {
+    return uniformArray(lineBorderColors, "color")
+  }, [lineBorderColors])
+
   const geometry = useMemo(() => {
     const geometry = new THREE.PlaneGeometry(SIZE, SIZE)
     // geometry.rotateX(-Math.PI / 2)
@@ -364,12 +430,33 @@ const Artworks = () => {
   }, [renderPositions])
 
   const colorNode = useMemo(() => {
-    const colorNode = texture(artworksTexture, uv().flipY()).depth(
+    const uvNode = uv()
+    const artworkColor = texture(artworksTexture, uvNode.flipY()).depth(
       int(instanceIndex)
     )
+    const lineBorderColor = lineBorderColorUniforms.element(
+      lineIds.toAttribute().toInt()
+    )
+    const aspectRatio = aspectRatioAttributes.toAttribute()
+    const horizontalBorderWidth = borderWidthUniform.div(aspectRatio)
+    const intensifiedBorderColor = lineBorderColor.mul(borderIntensityUniform)
+    const edgeMask = or(
+      or(
+        uvNode.x.lessThan(horizontalBorderWidth),
+        uvNode.x.greaterThan(float(1).sub(horizontalBorderWidth))
+      ),
+      or(
+        uvNode.y.lessThan(borderWidthUniform),
+        uvNode.y.greaterThan(float(1).sub(borderWidthUniform))
+      )
+    )
 
-    return colorNode
-  }, [artworksTexture])
+    return select(
+      edgeMask,
+      vec4(intensifiedBorderColor, artworkColor.a.mul(borderOpacityUniform)),
+      artworkColor
+    )
+  }, [artworksTexture, aspectRatioAttributes, lineBorderColorUniforms, lineIds])
 
   // TODO: Slight opacity, painted reveal on hover
   // Or just do a screen-space effect
