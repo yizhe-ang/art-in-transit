@@ -14,11 +14,14 @@ import {
   updateArtworkLineProgress,
 } from "@/components/three/artworks/line-progress"
 import { useArtworkGpuPicking } from "@/components/three/artworks/gpu-picking"
+import {
+  artworkZoomScale,
+  useArtworkCollisionLayout,
+} from "@/components/three/artworks/collision-layout"
 import { coordsToVector3 } from "react-three-map/maplibre"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import * as THREE from "three/webgpu"
-import { useLoader, useThree, useFrame } from "@react-three/fiber"
-import { useMap } from "react-three-map/maplibre"
+import { useLoader, useThree } from "@react-three/fiber"
 import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js"
 import { folder, useControls } from "leva"
 import {
@@ -29,16 +32,13 @@ import {
   positionLocal,
   texture,
   uv,
-  uniform,
   float,
 } from "three/tsl"
 
 const COUNT = data.artworks.length
 const ALTITUDE = 20
 const SIZE = 1800
-const MIN_ZOOM_SCALE = 0.25
 const DEFAULT_LINE_STAGGER = 0.2
-const artworkZoomScale = uniform(1)
 
 // TODO: Some shadow? Ambient occlusion?
 
@@ -62,13 +62,12 @@ function getArtworkPosition(artwork) {
   )
 }
 
-const Artworks = () => {
+const Artworks = ({ useCollisionLayout = false }) => {
   const gl = useThree((state) => state.gl)
-  const map = useMap()
+  const camera = useThree((state) => state.camera)
+  const size = useThree((state) => state.size)
   const setOpenArtworkDialog = useStore((state) => state.setOpenArtworkDialog)
   const setSelectedArtwork = useStore((state) => state.setSelectedArtwork)
-
-  const referenceZoomRef = useRef(null)
 
   const artworksTexture = useLoader(
     KTX2Loader,
@@ -127,17 +126,47 @@ const Artworks = () => {
     })
   }, [])
 
-  const positions = useMemo(() => {
+  const animatedPositions = useMemo(() => {
     const array = createArtworkLinePositionArray(artworkRoutes)
     return instancedArray(array, "vec3")
   }, [artworkRoutes])
-  const positionsRef = useRef(positions)
+  const animatedPositionsRef = useRef(animatedPositions)
+
+  const renderPositions = useMemo(() => {
+    const array = createArtworkLinePositionArray(artworkRoutes)
+    return instancedArray(array, "vec3")
+  }, [artworkRoutes])
+  const renderPositionsRef = useRef(renderPositions)
+
+  const finalPositionArray = useMemo(() => {
+    const array = new Float32Array(COUNT * 3)
+
+    artworkRoutes.forEach((artworkRoute, index) => {
+      array[index * 3 + 0] = artworkRoute.finalPosition.x
+      array[index * 3 + 1] = artworkRoute.finalPosition.y
+      array[index * 3 + 2] = artworkRoute.finalPosition.z
+    })
+
+    return array
+  }, [artworkRoutes])
 
   useEffect(() => {
-    positionsRef.current = positions
-  }, [positions])
+    animatedPositionsRef.current = animatedPositions
+  }, [animatedPositions])
 
-  const { progress, lineStagger } = useControls({
+  useEffect(() => {
+    renderPositionsRef.current = renderPositions
+  }, [renderPositions])
+
+  const {
+    progress,
+    lineStagger,
+    collisionLayoutEnabled,
+    collisionPadding,
+    collisionIterations,
+    collisionAnchorStrength,
+    collisionMaxOffset,
+  } = useControls({
     artworks: folder({
       progress: {
         value: 1,
@@ -151,45 +180,91 @@ const Artworks = () => {
         max: 0.2,
         step: 0.01,
       },
+      collisionLayoutEnabled: useCollisionLayout,
+      collisionPadding: {
+        value: 12,
+        min: 0,
+        max: 80,
+        step: 1,
+      },
+      collisionIterations: {
+        value: 4,
+        min: 1,
+        max: 12,
+        step: 1,
+      },
+      collisionAnchorStrength: {
+        value: 0.18,
+        min: 0,
+        max: 0.8,
+        step: 0.01,
+      },
+      collisionMaxOffset: {
+        value: 160,
+        min: 0,
+        max: 500,
+        step: 1,
+      },
     }),
   })
 
   useEffect(() => {
     updateArtworkLineProgress({
-      positions: positionsRef.current,
+      positions: animatedPositionsRef.current,
       artworkRoutes,
       progress,
       lineStagger,
     })
-  }, [artworkRoutes, lineStagger, progress])
 
-  useFrame(() => {
-    if (!map) return
+    const renderPositionBuffer = renderPositionsRef.current.value
 
-    const zoom = map.getZoom()
-
-    if (referenceZoomRef.current === null) {
-      referenceZoomRef.current = zoom
+    if (progress < 1) {
+      renderPositionBuffer.array.set(animatedPositionsRef.current.value.array)
+      renderPositionBuffer.needsUpdate = true
+      return
     }
 
-    artworkZoomScale.value = THREE.MathUtils.clamp(
-      Math.pow(2, referenceZoomRef.current - zoom),
-      MIN_ZOOM_SCALE,
-      1
-    )
+    renderPositionBuffer.array.set(finalPositionArray)
+    renderPositionBuffer.needsUpdate = true
+  }, [artworkRoutes, finalPositionArray, lineStagger, progress])
+
+  const aspectRatios = useMemo(() => {
+    const array = new Float32Array(COUNT)
+
+    manifest.entries.forEach((entry, index) => {
+      array[index] = entry.aspectRatio ?? 1
+    })
+
+    return array
+  }, [])
+
+  useArtworkCollisionLayout({
+    enabled: useCollisionLayout && collisionLayoutEnabled,
+    progress,
+    renderPositionsRef,
+    finalPositionArray,
+    aspectRatios,
+    camera,
+    viewport: size,
+    baseSize: SIZE,
+    altitude: ALTITUDE,
+    padding: collisionPadding,
+    iterations: collisionIterations,
+    anchorStrength: collisionAnchorStrength,
+    maxOffset: collisionMaxOffset,
   })
 
   const scales = useMemo(() => {
     const array = new Float32Array(COUNT * 3)
 
-    manifest.entries.forEach((entry, index) => {
-      array[index * 3 + 0] = entry.aspectRatio ?? 1
+    aspectRatios.forEach((aspectRatio, index) => {
+      array[index * 3 + 0] = aspectRatio
       array[index * 3 + 1] = 1
       array[index * 3 + 2] = 1
     })
 
     return instancedArray(array, "vec3")
-  }, [])
+  }, [aspectRatios])
 
   const geometry = useMemo(() => {
     const geometry = new THREE.PlaneGeometry(SIZE, SIZE)
@@ -212,11 +287,11 @@ const Artworks = () => {
 
   const vertexNode = useMemo(() => {
     return billboarding({
-      position: positions.toAttribute(),
+      position: renderPositions.toAttribute(),
       horizontal: false,
       vertical: true,
     })
-  }, [positions])
+  }, [renderPositions])
 
   const colorNode = useMemo(() => {
     const colorNode = texture(artworksTexture, uv().flipY()).depth(

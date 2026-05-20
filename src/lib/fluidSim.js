@@ -1,6 +1,6 @@
 // https://tympanus.net/codrops/2026/03/23/building-a-dual-scene-fluid-x-ray-reveal-effect-in-three-js/
 
-import { texture } from "three/tsl"
+import { texture, vec2, Fn, uv, mul, float } from "three/tsl"
 import * as THREE from "three/webgpu"
 
 export default class FluidSim {
@@ -52,5 +52,17 @@ export default class FluidSim {
     const temp = this.targetA
     this.targetA = this.targetB
     this.targetB = temp
+  }
+
+  #createFluidShader() {
+    const aspect = this.height / this.width
+    const aspectVec =
+      this.width < this.height ? vec2(1.0, 1.0 / aspect) : vec2(aspect, 1.0)
+
+
+    return Fn(() => {
+      const uvCoord = uv()
+      const disp = mul(mul(fbm(mul(uvCoord, 20.0), float(4)), aspectVec), 0.01)
+    })
   }
 }
