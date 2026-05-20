@@ -28,6 +28,7 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-three-map": "github:yizhe-ang/react-three-map#support-r3f-v9-webgpu",
+    "react-zoom-pan-pinch": "^3.7.0",
     "shadcn": "^4.7.0",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.2.1",

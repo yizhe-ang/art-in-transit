@@ -1,14 +1,18 @@
-import { ExternalLinkIcon } from "lucide-react"
+import {
+  ExternalLinkIcon,
+  RotateCcwIcon,
+  ZoomInIcon,
+  ZoomOutIcon,
+} from "lucide-react"
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch"
 
-import { buttonVariants } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { useStore } from "@/store"
 
 // TODO: Include photo credits too? To give proper credits to people involved.
 
 // TODO: The image in three.js should animate to the dialog position (like a layout animation)
-
-// TODO: Allow zoom controls
 
 const ArtworkDialog = () => {
   const openArtworkDialog = useStore((state) => state.openArtworkDialog)
@@ -42,20 +46,87 @@ const ArtworkDialog = () => {
 
   return (
     <Dialog open={openArtworkDialog} onOpenChange={handleOpenChange}>
-      <DialogContent className="h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] gap-0 overflow-hidden rounded-lg p-0 sm:max-w-[calc(100vw-2rem)] bg-transparent">
+      <DialogContent className="h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] gap-0 overflow-visible rounded-lg p-0 sm:max-w-[calc(100vw-2rem)] bg-transparent">
         {selectedArtwork && (
           <div
             className="flex min-h-0 flex-1 flex-col"
             onPointerDown={handleBackgroundPointerDown}
           >
             {imageUrl && (
-              <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
-                <img
-                  src={imageUrl}
-                  alt={selectedArtwork.imageAlt ?? title ?? "Artwork"}
-                  className="max-h-full max-w-full object-contain"
-                  onPointerDown={stopPointerPropagation}
-                />
+              <div
+                className="relative flex min-h-0 flex-1 items-center justify-center overflow-visible"
+                onPointerDown={stopPointerPropagation}
+              >
+                <TransformWrapper
+                  key={imageUrl}
+                  initialScale={1}
+                  minScale={1}
+                  maxScale={4}
+                  centerOnInit
+                  centerZoomedOut
+                  limitToBounds={false}
+                  wheel={{ step: 0.12, excluded: ["artwork-zoom-controls"] }}
+                  pinch={{ step: 8, excluded: ["artwork-zoom-controls"] }}
+                  panning={{
+                    velocityDisabled: true,
+                    excluded: ["artwork-zoom-controls"],
+                  }}
+                  doubleClick={{
+                    mode: "toggle",
+                    step: 1.6,
+                    excluded: ["artwork-zoom-controls"],
+                  }}
+                >
+                  {({ zoomIn, zoomOut, resetTransform }) => (
+                    <>
+                      <div
+                        className="artwork-zoom-controls absolute top-3 right-3 z-10 flex gap-1 rounded-lg bg-background/80 p-1 shadow-sm ring-1 ring-foreground/10 backdrop-blur"
+                        onPointerDown={stopPointerPropagation}
+                      >
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label="Zoom in"
+                          onClick={() => zoomIn()}
+                        >
+                          <ZoomInIcon />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label="Zoom out"
+                          onClick={() => zoomOut()}
+                        >
+                          <ZoomOutIcon />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label="Reset zoom"
+                          onClick={() => resetTransform()}
+                        >
+                          <RotateCcwIcon />
+                        </Button>
+                      </div>
+
+                      <TransformComponent
+                        wrapperClass="size-full"
+                        wrapperStyle={{ overflow: "visible" }}
+                        contentClass="flex size-full items-center justify-center"
+                      >
+                        <img
+                          src={imageUrl}
+                          alt={selectedArtwork.imageAlt ?? title ?? "Artwork"}
+                          className="max-h-full max-w-full touch-none object-contain select-none"
+                          draggable={false}
+                        />
+                      </TransformComponent>
+                    </>
+                  )}
+                </TransformWrapper>
               </div>
             )}
 
