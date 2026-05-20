@@ -252,7 +252,12 @@ const Artworks = () => {
 
   return (
     <>
-      <instancedMesh args={[geometry, undefined, COUNT]} frustumCulled={false}>
+      <instancedMesh
+        args={[geometry, undefined, COUNT]}
+        frustumCulled={false}
+        receiveShadow
+        castShadow
+      >
         <meshBasicNodeMaterial
           transparent
           positionNode={positionNode}

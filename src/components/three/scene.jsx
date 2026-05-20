@@ -1,5 +1,6 @@
 import Artworks from "@/components/three/artworks"
 import Lines from "@/components/three/lines"
+import Ground from "@/components/three/ground"
 
 const Scene = () => {
   return (
@@ -10,6 +11,8 @@ const Scene = () => {
           <meshPhysicalNodeMaterial />
           <boxGeometry />
         </mesh> */}
+
+      <Ground />
 
       <Lines />
 
