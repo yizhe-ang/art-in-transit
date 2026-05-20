@@ -44,6 +44,11 @@ const artworkZoomScale = uniform(1)
 
 // TODO: Use d3-force to prevent them from overlapping?
 
+// TODO: Positioning
+// 1. Small offsets
+// 2. Strict no overlap
+// 3. Cluster stacks
+
 function getArtworkPosition(artwork) {
   return new THREE.Vector3(
     ...coordsToVector3(
