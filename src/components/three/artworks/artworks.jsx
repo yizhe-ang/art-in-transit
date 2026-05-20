@@ -42,6 +42,8 @@ const artworkZoomScale = uniform(1)
 
 // TODO: Some shadow? Ambient occlusion?
 
+// TODO: Use d3-force to prevent them from overlapping?
+
 function getArtworkPosition(artwork) {
   return new THREE.Vector3(
     ...coordsToVector3(
