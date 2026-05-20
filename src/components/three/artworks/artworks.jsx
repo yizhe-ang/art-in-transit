@@ -1,6 +1,7 @@
 import data from "@/data/bloomberg-art-in-transit-gallery.json"
 import manifest from "@/data/artwork-texture-manifest.json"
 import { origin } from "@/components/map/constants"
+import { useStore } from "@/store"
 import {
   LINE_ORDER,
   buildRailRoutes,
@@ -57,6 +58,8 @@ function getArtworkPosition(artwork) {
 const Artworks = () => {
   const gl = useThree((state) => state.gl)
   const map = useMap()
+  const setOpenArtworkDialog = useStore((state) => state.setOpenArtworkDialog)
+  const setSelectedArtwork = useStore((state) => state.setSelectedArtwork)
 
   const referenceZoomRef = useRef(null)
 
@@ -228,18 +231,18 @@ const Artworks = () => {
     // console.debug("Artwork hover changed", { pickedId, previousPickedId })
   }, [])
 
-  const handleArtworkClick = useCallback((pickedId) => {
-    if (pickedId === null) {
-      console.log("Artwork clicked", { pickedId, artwork: null })
-      return
-    }
+  const handleArtworkClick = useCallback(
+    (pickedId) => {
+      if (pickedId === null) return
 
-    console.log("Artwork clicked", {
-      pickedId,
-      artwork: data.artworks[pickedId],
-      texture: manifest.entries[pickedId],
-    })
-  }, [])
+      const artwork = data.artworks[pickedId]
+      if (!artwork) return
+
+      setSelectedArtwork(artwork)
+      setOpenArtworkDialog(true)
+    },
+    [setOpenArtworkDialog, setSelectedArtwork]
+  )
 
   useArtworkGpuPicking({
     geometry,
