@@ -32,67 +32,84 @@ const ArtworkDialog = () => {
     }
   }
 
+  const handleBackgroundPointerDown = () => {
+    handleOpenChange(false)
+  }
+
+  const stopPointerPropagation = (event) => {
+    event.stopPropagation()
+  }
+
   return (
     <Dialog open={openArtworkDialog} onOpenChange={handleOpenChange}>
       <DialogContent className="h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] gap-0 overflow-hidden rounded-lg p-0 sm:max-w-[calc(100vw-2rem)] bg-transparent">
         {selectedArtwork && (
-          <div className="flex min-h-0 flex-1 flex-col">
+          <div
+            className="flex min-h-0 flex-1 flex-col"
+            onPointerDown={handleBackgroundPointerDown}
+          >
             {imageUrl && (
-              <div className="relative min-h-0 flex-1 overflow-hidden">
+              <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
                 <img
                   src={imageUrl}
                   alt={selectedArtwork.imageAlt ?? title ?? "Artwork"}
-                  className="h-full w-full object-contain"
+                  className="max-h-full max-w-full object-contain"
+                  onPointerDown={stopPointerPropagation}
                 />
               </div>
             )}
 
-            <div className="grid shrink-0 gap-5 p-5 bg-muted">
-              <div className="grid gap-2 pr-8">
-                {station && (
-                  <p className="text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
-                    {station}
-                  </p>
-                )}
+            <div className="flex shrink-0 justify-center">
+              <div
+                className="grid w-fit max-w-[calc(100vw-2rem)] gap-5 bg-muted p-5"
+                onPointerDown={stopPointerPropagation}
+              >
+                <div className="grid gap-2 pr-8">
+                  {station && (
+                    <p className="text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
+                      {station}
+                    </p>
+                  )}
 
-                <DialogTitle className="text-xl leading-tight">
-                  {title}
-                </DialogTitle>
+                  <DialogTitle className="text-xl leading-tight">
+                    {title}
+                  </DialogTitle>
 
-                {artist && (
-                  <p className="text-sm text-muted-foreground">{artist}</p>
+                  {artist && (
+                    <p className="text-sm text-muted-foreground">{artist}</p>
+                  )}
+                </div>
+
+                <div className="grid gap-3 text-sm">
+                  {artist && (
+                    <div className="grid grid-cols-[5.5rem_1fr] gap-3">
+                      <span className="text-muted-foreground">Artist</span>
+                      <span>{artist}</span>
+                    </div>
+                  )}
+
+                  {station && (
+                    <div className="grid grid-cols-[5.5rem_1fr] gap-3">
+                      <span className="text-muted-foreground">Station</span>
+                      <span>{station}</span>
+                    </div>
+                  )}
+                </div>
+
+                {readMoreUrl && (
+                  <a
+                    href={readMoreUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={buttonVariants({
+                      className: "w-fit",
+                    })}
+                  >
+                    Read more
+                    <ExternalLinkIcon data-icon="inline-end" />
+                  </a>
                 )}
               </div>
-
-              <div className="grid gap-3 text-sm">
-                {artist && (
-                  <div className="grid grid-cols-[5.5rem_1fr] gap-3">
-                    <span className="text-muted-foreground">Artist</span>
-                    <span>{artist}</span>
-                  </div>
-                )}
-
-                {station && (
-                  <div className="grid grid-cols-[5.5rem_1fr] gap-3">
-                    <span className="text-muted-foreground">Station</span>
-                    <span>{station}</span>
-                  </div>
-                )}
-              </div>
-
-              {readMoreUrl && (
-                <a
-                  href={readMoreUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={buttonVariants({
-                    className: "w-fit",
-                  })}
-                >
-                  Read more
-                  <ExternalLinkIcon data-icon="inline-end" />
-                </a>
-              )}
             </div>
           </div>
         )}
