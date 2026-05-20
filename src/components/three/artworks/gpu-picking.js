@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useFrame, useThree } from "@react-three/fiber"
 import { useMap } from "react-three-map/maplibre"
 import * as THREE from "three/webgpu"
@@ -182,6 +182,30 @@ export function useArtworkGpuPicking({
   const isMountedRef = useRef(true)
   const pickingCameraRef = useRef(new THREE.PerspectiveCamera())
   const pickingCropMatrixRef = useRef(new THREE.Matrix4())
+  const cursorTargetRef = useRef(null)
+  const previousCursorRef = useRef(null)
+
+  const restoreCursor = useCallback(() => {
+    const target = cursorTargetRef.current
+    if (!target) return
+
+    target.style.cursor = previousCursorRef.current ?? ""
+    cursorTargetRef.current = null
+    previousCursorRef.current = null
+  }, [])
+
+  const setPointerCursor = useCallback(
+    (target) => {
+      if (cursorTargetRef.current !== target) {
+        restoreCursor()
+        cursorTargetRef.current = target
+        previousCursorRef.current = target.style.cursor
+      }
+
+      target.style.cursor = "pointer"
+    },
+    [restoreCursor]
+  )
 
   const pickingScene = useMemo(() => new THREE.Scene(), [])
   const pickingTexture = useMemo(() => {
@@ -228,9 +252,10 @@ export function useArtworkGpuPicking({
   useEffect(() => {
     return () => {
       isMountedRef.current = false
+      restoreCursor()
       pickingTexture.dispose()
     }
-  }, [pickingTexture])
+  }, [pickingTexture, restoreCursor])
 
   useEffect(() => {
     isMountedRef.current = true
@@ -260,6 +285,7 @@ export function useArtworkGpuPicking({
       }
       hoverDirtyRef.current = false
       clickPointerRef.current = null
+      restoreCursor()
 
       if (hoveredIdRef.current === null) return
 
@@ -311,8 +337,9 @@ export function useArtworkGpuPicking({
       eventTarget.removeEventListener("pointermove", handlePointerMove)
       eventTarget.removeEventListener("pointerleave", handlePointerLeave)
       eventTarget.removeEventListener("click", handleClick)
+      restoreCursor()
     }
-  }, [enabled, gl, map])
+  }, [enabled, gl, map, restoreCursor])
 
   useFrame(({ gl, camera }) => {
     if (!enabled || pickInFlightRef.current) return
@@ -384,6 +411,14 @@ export function useArtworkGpuPicking({
 
         const previousId = hoveredIdRef.current
         hoveredIdRef.current = pickedId
+
+        if (pickedId === null) {
+          restoreCursor()
+        } else {
+          const canvas = map?.getCanvas?.() ?? gl.domElement
+          setPointerCursor(canvas.parentElement ?? gl.domElement)
+        }
+
         onHoverChangeRef.current?.(pickedId, previousId)
       },
       (error) => {

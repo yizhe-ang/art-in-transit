@@ -224,7 +224,7 @@ const Artworks = () => {
   }, [])
 
   // Interactions / picking
-  const handleArtworkHoverChange = useCallback((pickedId, previousPickedId) => {
+  const handleArtworkHoverChange = useCallback(() => {
     // console.debug("Artwork hover changed", { pickedId, previousPickedId })
   }, [])
 
