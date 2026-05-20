@@ -264,6 +264,7 @@ const Artworks = () => {
           vertexNode={vertexNode}
           colorNode={colorNode}
           opacityNode={opacityNode}
+          side={THREE.DoubleSide}
         />
       </instancedMesh>
     </>
