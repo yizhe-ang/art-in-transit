@@ -238,6 +238,16 @@ function normalizeArtworkStation(artwork) {
   }
 }
 
+function getFirstCaptionCredit(captions) {
+  const firstCaption = captions?.[0]
+
+  if (typeof firstCaption !== "string" || firstCaption.trim() === "") {
+    return null
+  }
+
+  return firstCaption.split(/\r?\n/).slice(1).join("\n").trim() || null
+}
+
 function getArtworkLineName(artwork) {
   return getLineNameForStationCode(getArtworkStationCode(artwork))
 }
@@ -275,10 +285,10 @@ const ArtworkDialog = () => {
     selectedArtwork?.imageUrls?.[0] ?? selectedArtwork?.thumbnailUrl
   const title = selectedArtwork?.artworkTitle
   const artist = selectedArtwork?.artist
-  const station = selectedArtwork?.stationLabel ?? selectedArtwork?.stationName
   const stationCode = selectedArtwork?.stationCode
   const stationName = selectedArtwork?.stationName
   const readMoreUrl = selectedArtwork?.itemUrl
+  const captionCredit = getFirstCaptionCredit(selectedArtwork?.captions)
 
   const handleOpenChange = (open) => {
     setOpenArtworkDialog(open)
@@ -438,6 +448,12 @@ const ArtworkDialog = () => {
 
                     {artist && (
                       <p className="text-sm text-muted-foreground">{artist}</p>
+                    )}
+
+                    {captionCredit && (
+                      <p className="whitespace-pre-line text-sm text-muted-foreground">
+                        {captionCredit}
+                      </p>
                     )}
                   </div>
 
