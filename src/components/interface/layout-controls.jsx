@@ -24,7 +24,10 @@ const LayoutControls = () => {
               size="sm"
               variant={active ? "default" : "ghost"}
               aria-pressed={active}
-              onClick={() => setArtworkLayout(layout.id)}
+              onClick={() => {
+                if (active) return
+                setArtworkLayout(layout.id)
+              }}
               className={
                 active
                   ? "bg-lta-dark-green text-white hover:bg-lta-dark-green/90"

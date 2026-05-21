@@ -80,13 +80,14 @@ export function createArtworkLineRowPositionArray(artworkRoutes) {
 
   rows.forEach((row, rowIndex) => {
     const sortedItems = [...row.items].sort(compareArtworkStations)
+    const columnCenterOffset = (sortedItems.length - 1) * LINE_ROW_COLUMN_GAP * 0.5
     const z = rowCenterOffset - rowIndex * LINE_ROW_GAP
 
     sortedItems.forEach((artworkRoute, columnIndex) => {
       setPositionAt(
         array,
         artworkRoute.originalIndex,
-        columnIndex * LINE_ROW_COLUMN_GAP,
+        columnIndex * LINE_ROW_COLUMN_GAP - columnCenterOffset,
         DEFAULT_ALTITUDE,
         z
       )
@@ -114,11 +115,12 @@ export function createArtworkTimePositionArray(
   })
 
   const years = [...groupsByYear.keys()].sort((a, b) => a - b)
+  const yearCenterOffset = (years.length - 1) * TIME_COLUMN_GAP * 0.5
 
   years.forEach((year, yearIndex) => {
     const group = groupsByYear.get(year)
     const stackCenterOffset = (group.length - 1) * TIME_STACK_GAP * 0.5
-    const x = yearIndex * TIME_COLUMN_GAP
+    const x = yearIndex * TIME_COLUMN_GAP - yearCenterOffset
 
     group.forEach((originalIndex, stackIndex) => {
       const z =

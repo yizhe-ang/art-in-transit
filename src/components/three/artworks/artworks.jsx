@@ -62,6 +62,7 @@ const HOVER_TRANSITION_DAMPING = 14
 const HOVER_TRANSITION_EPSILON = 0.001
 const LAYOUT_TRANSITION_DAMPING = 5.5
 const LAYOUT_TRANSITION_EPSILON = 0.001
+const MAX_LAYOUT_TRANSITION_DELTA = 1 / 30
 const NO_HOVERED_ARTWORK_ID = -1
 const FALLBACK_LINE_INDEX = LINE_ORDER.length
 const FALLBACK_LINE_COLOR = "#748477"
@@ -203,6 +204,9 @@ const Artworks = () => {
   const setSelectedArtwork = useStore((state) => state.setSelectedArtwork)
   const hoverAnimationActiveRef = useRef(false)
   const layoutAnimationActiveRef = useRef(false)
+  const layoutTargetRef = useRef(
+    LAYOUT_TARGETS[artworkLayout] ?? LAYOUT_TARGETS.map
+  )
 
   useArtworkZoomScale()
 
@@ -241,10 +245,13 @@ const Artworks = () => {
       previousHoveredArtworkStartInfluenceUniform.value = 0
       hoverAnimationActiveRef.current = false
       layoutAnimationActiveRef.current = false
+      layoutTargetRef.current = LAYOUT_TARGETS.map
     }
   }, [])
 
   useEffect(() => {
+    layoutTargetRef.current =
+      LAYOUT_TARGETS[artworkLayout] ?? LAYOUT_TARGETS.map
     layoutAnimationActiveRef.current = true
     invalidate()
   }, [artworkLayout, invalidate])
@@ -275,19 +282,20 @@ const Artworks = () => {
   useFrame((_, delta) => {
     if (!layoutAnimationActiveRef.current) return
 
-    const target = LAYOUT_TARGETS[artworkLayout] ?? LAYOUT_TARGETS.map
+    const target = layoutTargetRef.current
+    const transitionDelta = Math.min(delta, MAX_LAYOUT_TRANSITION_DELTA)
 
     lineLayoutProgressUniform.value = THREE.MathUtils.damp(
       lineLayoutProgressUniform.value,
       target.line,
       LAYOUT_TRANSITION_DAMPING,
-      delta
+      transitionDelta
     )
     timeLayoutProgressUniform.value = THREE.MathUtils.damp(
       timeLayoutProgressUniform.value,
       target.time,
       LAYOUT_TRANSITION_DAMPING,
-      delta
+      transitionDelta
     )
 
     const lineDistance = Math.abs(lineLayoutProgressUniform.value - target.line)
