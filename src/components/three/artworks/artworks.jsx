@@ -24,7 +24,7 @@ import {
   artworkZoomScale,
   useArtworkZoomScale,
 } from "@/components/three/artworks/zoom-scale"
-import { coordsToVector3 } from "react-three-map/maplibre"
+import { coordsToVector3, useMap } from "react-three-map/maplibre"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import * as THREE from "three/webgpu"
 import { useFrame, useLoader, useThree } from "@react-three/fiber"
@@ -199,11 +199,13 @@ function getClusterOffset({ index, count, direction, target }) {
 const Artworks = () => {
   const gl = useThree((state) => state.gl)
   const invalidate = useThree((state) => state.invalidate)
+  const map = useMap()
   const artworkLayout = useStore((state) => state.artworkLayout)
   const setOpenArtworkDialog = useStore((state) => state.setOpenArtworkDialog)
   const setSelectedArtwork = useStore((state) => state.setSelectedArtwork)
   const hoverAnimationActiveRef = useRef(false)
   const layoutAnimationActiveRef = useRef(false)
+  const repaintFrameRef = useRef(null)
   const layoutTargetRef = useRef(
     LAYOUT_TARGETS[artworkLayout] ?? LAYOUT_TARGETS.map
   )
@@ -236,8 +238,24 @@ const Artworks = () => {
     return 0
   }, [])
 
+  const scheduleRepaint = useCallback(() => {
+    invalidate()
+
+    if (!map || repaintFrameRef.current !== null) return
+
+    repaintFrameRef.current = requestAnimationFrame(() => {
+      repaintFrameRef.current = null
+      map.triggerRepaint?.()
+    })
+  }, [invalidate, map])
+
   useEffect(() => {
     return () => {
+      if (repaintFrameRef.current !== null) {
+        cancelAnimationFrame(repaintFrameRef.current)
+        repaintFrameRef.current = null
+      }
+
       hoveredArtworkIdUniform.value = NO_HOVERED_ARTWORK_ID
       previousHoveredArtworkIdUniform.value = NO_HOVERED_ARTWORK_ID
       hoverTransitionUniform.value = 1
@@ -253,8 +271,8 @@ const Artworks = () => {
     layoutTargetRef.current =
       LAYOUT_TARGETS[artworkLayout] ?? LAYOUT_TARGETS.map
     layoutAnimationActiveRef.current = true
-    invalidate()
-  }, [artworkLayout, invalidate])
+    scheduleRepaint()
+  }, [artworkLayout, scheduleRepaint])
 
   useFrame((_, delta) => {
     if (!hoverAnimationActiveRef.current) return
@@ -267,7 +285,7 @@ const Artworks = () => {
     )
 
     if (1 - hoverTransitionUniform.value > HOVER_TRANSITION_EPSILON) {
-      invalidate()
+      scheduleRepaint()
       return
     }
 
@@ -305,7 +323,7 @@ const Artworks = () => {
       lineDistance > LAYOUT_TRANSITION_EPSILON ||
       timeDistance > LAYOUT_TRANSITION_EPSILON
     ) {
-      invalidate()
+      scheduleRepaint()
       return
     }
 
@@ -687,9 +705,9 @@ const Artworks = () => {
         nextPreviousPickedId ?? NO_HOVERED_ARTWORK_ID
       hoverTransitionUniform.value = 0
       hoverAnimationActiveRef.current = true
-      invalidate()
+      scheduleRepaint()
     },
-    [getArtworkHoverInfluence, invalidate]
+    [getArtworkHoverInfluence, scheduleRepaint]
   )
 
   const handleArtworkClick = useCallback(
