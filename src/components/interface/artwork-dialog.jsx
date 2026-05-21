@@ -463,7 +463,7 @@ const ArtworkDialog = () => {
                       target="_blank"
                       rel="noreferrer"
                       className={buttonVariants({
-                        className: "w-fit",
+                        className: "w-fit bg-lta-yellow! justify-self-end",
                       })}
                     >
                       Read more
