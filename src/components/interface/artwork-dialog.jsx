@@ -25,10 +25,15 @@ import {
   getLineNameForStationCode,
 } from "@/components/three/rail-routes"
 import { useStore } from "@/store"
+import { TransitBadge } from "@/components/ui/transit-badge"
 
 // TODO: Include photo credits too? To give proper credits to people involved.
 
 // TODO: The image in three.js should animate to the dialog position (like a layout animation)
+
+// TODO: Add google maps location?
+
+// TODO: Going to next / previous image should also animate the camera to location in map
 
 const artworkImageVariants = {
   enter: ({ direction, shouldReduceMotion }) => ({
@@ -221,6 +226,18 @@ function getArtworkKey(artwork) {
   return artwork?.itemUrl ?? artwork?.sourceTitle ?? artwork?.artworkTitle
 }
 
+function normalizeArtworkStation(artwork) {
+  if (!artwork) {
+    return null
+  }
+
+  return {
+    ...artwork,
+    stationCode: artwork.stationCode ?? getArtworkStationCode(artwork),
+    stationName: artwork.stationName,
+  }
+}
+
 function getArtworkLineName(artwork) {
   return getLineNameForStationCode(getArtworkStationCode(artwork))
 }
@@ -236,7 +253,7 @@ function getLineArtworkSequence() {
     const lineArtworks = artworksByLine.get(lineName)
 
     if (lineArtworks) {
-      lineArtworks.push(artwork)
+      lineArtworks.push(normalizeArtworkStation(artwork))
     }
   })
 
@@ -246,11 +263,12 @@ function getLineArtworkSequence() {
 const ArtworkDialog = () => {
   const openArtworkDialog = useStore((state) => state.openArtworkDialog)
   const setOpenArtworkDialog = useStore((state) => state.setOpenArtworkDialog)
-  const selectedArtwork = useStore((state) => state.selectedArtwork)
+  const storedSelectedArtwork = useStore((state) => state.selectedArtwork)
   const setSelectedArtwork = useStore((state) => state.setSelectedArtwork)
   const shouldReduceMotion = useReducedMotion()
   const [navigationDirection, setNavigationDirection] = useState(1)
   const artworkSequence = useMemo(() => getLineArtworkSequence(), [])
+  const selectedArtwork = normalizeArtworkStation(storedSelectedArtwork)
 
   const selectedArtworkKey = getArtworkKey(selectedArtwork)
   const imageUrl =
@@ -258,6 +276,8 @@ const ArtworkDialog = () => {
   const title = selectedArtwork?.artworkTitle
   const artist = selectedArtwork?.artist
   const station = selectedArtwork?.stationLabel ?? selectedArtwork?.stationName
+  const stationCode = selectedArtwork?.stationCode
+  const stationName = selectedArtwork?.stationName
   const readMoreUrl = selectedArtwork?.itemUrl
 
   const handleOpenChange = (open) => {
@@ -397,7 +417,7 @@ const ArtworkDialog = () => {
                   animate="center"
                   exit="exit"
                   transition={detailsTransition}
-                  className="grid w-fit max-w-[calc(100vw-2rem)] gap-5 bg-muted p-5 rounded"
+                  className="grid w-fit max-w-[calc(100vw-2rem)] gap-5 rounded bg-muted p-5"
                   style={{ willChange: "transform, opacity" }}
                   onPointerDown={stopPointerPropagation}
                 >
@@ -407,6 +427,7 @@ const ArtworkDialog = () => {
                         {station}
                       </p>
                     )}
+                    <TransitBadge stationCode={stationCode} />
 
                     <DialogTitle className="text-xl leading-tight">
                       {title}

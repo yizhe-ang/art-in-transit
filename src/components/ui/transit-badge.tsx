@@ -38,15 +38,9 @@ const lineStyles: Record<string, LineStyle> = {
 }
 
 const sizeClasses: Record<TransitBadgeSize, string> = {
-  sm: "min-h-5 text-[11px]",
-  md: "min-h-8 text-base",
-  lg: "min-h-11 text-2xl",
-}
-
-const segmentSizeClasses: Record<TransitBadgeSize, string> = {
-  sm: "px-1.5 py-1",
-  md: "px-2.5 py-1.5",
-  lg: "px-3.5 py-2",
+  sm: "h-6 min-w-12 px-2.5 text-[13px] ring-[2px]",
+  md: "h-9 min-w-18 px-4 text-xl ring-[3px]",
+  lg: "h-12 min-w-24 px-5 text-3xl ring-[4px]",
 }
 
 function getStationPrefix(code: string) {
@@ -55,6 +49,13 @@ function getStationPrefix(code: string) {
 
 function getLineStyle(code: string) {
   return lineStyles[getStationPrefix(code)] ?? fallbackLineStyle
+}
+
+function formatStationCode(code: string) {
+  return code
+    .trim()
+    .toUpperCase()
+    .replace(/^([A-Z]+)\s*(\d+[A-Z]?)$/, "$1 $2")
 }
 
 function TransitBadge({
@@ -72,8 +73,7 @@ function TransitBadge({
     <div
       data-slot="transit-badge"
       className={cn(
-        "inline-flex overflow-hidden rounded-[0.45em] bg-clip-padding font-heading font-bold leading-none whitespace-nowrap shadow-[0_0_0_1px_rgba(255,255,255,0.9),0_2px_4px_rgba(0,0,0,0.2)]",
-        sizeClasses[size],
+        "inline-flex items-center gap-1.5 whitespace-nowrap",
         className
       )}
       {...props}
@@ -85,19 +85,20 @@ function TransitBadge({
           <span
             key={segment}
             className={cn(
-              "flex items-center justify-center bg-linear-to-b from-white/25 via-transparent to-black/10",
-              segmentSizeClasses[size]
+              "inline-flex shrink-0 items-center justify-center rounded-[0.48em] bg-clip-padding font-heading font-bold leading-none tracking-[0.015em] text-white ring-white/95 select-none",
+              "shadow-[0_0_0_1px_rgba(34,34,34,0.62),0_2px_3px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)]",
+              sizeClasses[size]
             )}
             style={{
               backgroundColor: lineStyle.backgroundColor,
               color: lineStyle.textColor,
               textShadow:
                 lineStyle.textColor === "#000"
-                  ? "0 -1px rgba(255, 255, 255, 0.5)"
-                  : "0 -1px rgba(0, 0, 0, 0.25)",
+                  ? "0 1px rgba(255, 255, 255, 0.45)"
+                  : "0 1px 1px rgba(0, 0, 0, 0.28)",
             }}
           >
-            {segment}
+            {formatStationCode(segment)}
           </span>
         )
       })}
