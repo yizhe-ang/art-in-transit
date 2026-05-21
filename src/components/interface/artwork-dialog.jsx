@@ -7,6 +7,7 @@ import {
   ZoomInIcon,
   ZoomOutIcon,
 } from "lucide-react"
+import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import { useMemo, useRef, useState } from "react"
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch"
 
@@ -28,6 +29,36 @@ import { useStore } from "@/store"
 // TODO: Include photo credits too? To give proper credits to people involved.
 
 // TODO: The image in three.js should animate to the dialog position (like a layout animation)
+
+const artworkImageVariants = {
+  enter: ({ direction, shouldReduceMotion }) => ({
+    opacity: 0,
+    x: shouldReduceMotion ? 0 : direction > 0 ? 56 : -56,
+  }),
+  center: {
+    opacity: 1,
+    x: 0,
+  },
+  exit: ({ direction, shouldReduceMotion }) => ({
+    opacity: 0,
+    x: shouldReduceMotion ? 0 : direction > 0 ? -56 : 56,
+  }),
+}
+
+const artworkDetailsVariants = {
+  enter: ({ direction, shouldReduceMotion }) => ({
+    opacity: 0,
+    x: shouldReduceMotion ? 0 : direction > 0 ? 24 : -24,
+  }),
+  center: {
+    opacity: 1,
+    x: 0,
+  },
+  exit: ({ direction, shouldReduceMotion }) => ({
+    opacity: 0,
+    x: shouldReduceMotion ? 0 : direction > 0 ? -24 : 24,
+  }),
+}
 
 const ArtworkImageViewer = ({ imageAlt, imageUrl, stopPointerPropagation }) => {
   const imageRef = useRef(null)
@@ -217,8 +248,11 @@ const ArtworkDialog = () => {
   const setOpenArtworkDialog = useStore((state) => state.setOpenArtworkDialog)
   const selectedArtwork = useStore((state) => state.selectedArtwork)
   const setSelectedArtwork = useStore((state) => state.setSelectedArtwork)
+  const shouldReduceMotion = useReducedMotion()
+  const [navigationDirection, setNavigationDirection] = useState(1)
   const artworkSequence = useMemo(() => getLineArtworkSequence(), [])
 
+  const selectedArtworkKey = getArtworkKey(selectedArtwork)
   const imageUrl =
     selectedArtwork?.imageUrls?.[0] ?? selectedArtwork?.thumbnailUrl
   const title = selectedArtwork?.artworkTitle
@@ -256,6 +290,7 @@ const ArtworkDialog = () => {
       (currentIndex + direction + artworkSequence.length) %
       artworkSequence.length
 
+    setNavigationDirection(direction)
     setSelectedArtwork(artworkSequence[nextIndex])
   }
 
@@ -269,6 +304,17 @@ const ArtworkDialog = () => {
     handleNavigateArtwork(1)
   }
 
+  const animationCustom = {
+    direction: navigationDirection,
+    shouldReduceMotion,
+  }
+  const imageTransition = shouldReduceMotion
+    ? { duration: 0.12, ease: "easeOut" }
+    : { type: "spring", visualDuration: 0.34, bounce: 0.18 }
+  const detailsTransition = shouldReduceMotion
+    ? { duration: 0.12, ease: "easeOut" }
+    : { type: "spring", visualDuration: 0.3, bounce: 0.12, delay: 0.04 }
+
   return (
     <Dialog open={openArtworkDialog} onOpenChange={handleOpenChange}>
       <DialogContent
@@ -281,13 +327,31 @@ const ArtworkDialog = () => {
             onPointerDown={handleBackgroundPointerDown}
           >
             {imageUrl && (
-              <div className="relative flex min-h-0 flex-1">
-                <ArtworkImageViewer
-                  key={imageUrl}
-                  imageAlt={selectedArtwork.imageAlt ?? title ?? "Artwork"}
-                  imageUrl={imageUrl}
-                  stopPointerPropagation={stopPointerPropagation}
-                />
+              <div className="relative flex min-h-0 flex-1 overflow-visible">
+                <AnimatePresence
+                  custom={animationCustom}
+                  initial={false}
+                  mode="popLayout"
+                >
+                  <motion.div
+                    key={selectedArtworkKey}
+                    custom={animationCustom}
+                    variants={artworkImageVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={imageTransition}
+                    className="absolute inset-0 flex min-h-0"
+                    style={{ willChange: "transform, opacity" }}
+                  >
+                    <ArtworkImageViewer
+                      key={imageUrl}
+                      imageAlt={selectedArtwork.imageAlt ?? title ?? "Artwork"}
+                      imageUrl={imageUrl}
+                      stopPointerPropagation={stopPointerPropagation}
+                    />
+                  </motion.div>
+                </AnimatePresence>
 
                 {artworkSequence.length > 1 && (
                   <div
@@ -319,57 +383,71 @@ const ArtworkDialog = () => {
               </div>
             )}
 
-            <div className="flex shrink-0 justify-center">
-              <div
-                className="grid w-fit max-w-[calc(100vw-2rem)] gap-5 bg-muted p-5"
-                onPointerDown={stopPointerPropagation}
+            <div className="flex shrink-0 justify-center overflow-hidden">
+              <AnimatePresence
+                custom={animationCustom}
+                initial={false}
+                mode="popLayout"
               >
-                <div className="grid gap-2 pr-8">
-                  {station && (
-                    <p className="text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
-                      {station}
-                    </p>
+                <motion.div
+                  key={selectedArtworkKey}
+                  custom={animationCustom}
+                  variants={artworkDetailsVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={detailsTransition}
+                  className="grid w-fit max-w-[calc(100vw-2rem)] gap-5 bg-muted p-5"
+                  style={{ willChange: "transform, opacity" }}
+                  onPointerDown={stopPointerPropagation}
+                >
+                  <div className="grid gap-2 pr-8">
+                    {station && (
+                      <p className="text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
+                        {station}
+                      </p>
+                    )}
+
+                    <DialogTitle className="text-xl leading-tight">
+                      {title}
+                    </DialogTitle>
+
+                    {artist && (
+                      <p className="text-sm text-muted-foreground">{artist}</p>
+                    )}
+                  </div>
+
+                  <div className="grid gap-3 text-sm">
+                    {artist && (
+                      <div className="grid grid-cols-[5.5rem_1fr] gap-3">
+                        <span className="text-muted-foreground">Artist</span>
+                        <span>{artist}</span>
+                      </div>
+                    )}
+
+                    {station && (
+                      <div className="grid grid-cols-[5.5rem_1fr] gap-3">
+                        <span className="text-muted-foreground">Station</span>
+                        <span>{station}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {readMoreUrl && (
+                    <a
+                      href={readMoreUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={buttonVariants({
+                        className: "w-fit",
+                      })}
+                    >
+                      Read more
+                      <ExternalLinkIcon data-icon="inline-end" />
+                    </a>
                   )}
-
-                  <DialogTitle className="text-xl leading-tight">
-                    {title}
-                  </DialogTitle>
-
-                  {artist && (
-                    <p className="text-sm text-muted-foreground">{artist}</p>
-                  )}
-                </div>
-
-                <div className="grid gap-3 text-sm">
-                  {artist && (
-                    <div className="grid grid-cols-[5.5rem_1fr] gap-3">
-                      <span className="text-muted-foreground">Artist</span>
-                      <span>{artist}</span>
-                    </div>
-                  )}
-
-                  {station && (
-                    <div className="grid grid-cols-[5.5rem_1fr] gap-3">
-                      <span className="text-muted-foreground">Station</span>
-                      <span>{station}</span>
-                    </div>
-                  )}
-                </div>
-
-                {readMoreUrl && (
-                  <a
-                    href={readMoreUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={buttonVariants({
-                      className: "w-fit",
-                    })}
-                  >
-                    Read more
-                    <ExternalLinkIcon data-icon="inline-end" />
-                  </a>
-                )}
-              </div>
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
         )}
