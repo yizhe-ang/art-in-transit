@@ -25,7 +25,7 @@ import {
   useArtworkZoomScale,
 } from "@/components/three/artworks/zoom-scale"
 import { coordsToVector3 } from "react-three-map/maplibre"
-import { useCallback, useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import * as THREE from "three/webgpu"
 import { useFrame, useLoader, useThree } from "@react-three/fiber"
 import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js"
@@ -74,6 +74,12 @@ const previousHoveredArtworkIdUniform = uniform(NO_HOVERED_ARTWORK_ID, "int")
 const hoverTransitionUniform = uniform(1)
 const hoveredArtworkStartInfluenceUniform = uniform(0)
 const previousHoveredArtworkStartInfluenceUniform = uniform(0)
+const transitioningArtworkIdUniform = uniform(NO_HOVERED_ARTWORK_ID, "int")
+
+const TRANSITION_DURATION = 0.3
+const PROXY_NDC_Z = 0.5
+
+const transitionLayerUniform = uniform(0, "int")
 
 // TODO: Some shadow? Ambient occlusion?
 
@@ -93,6 +99,157 @@ function getArtworkPosition(artwork) {
       },
       origin
     )
+  )
+}
+
+function isArtworkTransitionActive(transition) {
+  return (
+    transition?.phase === "measuring" ||
+    transition?.phase === "animating" ||
+    transition?.phase === "holding"
+  )
+}
+
+function getViewportSize() {
+  return {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  }
+}
+
+function getVectorFromArray(array, index, target) {
+  return target.set(
+    array[index * 3],
+    array[index * 3 + 1],
+    array[index * 3 + 2]
+  )
+}
+
+function projectClipPointToScreen(point, matrix, viewportSize, target) {
+  target.copy(point).applyMatrix4(matrix)
+
+  return {
+    x: (target.x * 0.5 + 0.5) * viewportSize.width,
+    y: (-target.y * 0.5 + 0.5) * viewportSize.height,
+  }
+}
+
+function getScreenRectForBillboard({
+  camera,
+  center,
+  height,
+  target,
+  viewportSize,
+  width,
+}) {
+  const halfWidth = width / 2
+  const halfHeight = height / 2
+
+  target.worldMatrix.identity()
+  target.worldMatrix.setPosition(center)
+  target.modelViewMatrix.multiplyMatrices(
+    camera.matrixWorldInverse,
+    target.worldMatrix
+  )
+
+  const modelViewElements = target.modelViewMatrix.elements
+  modelViewElements[4] = 0
+  modelViewElements[5] = 1
+  modelViewElements[6] = 0
+  modelViewElements[8] = 0
+  modelViewElements[9] = 0
+  modelViewElements[10] = 1
+
+  target.modelViewProjectionMatrix.multiplyMatrices(
+    camera.projectionMatrix,
+    target.modelViewMatrix
+  )
+
+  const points = [
+    target.corners[0].set(-halfWidth, halfHeight, 0),
+    target.corners[1].set(halfWidth, halfHeight, 0),
+    target.corners[2].set(halfWidth, -halfHeight, 0),
+    target.corners[3].set(-halfWidth, -halfHeight, 0),
+  ]
+
+  let left = Infinity
+  let top = Infinity
+  let right = -Infinity
+  let bottom = -Infinity
+
+  points.forEach((point) => {
+    const screenPoint = projectClipPointToScreen(
+      point,
+      target.modelViewProjectionMatrix,
+      viewportSize,
+      target.screenPoint
+    )
+
+    left = Math.min(left, screenPoint.x)
+    top = Math.min(top, screenPoint.y)
+    right = Math.max(right, screenPoint.x)
+    bottom = Math.max(bottom, screenPoint.y)
+  })
+
+  if (
+    !Number.isFinite(left) ||
+    !Number.isFinite(top) ||
+    !Number.isFinite(right) ||
+    !Number.isFinite(bottom)
+  ) {
+    return null
+  }
+
+  return {
+    left,
+    top,
+    width: Math.max(1, right - left),
+    height: Math.max(1, bottom - top),
+  }
+}
+
+function easeOutCubic(value) {
+  return 1 - Math.pow(1 - value, 3)
+}
+
+function lerpRect(fromRect, toRect, progress) {
+  return {
+    left: THREE.MathUtils.lerp(fromRect.left, toRect.left, progress),
+    top: THREE.MathUtils.lerp(fromRect.top, toRect.top, progress),
+    width: THREE.MathUtils.lerp(fromRect.width, toRect.width, progress),
+    height: THREE.MathUtils.lerp(fromRect.height, toRect.height, progress),
+  }
+}
+
+function applyScreenRectToMesh({ camera, mesh, rect }) {
+  const viewportSize = getViewportSize()
+  const centerX = rect.left + rect.width / 2
+  const centerY = rect.top + rect.height / 2
+  const centerNdc = new THREE.Vector3(
+    (centerX / viewportSize.width) * 2 - 1,
+    -(centerY / viewportSize.height) * 2 + 1,
+    PROXY_NDC_Z
+  )
+  const rightNdc = new THREE.Vector3(
+    ((centerX + rect.width / 2) / viewportSize.width) * 2 - 1,
+    -(centerY / viewportSize.height) * 2 + 1,
+    PROXY_NDC_Z
+  )
+  const topNdc = new THREE.Vector3(
+    (centerX / viewportSize.width) * 2 - 1,
+    -((centerY - rect.height / 2) / viewportSize.height) * 2 + 1,
+    PROXY_NDC_Z
+  )
+  const centerWorld = centerNdc.unproject(camera)
+  const rightWorld = rightNdc.unproject(camera)
+  const topWorld = topNdc.unproject(camera)
+
+  mesh.position.copy(centerWorld)
+  mesh.quaternion.copy(camera.quaternion)
+  mesh.scale.set(
+    centerWorld.distanceTo(rightWorld) * 2,
+    centerWorld.distanceTo(topWorld) * 2,
+    1
   )
 }
 
@@ -179,11 +336,178 @@ function getClusterOffset({ index, count, direction, target }) {
     .addScaledVector(along, Math.sin(angle) * radius)
 }
 
+const ArtworkTransitionProxy = ({ artworksTexture }) => {
+  const camera = useThree((state) => state.camera)
+  const invalidate = useThree((state) => state.invalidate)
+  const transition = useStore((state) => state.artworkImageTransition)
+  const updateArtworkImageTransition = useStore(
+    (state) => state.updateArtworkImageTransition
+  )
+  const meshRef = useRef(null)
+  const progressRef = useRef(0)
+  const [hasReducedMotion, setHasReducedMotion] = useState(() =>
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  )
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
+
+    const handleChange = () => {
+      setHasReducedMotion(mediaQuery.matches)
+    }
+
+    mediaQuery.addEventListener("change", handleChange)
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleChange)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!transition) {
+      progressRef.current = 0
+      return
+    }
+
+    transitionLayerUniform.value = transition.artworkId ?? 0
+    invalidate()
+  }, [invalidate, transition])
+
+  useEffect(() => {
+    if (!transition?.toRect) {
+      progressRef.current = 0
+    }
+  }, [transition?.artworkId, transition?.toRect])
+
+  const geometry = useMemo(() => {
+    return new THREE.PlaneGeometry(1, 1)
+  }, [])
+
+  const colorNode = useMemo(() => {
+    return texture(artworksTexture, uv().flipY()).depth(transitionLayerUniform)
+  }, [artworksTexture])
+
+  useFrame((_, delta) => {
+    if (!transition?.fromRect || !meshRef.current) {
+      return
+    }
+
+    if (hasReducedMotion) {
+      if (transition.phase !== "done") {
+        updateArtworkImageTransition({ phase: "done" })
+      }
+      return
+    }
+
+    if (!transition.toRect) {
+      applyScreenRectToMesh({
+        camera,
+        mesh: meshRef.current,
+        rect: transition.fromRect,
+      })
+      invalidate()
+      return
+    }
+
+    if (transition.phase === "measuring") {
+      progressRef.current = 0
+      updateArtworkImageTransition({ phase: "animating" })
+    }
+
+    if (transition.phase === "animating" || transition.phase === "measuring") {
+      progressRef.current = Math.min(
+        1,
+        progressRef.current + delta / TRANSITION_DURATION
+      )
+
+      const easedProgress = easeOutCubic(progressRef.current)
+      const rect = lerpRect(
+        transition.fromRect,
+        transition.toRect,
+        easedProgress
+      )
+
+      applyScreenRectToMesh({
+        camera,
+        mesh: meshRef.current,
+        rect,
+      })
+
+      if (progressRef.current >= 1) {
+        updateArtworkImageTransition({
+          phase: transition.imageLoaded ? "done" : "holding",
+        })
+      }
+
+      invalidate()
+      return
+    }
+
+    if (transition.phase === "holding") {
+      applyScreenRectToMesh({
+        camera,
+        mesh: meshRef.current,
+        rect: transition.toRect,
+      })
+
+      if (transition.imageLoaded) {
+        updateArtworkImageTransition({ phase: "done" })
+      } else {
+        invalidate()
+      }
+    }
+  })
+
+  if (
+    !transition?.fromRect ||
+    transition.phase === "done" ||
+    hasReducedMotion
+  ) {
+    return null
+  }
+
+  return (
+    <mesh ref={meshRef} geometry={geometry} frustumCulled={false} renderOrder={10}>
+      <meshBasicNodeMaterial
+        transparent
+        depthTest={false}
+        depthWrite={false}
+        colorNode={colorNode}
+        opacityNode={float(0.96)}
+        side={THREE.DoubleSide}
+      />
+    </mesh>
+  )
+}
+
 const Artworks = () => {
   const gl = useThree((state) => state.gl)
-  const setOpenArtworkDialog = useStore((state) => state.setOpenArtworkDialog)
-  const setSelectedArtwork = useStore((state) => state.setSelectedArtwork)
+  const camera = useThree((state) => state.camera)
+  const openArtworkDialogWithTransition = useStore(
+    (state) => state.openArtworkDialogWithTransition
+  )
+  const artworkImageTransition = useStore(
+    (state) => state.artworkImageTransition
+  )
   const hoverAnimationActiveRef = useRef(false)
+  const sourceRectTargetRef = useRef({
+    corners: [
+      new THREE.Vector3(),
+      new THREE.Vector3(),
+      new THREE.Vector3(),
+      new THREE.Vector3(),
+    ],
+    modelViewMatrix: new THREE.Matrix4(),
+    modelViewProjectionMatrix: new THREE.Matrix4(),
+    screenPoint: new THREE.Vector3(),
+    worldMatrix: new THREE.Matrix4(),
+  })
+  const currentPositionRef = useRef({
+    render: new THREE.Vector3(),
+    lineRow: new THREE.Vector3(),
+    time: new THREE.Vector3(),
+    current: new THREE.Vector3(),
+  })
 
   useArtworkZoomScale()
 
@@ -217,6 +541,7 @@ const Artworks = () => {
     return () => {
       hoveredArtworkIdUniform.value = NO_HOVERED_ARTWORK_ID
       previousHoveredArtworkIdUniform.value = NO_HOVERED_ARTWORK_ID
+      transitioningArtworkIdUniform.value = NO_HOVERED_ARTWORK_ID
       hoverTransitionUniform.value = 1
       hoveredArtworkStartInfluenceUniform.value = 0
       previousHoveredArtworkStartInfluenceUniform.value = 0
@@ -464,6 +789,14 @@ const Artworks = () => {
   }, [timeLayoutProgress])
 
   useEffect(() => {
+    transitioningArtworkIdUniform.value = isArtworkTransitionActive(
+      artworkImageTransition
+    )
+      ? artworkImageTransition.artworkId
+      : NO_HOVERED_ARTWORK_ID
+  }, [artworkImageTransition])
+
+  useEffect(() => {
     updateArtworkLineProgress({
       positions: animatedPositionsRef.current,
       artworkRoutes,
@@ -617,10 +950,72 @@ const Artworks = () => {
   // Or just do a screen-space effect
 
   const opacityNode = useMemo(() => {
-    return float(0.9)
+    return select(
+      equal(int(instanceIndex), transitioningArtworkIdUniform),
+      float(0),
+      float(0.9)
+    )
   }, [])
 
   // Interactions / picking
+  const getArtworkSourceRect = useCallback(
+    (artworkId) => {
+      const renderPositionArray = renderPositionsRef.current.value.array
+      const lineRowPositionArray = lineRowPositions.value.array
+      const timePositionArray = timePositions.value.array
+      const positionTarget = currentPositionRef.current
+      const renderPosition = getVectorFromArray(
+        renderPositionArray,
+        artworkId,
+        positionTarget.render
+      )
+      const lineRowPosition = getVectorFromArray(
+        lineRowPositionArray,
+        artworkId,
+        positionTarget.lineRow
+      )
+      const timePosition = getVectorFromArray(
+        timePositionArray,
+        artworkId,
+        positionTarget.time
+      )
+      const currentPosition = positionTarget.current
+        .copy(renderPosition)
+        .lerp(lineRowPosition, lineLayoutProgress)
+        .lerp(timePosition, timeLayoutProgress)
+      const zoomScale = THREE.MathUtils.lerp(
+        THREE.MathUtils.lerp(artworkZoomScale.value, 1, lineLayoutProgress),
+        1,
+        timeLayoutProgress
+      )
+      const hoverScale = THREE.MathUtils.lerp(
+        1,
+        HOVER_SCALE,
+        getArtworkHoverInfluence(artworkId)
+      )
+      const scale = zoomScale * hoverScale
+      const aspectRatio = aspectRatios[artworkId] ?? 1
+
+      return getScreenRectForBillboard({
+        camera,
+        center: currentPosition,
+        height: SIZE * scale,
+        target: sourceRectTargetRef.current,
+        viewportSize: getViewportSize(),
+        width: SIZE * aspectRatio * scale,
+      })
+    },
+    [
+      aspectRatios,
+      camera,
+      getArtworkHoverInfluence,
+      lineLayoutProgress,
+      lineRowPositions,
+      timeLayoutProgress,
+      timePositions,
+    ]
+  )
+
   const handleArtworkHoverChange = useCallback(
     (pickedId, previousPickedId) => {
       const previousTransitionArtworkId =
@@ -652,10 +1047,23 @@ const Artworks = () => {
       const artwork = data.artworks[pickedId]
       if (!artwork) return
 
-      setSelectedArtwork(artwork)
-      setOpenArtworkDialog(true)
+      const fromRect = getArtworkSourceRect(pickedId)
+
+      openArtworkDialogWithTransition({
+        artwork,
+        artworkImageTransition: fromRect
+          ? {
+              artworkId: pickedId,
+              artwork,
+              fromRect,
+              toRect: null,
+              imageLoaded: false,
+              phase: "measuring",
+            }
+          : null,
+      })
     },
-    [setOpenArtworkDialog, setSelectedArtwork]
+    [getArtworkSourceRect, openArtworkDialogWithTransition]
   )
 
   useArtworkGpuPicking({
@@ -684,6 +1092,8 @@ const Artworks = () => {
           side={THREE.DoubleSide}
         />
       </instancedMesh>
+
+      <ArtworkTransitionProxy artworksTexture={artworksTexture} />
     </>
   )
 }

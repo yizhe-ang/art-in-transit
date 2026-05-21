@@ -7,7 +7,7 @@ import {
   ZoomInIcon,
   ZoomOutIcon,
 } from "lucide-react"
-import { useMemo, useRef } from "react"
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react"
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch"
 
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -23,14 +23,115 @@ import {
   getArtworkStationCode,
   getLineNameForStationCode,
 } from "@/components/three/rail-routes"
+import manifest from "@/data/artwork-texture-manifest.json"
 import { useStore } from "@/store"
 
 // TODO: Include photo credits too? To give proper credits to people involved.
 
 // TODO: The image in three.js should animate to the dialog position (like a layout animation)
 
-const ArtworkImageViewer = ({ imageAlt, imageUrl, stopPointerPropagation }) => {
+function getContainedImageRect(containerRect, aspectRatio) {
+  const containerAspectRatio = containerRect.width / containerRect.height
+
+  if (containerAspectRatio > aspectRatio) {
+    const width = containerRect.height * aspectRatio
+
+    return {
+      left: containerRect.left + (containerRect.width - width) / 2,
+      top: containerRect.top,
+      width,
+      height: containerRect.height,
+    }
+  }
+
+  const height = containerRect.width / aspectRatio
+
+  return {
+    left: containerRect.left,
+    top: containerRect.top + (containerRect.height - height) / 2,
+    width: containerRect.width,
+    height,
+  }
+}
+
+function isArtworkTransitionActive(transition) {
+  return (
+    transition?.phase === "measuring" ||
+    transition?.phase === "animating" ||
+    transition?.phase === "holding"
+  )
+}
+
+function areRectsEqual(rectA, rectB, tolerance = 0.5) {
+  if (rectA === rectB) return true
+  if (!rectA || !rectB) return false
+
+  return (
+    Math.abs(rectA.left - rectB.left) <= tolerance &&
+    Math.abs(rectA.top - rectB.top) <= tolerance &&
+    Math.abs(rectA.width - rectB.width) <= tolerance &&
+    Math.abs(rectA.height - rectB.height) <= tolerance
+  )
+}
+
+const ArtworkImageViewer = ({
+  hideImage,
+  imageAlt,
+  imageUrl,
+  onImageLoad,
+  onTransitionTargetRect,
+  stopPointerPropagation,
+  transitionAspectRatio,
+  transitionActive,
+}) => {
   const imageRef = useRef(null)
+  const viewerRef = useRef(null)
+  const reportedLoadedUrlRef = useRef(null)
+
+  const reportImageLoad = useCallback(() => {
+    if (reportedLoadedUrlRef.current === imageUrl) {
+      return
+    }
+
+    reportedLoadedUrlRef.current = imageUrl
+    onImageLoad()
+  }, [imageUrl, onImageLoad])
+
+  const measureTransitionTarget = useCallback(() => {
+    const viewerBounds = viewerRef.current?.getBoundingClientRect()
+
+    if (!viewerBounds || viewerBounds.width === 0 || viewerBounds.height === 0) {
+      return
+    }
+
+    onTransitionTargetRect(
+      getContainedImageRect(viewerBounds, transitionAspectRatio)
+    )
+  }, [onTransitionTargetRect, transitionAspectRatio])
+
+  useLayoutEffect(() => {
+    if (!transitionActive) {
+      return
+    }
+
+    const frame = requestAnimationFrame(measureTransitionTarget)
+    const resizeObserver = new ResizeObserver(measureTransitionTarget)
+
+    if (viewerRef.current) {
+      resizeObserver.observe(viewerRef.current)
+    }
+
+    return () => {
+      cancelAnimationFrame(frame)
+      resizeObserver.disconnect()
+    }
+  }, [measureTransitionTarget, transitionActive])
+
+  useEffect(() => {
+    if (imageRef.current?.complete) {
+      reportImageLoad()
+    }
+  }, [imageUrl, reportImageLoad])
 
   const handleViewerPointerDown = (event) => {
     const imageBounds = imageRef.current?.getBoundingClientRect()
@@ -52,6 +153,7 @@ const ArtworkImageViewer = ({ imageAlt, imageUrl, stopPointerPropagation }) => {
 
   return (
     <div
+      ref={viewerRef}
       className="relative flex min-h-0 flex-1 items-center justify-center overflow-visible"
       onPointerDown={handleViewerPointerDown}
     >
@@ -137,8 +239,10 @@ const ArtworkImageViewer = ({ imageAlt, imageUrl, stopPointerPropagation }) => {
                 ref={imageRef}
                 src={imageUrl}
                 alt={imageAlt}
-                className="max-h-full max-w-full touch-none object-contain select-none"
+                className="max-h-full max-w-full touch-none object-contain select-none transition-opacity duration-150"
+                style={{ opacity: hideImage ? 0 : 1 }}
                 draggable={false}
+                onLoad={reportImageLoad}
               />
             </TransformComponent>
           </>
@@ -179,6 +283,15 @@ const ArtworkDialog = () => {
   const setOpenArtworkDialog = useStore((state) => state.setOpenArtworkDialog)
   const selectedArtwork = useStore((state) => state.selectedArtwork)
   const setSelectedArtwork = useStore((state) => state.setSelectedArtwork)
+  const artworkImageTransition = useStore(
+    (state) => state.artworkImageTransition
+  )
+  const updateArtworkImageTransition = useStore(
+    (state) => state.updateArtworkImageTransition
+  )
+  const clearArtworkImageTransition = useStore(
+    (state) => state.clearArtworkImageTransition
+  )
   const artworkSequence = useMemo(() => getLineArtworkSequence(), [])
 
   const imageUrl =
@@ -187,11 +300,24 @@ const ArtworkDialog = () => {
   const artist = selectedArtwork?.artist
   const station = selectedArtwork?.stationLabel ?? selectedArtwork?.stationName
   const readMoreUrl = selectedArtwork?.itemUrl
+  const selectedArtworkKey = getArtworkKey(selectedArtwork)
+  const transitionArtworkKey = getArtworkKey(artworkImageTransition?.artwork)
+  const transitionMatchesSelectedArtwork =
+    selectedArtworkKey && selectedArtworkKey === transitionArtworkKey
+  const transitionActiveForSelectedArtwork =
+    transitionMatchesSelectedArtwork &&
+    isArtworkTransitionActive(artworkImageTransition)
+  const transitionImageLoaded = artworkImageTransition?.imageLoaded ?? false
+  const transitionPhase = artworkImageTransition?.phase
+  const transitionToRect = artworkImageTransition?.toRect
+  const transitionAspectRatio =
+    manifest.entries[artworkImageTransition?.artworkId]?.aspectRatio ?? 1
 
   const handleOpenChange = (open) => {
     setOpenArtworkDialog(open)
 
     if (!open) {
+      clearArtworkImageTransition()
       setSelectedArtwork(null)
     }
   }
@@ -219,7 +345,48 @@ const ArtworkDialog = () => {
       artworkSequence.length
 
     setSelectedArtwork(artworkSequence[nextIndex])
+    clearArtworkImageTransition()
   }
+
+  const handleTransitionTargetRect = useCallback(
+    (toRect) => {
+      if (
+        !transitionMatchesSelectedArtwork ||
+        !isArtworkTransitionActive({ phase: transitionPhase })
+      ) {
+        return
+      }
+
+      if (areRectsEqual(transitionToRect, toRect)) {
+        return
+      }
+
+      updateArtworkImageTransition({ toRect })
+    },
+    [
+      transitionPhase,
+      transitionMatchesSelectedArtwork,
+      transitionToRect,
+      updateArtworkImageTransition,
+    ]
+  )
+
+  const handleImageLoad = useCallback(() => {
+    if (
+      !transitionMatchesSelectedArtwork ||
+      !transitionPhase ||
+      transitionImageLoaded
+    ) {
+      return
+    }
+
+    updateArtworkImageTransition({ imageLoaded: true })
+  }, [
+    transitionPhase,
+    transitionImageLoaded,
+    transitionMatchesSelectedArtwork,
+    updateArtworkImageTransition,
+  ])
 
   const handlePreviousArtworkPointerDown = (event) => {
     stopPointerPropagation(event)
@@ -246,9 +413,14 @@ const ArtworkDialog = () => {
               <div className="relative flex min-h-0 flex-1">
                 <ArtworkImageViewer
                   key={imageUrl}
+                  hideImage={transitionActiveForSelectedArtwork}
                   imageAlt={selectedArtwork.imageAlt ?? title ?? "Artwork"}
                   imageUrl={imageUrl}
+                  onImageLoad={handleImageLoad}
+                  onTransitionTargetRect={handleTransitionTargetRect}
                   stopPointerPropagation={stopPointerPropagation}
+                  transitionActive={transitionActiveForSelectedArtwork}
+                  transitionAspectRatio={transitionAspectRatio}
                 />
 
                 {artworkSequence.length > 1 && (
