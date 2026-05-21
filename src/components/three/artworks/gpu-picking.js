@@ -304,6 +304,7 @@ export function useArtworkGpuPicking({
         pointerVersionRef.current
       )
       hoverDirtyRef.current = true
+      map?.triggerRepaint?.()
     }
 
     const handlePointerLeave = () => {
@@ -320,6 +321,7 @@ export function useArtworkGpuPicking({
         pointerVersionRef.current
       )
       clickPointerRef.current = pointerRef.current
+      map?.triggerRepaint?.()
     }
 
     if (!enabled) {

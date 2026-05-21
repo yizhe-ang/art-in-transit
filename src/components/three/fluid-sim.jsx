@@ -13,6 +13,7 @@ import MouseTrail from "@/lib/MouseTrail"
 
 const MIN_SIM_SIZE = 1
 const DEFAULT_RESOLUTION_SCALE = 1
+const FLUID_SETTLE_FRAMES = 90
 
 function getRenderSize(size, dpr, resolutionScale) {
   return {
@@ -50,6 +51,7 @@ const FluidSim = forwardRef(function FluidSim(
   const viewportDpr = useThree((state) => state.viewport.dpr)
   const map = useMap()
   const pointerRef = useRef(null)
+  const settleFramesRef = useRef(0)
 
   const dpr = viewportDpr ?? gl.getPixelRatio?.() ?? window.devicePixelRatio ?? 1
   const renderSize = useMemo(() => {
@@ -79,6 +81,8 @@ const FluidSim = forwardRef(function FluidSim(
       if (!enabled) return
 
       pointerRef.current = getPointerFromEvent(event, canvas)
+      settleFramesRef.current = FLUID_SETTLE_FRAMES
+      map?.triggerRepaint?.()
     }
 
     const handlePointerLeave = () => {
@@ -127,6 +131,11 @@ const FluidSim = forwardRef(function FluidSim(
     }
 
     sim.update(gl, trail.texture)
+
+    if (pointer || settleFramesRef.current > 0) {
+      settleFramesRef.current = Math.max(0, settleFramesRef.current - 1)
+      map?.triggerRepaint?.()
+    }
   }, 0)
 
   return children?.(sim.texture) ?? null

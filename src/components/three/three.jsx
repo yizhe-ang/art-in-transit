@@ -12,6 +12,7 @@ const Three = () => {
       <Canvas
         latitude={center[1]}
         longitude={center[0]}
+        frameloop="demand"
         overlay
         gl={async (props) => {
           const renderer = new THREE.WebGPURenderer(props)
