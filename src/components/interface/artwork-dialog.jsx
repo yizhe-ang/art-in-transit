@@ -397,7 +397,7 @@ const ArtworkDialog = () => {
                   animate="center"
                   exit="exit"
                   transition={detailsTransition}
-                  className="grid w-fit max-w-[calc(100vw-2rem)] gap-5 bg-muted p-5"
+                  className="grid w-fit max-w-[calc(100vw-2rem)] gap-5 bg-muted p-5 rounded"
                   style={{ willChange: "transform, opacity" }}
                   onPointerDown={stopPointerPropagation}
                 >
@@ -417,7 +417,7 @@ const ArtworkDialog = () => {
                     )}
                   </div>
 
-                  <div className="grid gap-3 text-sm">
+                  {/* <div className="grid gap-3 text-sm">
                     {artist && (
                       <div className="grid grid-cols-[5.5rem_1fr] gap-3">
                         <span className="text-muted-foreground">Artist</span>
@@ -431,7 +431,7 @@ const ArtworkDialog = () => {
                         <span>{station}</span>
                       </div>
                     )}
-                  </div>
+                  </div> */}
 
                   {readMoreUrl && (
                     <a
