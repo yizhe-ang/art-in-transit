@@ -13,6 +13,12 @@ import {
   createArtworkLinePositionArray,
   updateArtworkLineProgress,
 } from "@/components/three/artworks/line-progress"
+import {
+  createArtworkFinalPositionArray,
+  createArtworkLineRowPositionArray,
+  createArtworkTimePositionArray,
+  TIME_STACK_BASELINES,
+} from "@/components/three/artworks/layouts"
 import { useArtworkGpuPicking } from "@/components/three/artworks/gpu-picking"
 import {
   artworkZoomScale,
@@ -47,8 +53,6 @@ const ALTITUDE = 20
 const SIZE = 1800
 const DEFAULT_LINE_STAGGER = 0.2
 const CLUSTER_OFFSET = SIZE * 0.18
-const LINE_ROW_COLUMN_GAP = SIZE * 2.05
-const LINE_ROW_GAP = SIZE * 1.6
 const COORDINATE_KEY_PRECISION = 6
 const DEFAULT_BORDER_WIDTH = 0.035
 const DEFAULT_BORDER_INTENSITY = 1
@@ -64,6 +68,7 @@ const borderWidthUniform = uniform(DEFAULT_BORDER_WIDTH)
 const borderIntensityUniform = uniform(DEFAULT_BORDER_INTENSITY)
 const borderOpacityUniform = uniform(DEFAULT_BORDER_OPACITY)
 const lineLayoutProgressUniform = uniform(0)
+const timeLayoutProgressUniform = uniform(0)
 const hoveredArtworkIdUniform = uniform(NO_HOVERED_ARTWORK_ID, "int")
 const previousHoveredArtworkIdUniform = uniform(NO_HOVERED_ARTWORK_ID, "int")
 const hoverTransitionUniform = uniform(1)
@@ -101,68 +106,6 @@ function getArtworkClusterKey(artwork) {
   return `coord:${Number(artwork.longitude).toFixed(
     COORDINATE_KEY_PRECISION
   )},${Number(artwork.latitude).toFixed(COORDINATE_KEY_PRECISION)}`
-}
-
-function getStationSortNumber(stationCode) {
-  return Number(stationCode?.match(/^[A-Z]+(\d+)/)?.[1] ?? Infinity)
-}
-
-function compareArtworkStations(a, b) {
-  return (
-    getStationSortNumber(a.stationCode) - getStationSortNumber(b.stationCode) ||
-    (a.stationCode ?? "").localeCompare(b.stationCode ?? "") ||
-    a.originalIndex - b.originalIndex
-  )
-}
-
-function setLineRowPositionAt(array, index, x, z) {
-  array[index * 3 + 0] = x
-  array[index * 3 + 1] = ALTITUDE
-  array[index * 3 + 2] = z
-}
-
-function createArtworkLineRowPositionArray(artworkRoutes) {
-  const array = new Float32Array(artworkRoutes.length * 3)
-  const rows = LINE_ORDER.map((lineName, lineIndex) => ({
-    lineIndex,
-    lineName,
-    items: [],
-  }))
-  const fallbackRow = {
-    lineIndex: FALLBACK_LINE_INDEX,
-    lineName: "Fallback",
-    items: [],
-  }
-
-  artworkRoutes.forEach((artworkRoute, originalIndex) => {
-    const row = rows[artworkRoute.lineIndex] ?? fallbackRow
-    row.items.push({
-      ...artworkRoute,
-      originalIndex,
-    })
-  })
-
-  if (fallbackRow.items.length > 0) {
-    rows.push(fallbackRow)
-  }
-
-  const rowCenterOffset = (rows.length - 1) * LINE_ROW_GAP * 0.5
-
-  rows.forEach((row, rowIndex) => {
-    const sortedItems = [...row.items].sort(compareArtworkStations)
-    const z = rowCenterOffset - rowIndex * LINE_ROW_GAP
-
-    sortedItems.forEach((artworkRoute, columnIndex) => {
-      setLineRowPositionAt(
-        array,
-        artworkRoute.originalIndex,
-        columnIndex * LINE_ROW_COLUMN_GAP,
-        z
-      )
-    })
-  })
-
-  return array
 }
 
 function getRouteDirectionAtDistance(route, distance, target) {
@@ -423,15 +366,7 @@ const Artworks = () => {
   }, [artworkRoutes])
 
   const finalPositionArray = useMemo(() => {
-    const array = new Float32Array(COUNT * 3)
-
-    artworkRoutes.forEach((artworkRoute, index) => {
-      array[index * 3 + 0] = artworkRoute.finalPosition.x
-      array[index * 3 + 1] = artworkRoute.finalPosition.y
-      array[index * 3 + 2] = artworkRoute.finalPosition.z
-    })
-
-    return array
+    return createArtworkFinalPositionArray(artworkRoutes)
   }, [artworkRoutes])
 
   useEffect(() => {
@@ -446,6 +381,8 @@ const Artworks = () => {
     progress,
     lineStagger,
     lineLayoutProgress,
+    timeLayoutProgress,
+    timeStackBaseline,
     borderWidth,
     borderIntensity,
     borderOpacity,
@@ -469,6 +406,19 @@ const Artworks = () => {
           max: 1,
           step: 0.01,
         },
+        timeLayoutProgress: {
+          value: 0,
+          min: 0,
+          max: 1,
+          step: 0.01,
+        },
+        timeStackBaseline: {
+          value: TIME_STACK_BASELINES.ZERO_DOWN,
+          options: {
+            Centered: TIME_STACK_BASELINES.CENTERED,
+            "Zero, stack down": TIME_STACK_BASELINES.ZERO_DOWN,
+          },
+        },
         borderWidth: {
           value: DEFAULT_BORDER_WIDTH,
           min: 0,
@@ -490,6 +440,15 @@ const Artworks = () => {
       }),
     })
 
+  const timePositions = useMemo(() => {
+    const array = createArtworkTimePositionArray(
+      artworkRoutes,
+      data.artworks,
+      timeStackBaseline
+    )
+    return instancedArray(array, "vec3")
+  }, [artworkRoutes, timeStackBaseline])
+
   useEffect(() => {
     borderWidthUniform.value = borderWidth
     borderIntensityUniform.value = borderIntensity
@@ -499,6 +458,10 @@ const Artworks = () => {
   useEffect(() => {
     lineLayoutProgressUniform.value = lineLayoutProgress
   }, [lineLayoutProgress])
+
+  useEffect(() => {
+    timeLayoutProgressUniform.value = timeLayoutProgress
+  }, [timeLayoutProgress])
 
   useEffect(() => {
     updateArtworkLineProgress({
@@ -530,31 +493,25 @@ const Artworks = () => {
     return array
   }, [])
 
-  const scales = useMemo(() => {
-    const array = new Float32Array(COUNT * 3)
+  const artworkMetadata = useMemo(() => {
+    const array = new Float32Array(COUNT * 4)
 
     aspectRatios.forEach((aspectRatio, index) => {
-      array[index * 3 + 0] = aspectRatio
-      array[index * 3 + 1] = 1
-      array[index * 3 + 2] = 1
+      array[index * 4 + 0] = aspectRatio
+      array[index * 4 + 1] = 1
+      array[index * 4 + 2] = 1
     })
-
-    return instancedArray(array, "vec3")
-  }, [aspectRatios])
-
-  const aspectRatioAttributes = useMemo(() => {
-    return instancedArray(aspectRatios, "float")
-  }, [aspectRatios])
-
-  const lineIds = useMemo(() => {
-    const array = new Int32Array(COUNT)
 
     artworkRoutes.forEach((artworkRoute, index) => {
-      array[index] = artworkRoute.lineIndex
+      array[index * 4 + 3] = artworkRoute.lineIndex
     })
 
-    return instancedArray(array, "int")
-  }, [artworkRoutes])
+    return instancedArray(array, "vec4")
+  }, [artworkRoutes, aspectRatios])
+
+  const artworkMetadataAttribute = useMemo(() => {
+    return artworkMetadata.toAttribute()
+  }, [artworkMetadata])
 
   const lineBorderColorUniforms = useMemo(() => {
     return uniformArray(lineBorderColors, "color")
@@ -573,9 +530,9 @@ const Artworks = () => {
   // TODO: To remain same size regardless of zoom
   const positionNode = useMemo(() => {
     const zoomScale = mix(
-      artworkZoomScale,
+      mix(artworkZoomScale, float(1), lineLayoutProgressUniform),
       float(1),
-      lineLayoutProgressUniform
+      timeLayoutProgressUniform
     )
     const artworkIndex = int(instanceIndex)
     const hoveredInfluence = select(
@@ -602,24 +559,30 @@ const Artworks = () => {
       hoveredInfluence.add(previousHoveredInfluence)
     )
     const positionNode = positionLocal
-      .mul(scales.toAttribute())
+      .mul(artworkMetadataAttribute.xyz)
       .mul(zoomScale)
       .mul(hoverScale)
 
     return positionNode
-  }, [scales])
+  }, [artworkMetadataAttribute])
 
   const vertexNode = useMemo(() => {
+    const rowLayoutPosition = mix(
+      renderPositions.toAttribute(),
+      lineRowPositions.toAttribute(),
+      lineLayoutProgressUniform
+    )
+
     return billboarding({
       position: mix(
-        renderPositions.toAttribute(),
-        lineRowPositions.toAttribute(),
-        lineLayoutProgressUniform
+        rowLayoutPosition,
+        timePositions.toAttribute(),
+        timeLayoutProgressUniform
       ),
       horizontal: false,
       vertical: true,
     })
-  }, [lineRowPositions, renderPositions])
+  }, [lineRowPositions, renderPositions, timePositions])
 
   const colorNode = useMemo(() => {
     const uvNode = uv()
@@ -627,9 +590,9 @@ const Artworks = () => {
       int(instanceIndex)
     )
     const lineBorderColor = lineBorderColorUniforms.element(
-      lineIds.toAttribute().toInt()
+      artworkMetadataAttribute.w.toInt()
     )
-    const aspectRatio = aspectRatioAttributes.toAttribute()
+    const aspectRatio = artworkMetadataAttribute.x
     const horizontalBorderWidth = borderWidthUniform.div(aspectRatio)
     const intensifiedBorderColor = lineBorderColor.mul(borderIntensityUniform)
     const edgeMask = or(
@@ -648,7 +611,7 @@ const Artworks = () => {
       vec4(intensifiedBorderColor, artworkColor.a.mul(borderOpacityUniform)),
       artworkColor
     )
-  }, [artworksTexture, aspectRatioAttributes, lineBorderColorUniforms, lineIds])
+  }, [artworksTexture, artworkMetadataAttribute, lineBorderColorUniforms])
 
   // TODO: Slight opacity, painted reveal on hover
   // Or just do a screen-space effect
