@@ -130,11 +130,11 @@ const ArtworkImageViewer = ({ imageAlt, imageUrl, stopPointerPropagation }) => {
                     variant="ghost"
                     size="icon-lg"
                     aria-label="Close artwork"
-                    className="bg-background/90 shadow-sm ring-1 ring-foreground/10 backdrop-blur hover:bg-destructive/10 hover:text-destructive"
+                    className="bg-lta-yellow shadow ring-1 ring-foreground/10 backdrop-blur hover:bg-destructive/10 hover:text-destructive"
                   />
                 }
               >
-                <XIcon />
+                <XIcon className="stroke-black stroke-6" />
               </DialogClose>
             </div>
 
@@ -171,7 +171,7 @@ const ArtworkImageViewer = ({ imageAlt, imageUrl, stopPointerPropagation }) => {
                 ref={imageRef}
                 src={imageUrl}
                 alt={imageAlt}
-                className={`max-h-full max-w-full touch-none object-contain select-none transition-opacity duration-300 ${
+                className={`max-h-full max-w-full touch-none object-contain transition-opacity duration-300 select-none ${
                   isImageLoading || hasImageError ? "opacity-0" : "opacity-100"
                 }`}
                 draggable={false}
