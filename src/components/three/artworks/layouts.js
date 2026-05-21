@@ -2,10 +2,11 @@ import { LINE_ORDER } from "@/components/three/rail-routes"
 
 const DEFAULT_ALTITUDE = 20
 const DEFAULT_SIZE = 1800
-const LINE_ROW_COLUMN_GAP = DEFAULT_SIZE * 2.05
-const LINE_ROW_GAP = DEFAULT_SIZE * 1.6
-const TIME_COLUMN_GAP = DEFAULT_SIZE * 2.05
-const TIME_STACK_GAP = DEFAULT_SIZE * 1.35
+const LINE_ROW_COLUMN_GAP = DEFAULT_SIZE * 1.98
+const LINE_ROW_GAP = DEFAULT_SIZE * 1.45
+const TIME_COLUMN_GAP = DEFAULT_SIZE * 1.98
+const TIME_STACK_GAP = DEFAULT_SIZE * 1.25
+const TIME_YEAR_LABEL_GAP = DEFAULT_SIZE * 0.72
 const FALLBACK_LINE_INDEX = LINE_ORDER.length
 export const TIME_STACK_BASELINES = {
   CENTERED: "centered",
@@ -33,6 +34,37 @@ function compareArtworkStations(a, b) {
 function getArtworkYearValue(artwork) {
   const year = Number.parseInt(artwork?.year, 10)
   return Number.isFinite(year) ? year : Infinity
+}
+
+function getArtworkYearLabel(year) {
+  return Number.isFinite(year) ? String(year) : "Unknown"
+}
+
+function createArtworkTimeGroups(artworkRoutes, artworks) {
+  const groupsByYear = new Map()
+
+  artworkRoutes.forEach((_, originalIndex) => {
+    const artwork = artworks[originalIndex]
+    const year = getArtworkYearValue(artwork)
+    const group = groupsByYear.get(year) ?? []
+
+    group.push(originalIndex)
+    groupsByYear.set(year, group)
+  })
+
+  const years = [...groupsByYear.keys()].sort((a, b) => a - b)
+  const yearCenterOffset = (years.length - 1) * TIME_COLUMN_GAP * 0.5
+
+  return years.map((year, yearIndex) => {
+    const group = groupsByYear.get(year)
+
+    return {
+      group,
+      label: getArtworkYearLabel(year),
+      x: yearIndex * TIME_COLUMN_GAP - yearCenterOffset,
+      year,
+    }
+  })
 }
 
 export function createArtworkFinalPositionArray(artworkRoutes) {
@@ -80,7 +112,8 @@ export function createArtworkLineRowPositionArray(artworkRoutes) {
 
   rows.forEach((row, rowIndex) => {
     const sortedItems = [...row.items].sort(compareArtworkStations)
-    const columnCenterOffset = (sortedItems.length - 1) * LINE_ROW_COLUMN_GAP * 0.5
+    const columnCenterOffset =
+      (sortedItems.length - 1) * LINE_ROW_COLUMN_GAP * 0.5
     const z = rowCenterOffset - rowIndex * LINE_ROW_GAP
 
     sortedItems.forEach((artworkRoute, columnIndex) => {
@@ -103,24 +136,10 @@ export function createArtworkTimePositionArray(
   timeStackBaseline = TIME_STACK_BASELINES.CENTERED
 ) {
   const array = new Float32Array(artworkRoutes.length * 3)
-  const groupsByYear = new Map()
+  const groups = createArtworkTimeGroups(artworkRoutes, artworks)
 
-  artworkRoutes.forEach((_, originalIndex) => {
-    const artwork = artworks[originalIndex]
-    const year = getArtworkYearValue(artwork)
-    const group = groupsByYear.get(year) ?? []
-
-    group.push(originalIndex)
-    groupsByYear.set(year, group)
-  })
-
-  const years = [...groupsByYear.keys()].sort((a, b) => a - b)
-  const yearCenterOffset = (years.length - 1) * TIME_COLUMN_GAP * 0.5
-
-  years.forEach((year, yearIndex) => {
-    const group = groupsByYear.get(year)
+  groups.forEach(({ group, x }) => {
     const stackCenterOffset = (group.length - 1) * TIME_STACK_GAP * 0.5
-    const x = yearIndex * TIME_COLUMN_GAP - yearCenterOffset
 
     group.forEach((originalIndex, stackIndex) => {
       const z =
@@ -128,15 +147,31 @@ export function createArtworkTimePositionArray(
           ? -stackIndex * TIME_STACK_GAP
           : stackCenterOffset - stackIndex * TIME_STACK_GAP
 
-      setPositionAt(
-        array,
-        originalIndex,
-        x,
-        DEFAULT_ALTITUDE,
-        z
-      )
+      setPositionAt(array, originalIndex, x, DEFAULT_ALTITUDE, z)
     })
   })
 
   return array
+}
+
+export function createArtworkTimeYearLabels(
+  artworkRoutes,
+  artworks,
+  timeStackBaseline = TIME_STACK_BASELINES.CENTERED
+) {
+  const groups = createArtworkTimeGroups(artworkRoutes, artworks)
+
+  return groups.map(({ group, label, x, year }) => {
+    const stackCenterOffset = (group.length - 1) * TIME_STACK_GAP * 0.5
+    const topZ =
+      timeStackBaseline === TIME_STACK_BASELINES.ZERO_DOWN
+        ? 0
+        : stackCenterOffset
+
+    return {
+      label,
+      position: [x, DEFAULT_ALTITUDE, topZ + TIME_YEAR_LABEL_GAP],
+      year,
+    }
+  })
 }

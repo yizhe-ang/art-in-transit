@@ -17,6 +17,7 @@ import {
   createArtworkFinalPositionArray,
   createArtworkLineRowPositionArray,
   createArtworkTimePositionArray,
+  createArtworkTimeYearLabels,
   TIME_STACK_BASELINES,
 } from "@/components/three/artworks/layouts"
 import { useArtworkGpuPicking } from "@/components/three/artworks/gpu-picking"
@@ -24,6 +25,7 @@ import {
   artworkZoomScale,
   useArtworkZoomScale,
 } from "@/components/three/artworks/zoom-scale"
+import TimeYearLabels from "@/components/three/artworks/time-year-labels"
 import { coordsToVector3, useMap } from "react-three-map/maplibre"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import * as THREE from "three/webgpu"
@@ -364,7 +366,9 @@ const Artworks = () => {
       return groups
     }, new Map())
     const lineBorderColors = LINE_ORDER.map((lineName) => {
-      return new THREE.Color(lineColorByName.get(lineName) ?? FALLBACK_LINE_COLOR)
+      return new THREE.Color(
+        lineColorByName.get(lineName) ?? FALLBACK_LINE_COLOR
+      )
     })
 
     lineBorderColors.push(new THREE.Color(FALLBACK_LINE_COLOR))
@@ -471,46 +475,46 @@ const Artworks = () => {
     borderIntensity,
     borderOpacity,
   } = useControls({
-      artworks: folder({
-        progress: {
-          value: 1,
-          min: 0,
-          max: 1,
-          step: 0.01,
+    artworks: folder({
+      progress: {
+        value: 1,
+        min: 0,
+        max: 1,
+        step: 0.01,
+      },
+      lineStagger: {
+        value: DEFAULT_LINE_STAGGER,
+        min: 0,
+        max: 0.2,
+        step: 0.01,
+      },
+      timeStackBaseline: {
+        value: TIME_STACK_BASELINES.ZERO_DOWN,
+        options: {
+          Centered: TIME_STACK_BASELINES.CENTERED,
+          "Zero, stack down": TIME_STACK_BASELINES.ZERO_DOWN,
         },
-        lineStagger: {
-          value: DEFAULT_LINE_STAGGER,
-          min: 0,
-          max: 0.2,
-          step: 0.01,
-        },
-        timeStackBaseline: {
-          value: TIME_STACK_BASELINES.ZERO_DOWN,
-          options: {
-            Centered: TIME_STACK_BASELINES.CENTERED,
-            "Zero, stack down": TIME_STACK_BASELINES.ZERO_DOWN,
-          },
-        },
-        borderWidth: {
-          value: DEFAULT_BORDER_WIDTH,
-          min: 0,
-          max: 0.12,
-          step: 0.001,
-        },
-        borderIntensity: {
-          value: DEFAULT_BORDER_INTENSITY,
-          min: 0,
-          max: 2,
-          step: 0.01,
-        },
-        borderOpacity: {
-          value: DEFAULT_BORDER_OPACITY,
-          min: 0,
-          max: 1,
-          step: 0.01,
-        },
-      }),
-    })
+      },
+      borderWidth: {
+        value: DEFAULT_BORDER_WIDTH,
+        min: 0,
+        max: 0.12,
+        step: 0.001,
+      },
+      borderIntensity: {
+        value: DEFAULT_BORDER_INTENSITY,
+        min: 0,
+        max: 2,
+        step: 0.01,
+      },
+      borderOpacity: {
+        value: DEFAULT_BORDER_OPACITY,
+        min: 0,
+        max: 1,
+        step: 0.01,
+      },
+    }),
+  })
 
   const timePositions = useMemo(() => {
     const array = createArtworkTimePositionArray(
@@ -519,6 +523,14 @@ const Artworks = () => {
       timeStackBaseline
     )
     return instancedArray(array, "vec3")
+  }, [artworkRoutes, timeStackBaseline])
+
+  const timeYearLabels = useMemo(() => {
+    return createArtworkTimeYearLabels(
+      artworkRoutes,
+      data.artworks,
+      timeStackBaseline
+    )
   }, [artworkRoutes, timeStackBaseline])
 
   useEffect(() => {
@@ -687,8 +699,7 @@ const Artworks = () => {
   // Interactions / picking
   const handleArtworkHoverChange = useCallback(
     (pickedId, previousPickedId) => {
-      const previousTransitionArtworkId =
-        previousHoveredArtworkIdUniform.value
+      const previousTransitionArtworkId = previousHoveredArtworkIdUniform.value
       const nextPreviousPickedId =
         previousPickedId ??
         (previousTransitionArtworkId !== NO_HOVERED_ARTWORK_ID &&
@@ -749,6 +760,10 @@ const Artworks = () => {
           side={THREE.DoubleSide}
         />
       </instancedMesh>
+      <TimeYearLabels
+        labels={timeYearLabels}
+        timeLayoutProgressUniform={timeLayoutProgressUniform}
+      />
     </>
   )
 }

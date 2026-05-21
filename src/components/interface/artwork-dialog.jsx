@@ -1,4 +1,6 @@
 import {
+  ArrowLeft,
+  ArrowRight,
   ChevronLeftIcon,
   ChevronRightIcon,
   ExternalLinkIcon,
@@ -379,22 +381,20 @@ const ArtworkDialog = () => {
                     <Button
                       type="button"
                       variant="secondary"
-                      size="icon"
                       aria-label="Previous artwork"
-                      className="pointer-events-auto rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur"
+                      className="pointer-events-auto size-12 rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur"
                       onPointerDown={handlePreviousArtworkPointerDown}
                     >
-                      <ChevronLeftIcon />
+                      <ArrowLeft className="size-7 stroke-3" />
                     </Button>
                     <Button
                       type="button"
                       variant="secondary"
-                      size="icon"
                       aria-label="Next artwork"
-                      className="pointer-events-auto rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur"
+                      className="pointer-events-auto size-12 rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur"
                       onPointerDown={handleNextArtworkPointerDown}
                     >
-                      <ChevronRightIcon />
+                      <ArrowRight className="size-7 stroke-3" />
                     </Button>
                   </div>
                 )}
@@ -430,16 +430,18 @@ const ArtworkDialog = () => {
                       <div className="text-muted-foreground">{stationName}</div>
                     </div>
 
-                    <DialogTitle className="text-xl leading-tight mt-1">
+                    <DialogTitle className="mt-1 text-xl leading-tight">
                       {title}
                     </DialogTitle>
 
                     {artist && (
-                      <p className="text-base text-muted-foreground">{artist}</p>
+                      <p className="text-base text-muted-foreground">
+                        {artist}
+                      </p>
                     )}
 
                     {credits && (
-                      <p className="whitespace-pre-line text-sm text-muted-foreground">
+                      <p className="text-sm whitespace-pre-line text-muted-foreground">
                         {credits}
                       </p>
                     )}
@@ -467,7 +469,7 @@ const ArtworkDialog = () => {
                       target="_blank"
                       rel="noreferrer"
                       className={buttonVariants({
-                        className: "w-fit bg-lta-yellow! justify-self-end",
+                        className: "w-fit justify-self-end bg-lta-yellow!",
                       })}
                     >
                       Read more
