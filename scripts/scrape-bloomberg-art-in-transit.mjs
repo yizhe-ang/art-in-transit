@@ -224,6 +224,23 @@ function parseCaptions(html) {
   return unique(captions)
 }
 
+function getFirstCaptionCredits(captions) {
+  const creditLinePattern = /(?:^|\n)(?:photo(?::| courtesy)|donated by|archival .*courtesy|video courtesy)/i
+
+  for (const caption of captions ?? []) {
+    if (typeof caption !== "string" || caption.trim() === "") {
+      continue
+    }
+
+    const credits = caption.split(/\r?\n/).slice(1).join("\n").trim()
+    if (creditLinePattern.test(credits)) {
+      return credits
+    }
+  }
+
+  return null
+}
+
 function parseMapCoordinates(html) {
   const normalizedHtml = decodeEntities(html).replace(/[\\]+"/g, '"')
   const [, latitude, longitude] =
@@ -253,6 +270,7 @@ async function enrichArtwork(candidate) {
   const articleHtml = parseArticle(html)
   const mapUrl = mapUrlForItem(candidate.itemUrl)
   const description = parseDescription(articleHtml)
+  const captions = parseCaptions(html)
 
   await sleep(REQUEST_DELAY_MS)
   const mapHtml = await fetchHtml(mapUrl)
@@ -266,7 +284,8 @@ async function enrichArtwork(candidate) {
     description,
     year: parseYear(articleHtml, candidate.stationLabel),
     imageUrls: parseImageUrls(html),
-    captions: parseCaptions(html),
+    captions,
+    credits: getFirstCaptionCredits(captions),
     sourceTitle: parseSourceTitle(html),
   }
 }

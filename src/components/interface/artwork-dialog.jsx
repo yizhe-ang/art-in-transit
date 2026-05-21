@@ -239,13 +239,20 @@ function normalizeArtworkStation(artwork) {
 }
 
 function getFirstCaptionCredit(captions) {
-  const firstCaption = captions?.[0]
+  const creditLinePattern = /(?:^|\n)(?:photo(?::| courtesy)|donated by|archival .*courtesy|video courtesy)/i
 
-  if (typeof firstCaption !== "string" || firstCaption.trim() === "") {
-    return null
+  for (const caption of captions ?? []) {
+    if (typeof caption !== "string" || caption.trim() === "") {
+      continue
+    }
+
+    const credit = caption.split(/\r?\n/).slice(1).join("\n").trim()
+    if (creditLinePattern.test(credit)) {
+      return credit
+    }
   }
 
-  return firstCaption.split(/\r?\n/).slice(1).join("\n").trim() || null
+  return null
 }
 
 function getArtworkLineName(artwork) {
@@ -288,7 +295,8 @@ const ArtworkDialog = () => {
   const stationCode = selectedArtwork?.stationCode
   const stationName = selectedArtwork?.stationName
   const readMoreUrl = selectedArtwork?.itemUrl
-  const captionCredit = getFirstCaptionCredit(selectedArtwork?.captions)
+  const captionCredit =
+    selectedArtwork?.credits ?? getFirstCaptionCredit(selectedArtwork?.captions)
 
   const handleOpenChange = (open) => {
     setOpenArtworkDialog(open)
@@ -427,27 +435,27 @@ const ArtworkDialog = () => {
                   animate="center"
                   exit="exit"
                   transition={detailsTransition}
-                  className="grid w-fit max-w-[calc(100vw-2rem)] gap-5 rounded bg-muted p-5"
+                  className="grid w-fit max-w-[calc(100vw-2rem)] gap-5 rounded bg-muted px-5 py-3"
                   style={{ willChange: "transform, opacity" }}
                   onPointerDown={stopPointerPropagation}
                 >
-                  <div className="grid gap-2 pr-8">
+                  <div className="grid gap-1 pr-8">
                     {/* {station && (
                       <p className="text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
                         {station}
                       </p>
                     )} */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 justify-self-center">
                       <TransitBadge stationCode={stationCode} size="sm" />
                       <div className="text-muted-foreground">{stationName}</div>
                     </div>
 
-                    <DialogTitle className="text-xl leading-tight">
+                    <DialogTitle className="text-xl leading-tight mt-1">
                       {title}
                     </DialogTitle>
 
                     {artist && (
-                      <p className="text-sm text-muted-foreground">{artist}</p>
+                      <p className="text-base text-muted-foreground">{artist}</p>
                     )}
 
                     {captionCredit && (

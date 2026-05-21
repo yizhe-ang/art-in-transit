@@ -38,7 +38,7 @@ const lineStyles: Record<string, LineStyle> = {
 }
 
 const sizeClasses: Record<TransitBadgeSize, string> = {
-  sm: "h-6 min-w-12 px-2.5 text-[13px] ring-[1px]",
+  sm: "h-5 min-w-12 px-1.5 text-[13px] ring-[1px]",
   md: "h-9 min-w-18 px-4 text-xl ring-[3px]",
   lg: "h-12 min-w-24 px-5 text-3xl ring-[4px]",
 }
