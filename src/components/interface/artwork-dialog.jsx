@@ -116,7 +116,7 @@ const ArtworkImageViewer = ({ imageAlt, imageUrl, stopPointerPropagation }) => {
                   <Button
                     type="button"
                     variant="ghost"
-                    size="icon-sm"
+                    size="icon-lg"
                     aria-label="Close artwork"
                     className="bg-background/90 shadow-sm ring-1 ring-foreground/10 backdrop-blur hover:bg-destructive/10 hover:text-destructive"
                   />
