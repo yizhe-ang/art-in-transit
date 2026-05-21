@@ -407,7 +407,7 @@ const ArtworkDialog = () => {
                 initial={false}
                 mode="popLayout"
               >
-                <
+                <div
                   key={selectedArtworkKey}
                   custom={animationCustom}
                   variants={artworkDetailsVariants}
@@ -474,7 +474,7 @@ const ArtworkDialog = () => {
                       <ExternalLinkIcon data-icon="inline-end" />
                     </a>
                   )}
-                </>
+                </div>
               </AnimatePresence>
             </div>
           </div>
