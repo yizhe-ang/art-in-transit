@@ -4,7 +4,7 @@ const lowerLat = 1.23,
   upperLong = 104.05
 export const bounds = [lowerLong, lowerLat, upperLong, upperLat]
 
-export const center = [103.8475, 1.3011]
+export const center = [103.8198, 1.3521]
 
 export const origin = { longitude: center[0], latitude: center[1], altitude: 0 }
 
