@@ -1,5 +1,6 @@
 import Map from "@/components/map/map"
 import ArtworkDialog from "@/components/interface/artwork-dialog"
+import LayoutControls from "@/components/interface/layout-controls"
 import { Leva } from "leva"
 
 export function App() {
@@ -12,6 +13,7 @@ export function App() {
       </div>
 
       <ArtworkDialog />
+      <LayoutControls />
     </>
   )
 }

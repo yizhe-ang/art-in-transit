@@ -60,9 +60,25 @@ const DEFAULT_BORDER_OPACITY = 0.75
 const HOVER_SCALE = 1.18
 const HOVER_TRANSITION_DAMPING = 14
 const HOVER_TRANSITION_EPSILON = 0.001
+const LAYOUT_TRANSITION_DAMPING = 5.5
+const LAYOUT_TRANSITION_EPSILON = 0.001
 const NO_HOVERED_ARTWORK_ID = -1
 const FALLBACK_LINE_INDEX = LINE_ORDER.length
 const FALLBACK_LINE_COLOR = "#748477"
+const LAYOUT_TARGETS = {
+  map: {
+    line: 0,
+    time: 0,
+  },
+  line: {
+    line: 1,
+    time: 0,
+  },
+  time: {
+    line: 1,
+    time: 1,
+  },
+}
 
 const borderWidthUniform = uniform(DEFAULT_BORDER_WIDTH)
 const borderIntensityUniform = uniform(DEFAULT_BORDER_INTENSITY)
@@ -181,9 +197,12 @@ function getClusterOffset({ index, count, direction, target }) {
 
 const Artworks = () => {
   const gl = useThree((state) => state.gl)
+  const invalidate = useThree((state) => state.invalidate)
+  const artworkLayout = useStore((state) => state.artworkLayout)
   const setOpenArtworkDialog = useStore((state) => state.setOpenArtworkDialog)
   const setSelectedArtwork = useStore((state) => state.setSelectedArtwork)
   const hoverAnimationActiveRef = useRef(false)
+  const layoutAnimationActiveRef = useRef(false)
 
   useArtworkZoomScale()
 
@@ -221,8 +240,14 @@ const Artworks = () => {
       hoveredArtworkStartInfluenceUniform.value = 0
       previousHoveredArtworkStartInfluenceUniform.value = 0
       hoverAnimationActiveRef.current = false
+      layoutAnimationActiveRef.current = false
     }
   }, [])
+
+  useEffect(() => {
+    layoutAnimationActiveRef.current = true
+    invalidate()
+  }, [artworkLayout, invalidate])
 
   useFrame((_, delta) => {
     if (!hoverAnimationActiveRef.current) return
@@ -235,6 +260,7 @@ const Artworks = () => {
     )
 
     if (1 - hoverTransitionUniform.value > HOVER_TRANSITION_EPSILON) {
+      invalidate()
       return
     }
 
@@ -244,6 +270,40 @@ const Artworks = () => {
     hoveredArtworkStartInfluenceUniform.value =
       hoveredArtworkIdUniform.value === NO_HOVERED_ARTWORK_ID ? 0 : 1
     hoverAnimationActiveRef.current = false
+  })
+
+  useFrame((_, delta) => {
+    if (!layoutAnimationActiveRef.current) return
+
+    const target = LAYOUT_TARGETS[artworkLayout] ?? LAYOUT_TARGETS.map
+
+    lineLayoutProgressUniform.value = THREE.MathUtils.damp(
+      lineLayoutProgressUniform.value,
+      target.line,
+      LAYOUT_TRANSITION_DAMPING,
+      delta
+    )
+    timeLayoutProgressUniform.value = THREE.MathUtils.damp(
+      timeLayoutProgressUniform.value,
+      target.time,
+      LAYOUT_TRANSITION_DAMPING,
+      delta
+    )
+
+    const lineDistance = Math.abs(lineLayoutProgressUniform.value - target.line)
+    const timeDistance = Math.abs(timeLayoutProgressUniform.value - target.time)
+
+    if (
+      lineDistance > LAYOUT_TRANSITION_EPSILON ||
+      timeDistance > LAYOUT_TRANSITION_EPSILON
+    ) {
+      invalidate()
+      return
+    }
+
+    lineLayoutProgressUniform.value = target.line
+    timeLayoutProgressUniform.value = target.time
+    layoutAnimationActiveRef.current = false
   })
 
   const artworksTexture = useLoader(
@@ -380,8 +440,6 @@ const Artworks = () => {
   const {
     progress,
     lineStagger,
-    lineLayoutProgress,
-    timeLayoutProgress,
     timeStackBaseline,
     borderWidth,
     borderIntensity,
@@ -398,18 +456,6 @@ const Artworks = () => {
           value: DEFAULT_LINE_STAGGER,
           min: 0,
           max: 0.2,
-          step: 0.01,
-        },
-        lineLayoutProgress: {
-          value: 0,
-          min: 0,
-          max: 1,
-          step: 0.01,
-        },
-        timeLayoutProgress: {
-          value: 0,
-          min: 0,
-          max: 1,
           step: 0.01,
         },
         timeStackBaseline: {
@@ -454,14 +500,6 @@ const Artworks = () => {
     borderIntensityUniform.value = borderIntensity
     borderOpacityUniform.value = borderOpacity
   }, [borderIntensity, borderOpacity, borderWidth])
-
-  useEffect(() => {
-    lineLayoutProgressUniform.value = lineLayoutProgress
-  }, [lineLayoutProgress])
-
-  useEffect(() => {
-    timeLayoutProgressUniform.value = timeLayoutProgress
-  }, [timeLayoutProgress])
 
   useEffect(() => {
     updateArtworkLineProgress({
@@ -641,8 +679,9 @@ const Artworks = () => {
         nextPreviousPickedId ?? NO_HOVERED_ARTWORK_ID
       hoverTransitionUniform.value = 0
       hoverAnimationActiveRef.current = true
+      invalidate()
     },
-    [getArtworkHoverInfluence]
+    [getArtworkHoverInfluence, invalidate]
   )
 
   const handleArtworkClick = useCallback(

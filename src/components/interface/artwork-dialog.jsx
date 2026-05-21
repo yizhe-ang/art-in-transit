@@ -27,8 +27,6 @@ import {
 import { useStore } from "@/store"
 import { TransitBadge } from "@/components/ui/transit-badge"
 
-// TODO: Include photo credits too? To give proper credits to people involved.
-
 // TODO: The image in three.js should animate to the dialog position (like a layout animation)
 
 // TODO: Add google maps location?
@@ -238,23 +236,6 @@ function normalizeArtworkStation(artwork) {
   }
 }
 
-function getFirstCaptionCredit(captions) {
-  const creditLinePattern = /(?:^|\n)(?:photo(?::| courtesy)|donated by|archival .*courtesy|video courtesy)/i
-
-  for (const caption of captions ?? []) {
-    if (typeof caption !== "string" || caption.trim() === "") {
-      continue
-    }
-
-    const credit = caption.split(/\r?\n/).slice(1).join("\n").trim()
-    if (creditLinePattern.test(credit)) {
-      return credit
-    }
-  }
-
-  return null
-}
-
 function getArtworkLineName(artwork) {
   return getLineNameForStationCode(getArtworkStationCode(artwork))
 }
@@ -295,8 +276,7 @@ const ArtworkDialog = () => {
   const stationCode = selectedArtwork?.stationCode
   const stationName = selectedArtwork?.stationName
   const readMoreUrl = selectedArtwork?.itemUrl
-  const captionCredit =
-    selectedArtwork?.credits ?? getFirstCaptionCredit(selectedArtwork?.captions)
+  const credits = selectedArtwork?.credits
 
   const handleOpenChange = (open) => {
     setOpenArtworkDialog(open)
@@ -427,7 +407,7 @@ const ArtworkDialog = () => {
                 initial={false}
                 mode="popLayout"
               >
-                <motion.div
+                <
                   key={selectedArtworkKey}
                   custom={animationCustom}
                   variants={artworkDetailsVariants}
@@ -458,9 +438,9 @@ const ArtworkDialog = () => {
                       <p className="text-base text-muted-foreground">{artist}</p>
                     )}
 
-                    {captionCredit && (
+                    {credits && (
                       <p className="whitespace-pre-line text-sm text-muted-foreground">
-                        {captionCredit}
+                        {credits}
                       </p>
                     )}
                   </div>
@@ -494,7 +474,7 @@ const ArtworkDialog = () => {
                       <ExternalLinkIcon data-icon="inline-end" />
                     </a>
                   )}
-                </motion.div>
+                </>
               </AnimatePresence>
             </div>
           </div>
