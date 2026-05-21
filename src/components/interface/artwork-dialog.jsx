@@ -422,12 +422,15 @@ const ArtworkDialog = () => {
                   onPointerDown={stopPointerPropagation}
                 >
                   <div className="grid gap-2 pr-8">
-                    {station && (
+                    {/* {station && (
                       <p className="text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
                         {station}
                       </p>
-                    )}
-                    <TransitBadge stationCode={stationCode} />
+                    )} */}
+                    <div className="flex items-center gap-2">
+                      <TransitBadge stationCode={stationCode} size="sm" />
+                      <div className="text-muted-foreground">{stationName}</div>
+                    </div>
 
                     <DialogTitle className="text-xl leading-tight">
                       {title}

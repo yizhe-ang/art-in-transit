@@ -38,7 +38,7 @@ const lineStyles: Record<string, LineStyle> = {
 }
 
 const sizeClasses: Record<TransitBadgeSize, string> = {
-  sm: "h-6 min-w-12 px-2.5 text-[13px] ring-[2px]",
+  sm: "h-6 min-w-12 px-2.5 text-[13px] ring-[1px]",
   md: "h-9 min-w-18 px-4 text-xl ring-[3px]",
   lg: "h-12 min-w-24 px-5 text-3xl ring-[4px]",
 }
@@ -86,16 +86,11 @@ function TransitBadge({
             key={segment}
             className={cn(
               "inline-flex shrink-0 items-center justify-center rounded-[0.48em] bg-clip-padding font-heading font-bold leading-none tracking-[0.015em] text-white ring-white/95 select-none",
-              "shadow-[0_0_0_1px_rgba(34,34,34,0.62),0_2px_3px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)]",
               sizeClasses[size]
             )}
             style={{
               backgroundColor: lineStyle.backgroundColor,
               color: lineStyle.textColor,
-              textShadow:
-                lineStyle.textColor === "#000"
-                  ? "0 1px rgba(255, 255, 255, 0.45)"
-                  : "0 1px 1px rgba(0, 0, 0, 0.28)",
             }}
           >
             {formatStationCode(segment)}
