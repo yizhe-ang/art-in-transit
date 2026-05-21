@@ -7,7 +7,7 @@ import {
   ZoomInIcon,
   ZoomOutIcon,
 } from "lucide-react"
-import { useMemo, useRef } from "react"
+import { useMemo, useRef, useState } from "react"
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch"
 
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -31,6 +31,18 @@ import { useStore } from "@/store"
 
 const ArtworkImageViewer = ({ imageAlt, imageUrl, stopPointerPropagation }) => {
   const imageRef = useRef(null)
+  const [isImageLoading, setIsImageLoading] = useState(true)
+  const [hasImageError, setHasImageError] = useState(false)
+
+  const handleImageLoad = () => {
+    setIsImageLoading(false)
+    setHasImageError(false)
+  }
+
+  const handleImageError = () => {
+    setIsImageLoading(false)
+    setHasImageError(true)
+  }
 
   const handleViewerPointerDown = (event) => {
     const imageBounds = imageRef.current?.getBoundingClientRect()
@@ -126,6 +138,28 @@ const ArtworkImageViewer = ({ imageAlt, imageUrl, stopPointerPropagation }) => {
               </DialogClose>
             </div>
 
+            {(isImageLoading || hasImageError) && (
+              <div className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center">
+                <div className="flex items-center gap-3 rounded-lg bg-background/85 px-4 py-3 text-sm text-muted-foreground shadow-sm ring-1 ring-foreground/10 backdrop-blur">
+                  {isImageLoading ? (
+                    <>
+                      <span
+                        className="size-4 animate-spin rounded-full border-2 border-foreground/20 border-t-foreground"
+                        aria-hidden="true"
+                      />
+                      <span role="status" aria-live="polite">
+                        Loading artwork
+                      </span>
+                    </>
+                  ) : (
+                    <span role="status" aria-live="polite">
+                      Artwork image could not be loaded
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
             <TransformComponent
               wrapperClass="size-full cursor-grab active:cursor-grabbing"
               wrapperStyle={{
@@ -137,8 +171,12 @@ const ArtworkImageViewer = ({ imageAlt, imageUrl, stopPointerPropagation }) => {
                 ref={imageRef}
                 src={imageUrl}
                 alt={imageAlt}
-                className="max-h-full max-w-full touch-none object-contain select-none"
+                className={`max-h-full max-w-full touch-none object-contain select-none transition-opacity duration-300 ${
+                  isImageLoading || hasImageError ? "opacity-0" : "opacity-100"
+                }`}
                 draggable={false}
+                onLoad={handleImageLoad}
+                onError={handleImageError}
               />
             </TransformComponent>
           </>
