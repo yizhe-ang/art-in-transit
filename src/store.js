@@ -3,6 +3,9 @@ import { create } from "zustand"
 const clamp01 = (value) => Math.min(1, Math.max(0, value))
 
 export const useStore = create((set) => ({
+  map: null,
+  setMap: (map) => set({ map }),
+
   artworkLayout: "map",
   setArtworkLayout: (artworkLayout) => set({ artworkLayout }),
 

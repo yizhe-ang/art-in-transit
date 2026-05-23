@@ -5,7 +5,7 @@ import loadImages from "@/components/map/loadImages"
 import { useState } from "react"
 import Three from "@/components/three/three"
 import { bounds } from "@/components/map/constants"
-import PaperOverlay from "@/components/map/paper-overlay"
+import { useStore } from "@/store"
 
 const dragPanOptions = {
   linearity: 0.3,
@@ -19,6 +19,7 @@ const scrollZoomOptions = {
 
 const Map = () => {
   const [imagesLoaded, setImagesLoaded] = useState(false)
+  const setMap = useStore((state) => state.setMap)
 
   return (
     <>
@@ -34,6 +35,8 @@ const Map = () => {
         mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
         onLoad={(event) => {
           const map = event.target
+
+          setMap(map)
 
           map.scrollZoom.setWheelZoomRate(1 / 700)
           map.scrollZoom.setZoomRate(1 / 120)

@@ -8,36 +8,62 @@ gsap.registerPlugin(useGSAP, ScrollTrigger)
 // TODO: Lenis?
 
 const ScrollyIntro = () => {
+  const map = useStore((state) => state.map)
+
   useGSAP(
     () => {
+      if (!map) {
+        return
+      }
+
       const setArtworkLineProgress =
         useStore.getState().setArtworkLineProgress
-      const progressState = {
+      const scrollState = {
         value: useStore.getState().artworkLineProgress,
+        longitude: map.getCenter().lng,
+        latitude: map.getCenter().lat,
+        zoom: map.getZoom(),
+        pitch: map.getPitch(),
+        bearing: map.getBearing(),
       }
 
       setArtworkLineProgress(0)
-      progressState.value = 0
+      scrollState.value = 0
 
-      gsap.to(progressState, {
-        value: 1,
-        ease: "none",
+      const timeline = gsap.timeline({
         scrollTrigger: {
           trigger: "#step-1",
           start: "top top",
           end: "bottom bottom",
-          scrub: true,
+          scrub: 1,
         },
         onUpdate: () => {
-          setArtworkLineProgress(progressState.value)
+          setArtworkLineProgress(scrollState.value)
+          map.jumpTo({
+            center: [scrollState.longitude, scrollState.latitude],
+            zoom: scrollState.zoom,
+            pitch: scrollState.pitch,
+            bearing: scrollState.bearing,
+          })
+          map.triggerRepaint?.()
         },
+      })
+
+      timeline.to(scrollState, {
+        value: 1,
+        longitude: 103.85,
+        latitude: 1.31,
+        zoom: 12.5,
+        pitch: 45,
+        bearing: -20,
+        ease: "none",
       })
 
       return () => {
         setArtworkLineProgress(0)
       }
     },
-    { dependencies: [] }
+    { dependencies: [map] }
   )
 
   return <></>
