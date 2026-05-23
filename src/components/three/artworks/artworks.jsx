@@ -15,7 +15,7 @@ import {
 } from "@/components/three/artworks/line-progress"
 import {
   createArtworkFinalPositionArray,
-  createArtworkLineRowPositionArray,
+  createArtworkLineRowLayout,
   createArtworkTimePositionArray,
   createArtworkTimeYearLabels,
   TIME_STACK_BASELINES,
@@ -25,6 +25,7 @@ import {
   artworkZoomScale,
   useArtworkZoomScale,
 } from "@/components/three/artworks/zoom-scale"
+import LineLayoutGuides from "@/components/three/artworks/line-layout-guides"
 import TimeYearLabels from "@/components/three/artworks/time-year-labels"
 import { coordsToVector3, useMap } from "react-three-map/maplibre"
 import { useCallback, useEffect, useMemo, useRef } from "react"
@@ -450,10 +451,13 @@ const Artworks = () => {
   }, [artworkRoutes])
   const renderPositionsRef = useRef(renderPositions)
 
+  const lineRowLayout = useMemo(() => {
+    return createArtworkLineRowLayout(artworkRoutes, lineBorderColors)
+  }, [artworkRoutes, lineBorderColors])
+
   const lineRowPositions = useMemo(() => {
-    const array = createArtworkLineRowPositionArray(artworkRoutes)
-    return instancedArray(array, "vec3")
-  }, [artworkRoutes])
+    return instancedArray(lineRowLayout.positions, "vec3")
+  }, [lineRowLayout.positions])
 
   const finalPositionArray = useMemo(() => {
     return createArtworkFinalPositionArray(artworkRoutes)
@@ -745,6 +749,10 @@ const Artworks = () => {
 
   return (
     <>
+      <LineLayoutGuides
+        guides={lineRowLayout.guides}
+        lineLayoutProgressUniform={lineLayoutProgressUniform}
+      />
       <instancedMesh
         args={[geometry, undefined, COUNT]}
         frustumCulled={false}

@@ -166,7 +166,7 @@ const ArtworkImageViewer = ({ imageAlt, imageUrl, stopPointerPropagation }) => {
                     variant="ghost"
                     size="icon-lg"
                     aria-label="Close artwork"
-                    className="bg-lta-yellow shadow ring-1 ring-foreground/10 backdrop-blur hover:bg-destructive/10 hover:text-destructive"
+                    className="bg-lta-yellow shadow ring-1 ring-foreground/10 backdrop-blur hover:bg-destructive/10 hover:text-destructive hover:[&_svg]:stroke-white"
                   />
                 }
               >
@@ -415,11 +415,11 @@ const ArtworkDialog = () => {
                   animate="center"
                   exit="exit"
                   transition={detailsTransition}
-                  className="grid w-fit max-w-[calc(100vw-2rem)] gap-5 rounded bg-muted px-5 py-3"
+                  className="grid w-fit max-w-[calc(100vw-2rem)] gap-5 rounded bg-muted px-7 py-3"
                   style={{ willChange: "transform, opacity" }}
                   onPointerDown={stopPointerPropagation}
                 >
-                  <div className="grid gap-1 pr-8">
+                  <div className="grid gap-1 pr-0">
                     {/* {station && (
                       <p className="text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
                         {station}
@@ -441,7 +441,7 @@ const ArtworkDialog = () => {
                     )}
 
                     {credits && (
-                      <p className="text-sm whitespace-pre-line text-muted-foreground">
+                      <p className="text-right text-xs whitespace-pre-line text-muted-foreground">
                         {credits}
                       </p>
                     )}

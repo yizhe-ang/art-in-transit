@@ -7,6 +7,16 @@ import Three from "@/components/three/three"
 import { bounds } from "@/components/map/constants"
 import PaperOverlay from "@/components/map/paper-overlay"
 
+const dragPanOptions = {
+  linearity: 0.3,
+  maxSpeed: 1400,
+  deceleration: 1800,
+}
+
+const scrollZoomOptions = {
+  around: "center",
+}
+
 const Map = () => {
   const [imagesLoaded, setImagesLoaded] = useState(false)
 
@@ -19,9 +29,14 @@ const Map = () => {
         initialViewState={{
           bounds,
         }}
+        dragPan={dragPanOptions}
+        scrollZoom={scrollZoomOptions}
         mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
         onLoad={(event) => {
           const map = event.target
+
+          map.scrollZoom.setWheelZoomRate(1 / 700)
+          map.scrollZoom.setZoomRate(1 / 120)
 
           loadImages(map).then(() => {
             setImagesLoaded(true)

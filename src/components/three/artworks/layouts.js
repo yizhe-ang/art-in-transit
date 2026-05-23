@@ -4,6 +4,7 @@ const DEFAULT_ALTITUDE = 20
 const DEFAULT_SIZE = 1800
 const LINE_ROW_COLUMN_GAP = DEFAULT_SIZE * 1.98
 const LINE_ROW_GAP = DEFAULT_SIZE * 1.45
+const LINE_ROW_GUIDE_PADDING = DEFAULT_SIZE * 0.5
 const TIME_COLUMN_GAP = DEFAULT_SIZE * 1.98
 const TIME_STACK_GAP = DEFAULT_SIZE * 1.25
 const TIME_YEAR_LABEL_GAP = DEFAULT_SIZE * 0.58
@@ -83,8 +84,9 @@ export function createArtworkFinalPositionArray(artworkRoutes) {
   return array
 }
 
-export function createArtworkLineRowPositionArray(artworkRoutes) {
+export function createArtworkLineRowLayout(artworkRoutes, lineColors = []) {
   const array = new Float32Array(artworkRoutes.length * 3)
+  const guides = []
   const rows = LINE_ORDER.map((lineName, lineIndex) => ({
     lineIndex,
     lineName,
@@ -125,9 +127,33 @@ export function createArtworkLineRowPositionArray(artworkRoutes) {
         z
       )
     })
+
+    if (sortedItems.length > 0) {
+      const startX = -columnCenterOffset - LINE_ROW_GUIDE_PADDING
+      const endX =
+        (sortedItems.length - 1) * LINE_ROW_COLUMN_GAP -
+        columnCenterOffset +
+        LINE_ROW_GUIDE_PADDING
+
+      guides.push({
+        color: lineColors[row.lineIndex],
+        length: Math.abs(endX - startX),
+        lineIndex: row.lineIndex,
+        lineName: row.lineName,
+        start: [startX, DEFAULT_ALTITUDE, z],
+        end: [endX, DEFAULT_ALTITUDE, z],
+      })
+    }
   })
 
-  return array
+  return {
+    guides,
+    positions: array,
+  }
+}
+
+export function createArtworkLineRowPositionArray(artworkRoutes) {
+  return createArtworkLineRowLayout(artworkRoutes).positions
 }
 
 export function createArtworkTimePositionArray(

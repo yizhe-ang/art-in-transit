@@ -1,7 +1,7 @@
 import { LINE_ORDER, getPointAtDistance } from "@/components/three/rail-routes"
 import { MathUtils, Vector3 } from "three"
 
-function getLineProgress(progress, lineIndex, lineStagger, lineCount) {
+export function getLineProgress(progress, lineIndex, lineStagger, lineCount) {
   if (lineIndex < 0) {
     return progress
   }

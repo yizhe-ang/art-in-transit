@@ -23,7 +23,7 @@ const AboutDialog = () => {
           />
         }
       >
-        <Info className="size-5 stroke-2.5" />
+        <Info className="size-5 stroke-3" />
       </DialogTrigger>
 
       <DialogContent className="max-w-[calc(100%-2rem)] gap-5 rounded-lg border border-white/60 bg-white/95 p-5 text-lta-dark-green shadow-[0_22px_70px_rgba(0,72,81,0.22)] backdrop-blur-md sm:max-w-md">
