@@ -331,7 +331,7 @@ const ScrollyIntro = () => {
           <Button
             type="button"
             size="lg"
-            className="pointer-events-auto gap-2 bg-lta-yellow px-5 text-lta-dark-green shadow-[0_12px_36px_rgba(0,72,81,0.24)] ring-1 ring-white/70 hover:bg-lta-yellow/92"
+            className="pointer-events-auto gap-2 bg-lta-dark-green px-5 text-white shadow-[0_12px_36px_rgba(0,72,81,0.24)] ring-1 ring-white/70 hover:bg-lta-dark-green/92"
             onClick={() => {
               setMapInteractionUnlocked(true)
             }}
