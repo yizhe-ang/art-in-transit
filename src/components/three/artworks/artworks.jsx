@@ -126,7 +126,6 @@ const Artworks = () => {
   }, [renderPositions])
 
   const {
-    progress,
     lineStagger,
     timeStackBaseline,
     borderWidth,
@@ -134,12 +133,6 @@ const Artworks = () => {
     borderOpacity,
   } = useControls({
     artworks: folder({
-      progress: {
-        value: 1,
-        min: 0,
-        max: 1,
-        step: 0.01,
-      },
       lineStagger: {
         value: DEFAULT_LINE_STAGGER,
         min: 0,
@@ -235,25 +228,39 @@ const Artworks = () => {
   }, [artworkRoutes, timeStackBaseline])
 
   useEffect(() => {
-    updateArtworkLineProgress({
-      positions: animatedPositionsRef.current,
-      artworkRoutes,
-      progress,
-      lineStagger,
-    })
+    const applyArtworkLineProgress = (progress) => {
+      updateArtworkLineProgress({
+        positions: animatedPositionsRef.current,
+        artworkRoutes,
+        progress,
+        lineStagger,
+      })
 
-    const renderPositionBuffer = renderPositionsRef.current.value
+      const renderPositionBuffer = renderPositionsRef.current.value
 
-    if (progress < 1) {
-      renderPositionBuffer.array.set(animatedPositionsRef.current.value.array)
-    } else {
-      renderPositionBuffer.array.set(finalPositionArray)
+      if (progress < 1) {
+        renderPositionBuffer.array.set(animatedPositionsRef.current.value.array)
+      } else {
+        renderPositionBuffer.array.set(finalPositionArray)
+      }
+
+      renderPositionBuffer.needsUpdate = true
+      invalidate()
+      map?.triggerRepaint?.()
     }
 
-    renderPositionBuffer.needsUpdate = true
-    invalidate()
-    map?.triggerRepaint?.()
-  }, [artworkRoutes, finalPositionArray, invalidate, lineStagger, map, progress])
+    applyArtworkLineProgress(useStore.getState().artworkLineProgress)
+
+    return useStore.subscribe((state, previousState) => {
+      if (
+        state.artworkLineProgress === previousState.artworkLineProgress
+      ) {
+        return
+      }
+
+      applyArtworkLineProgress(state.artworkLineProgress)
+    })
+  }, [artworkRoutes, finalPositionArray, invalidate, lineStagger, map])
 
   const artworkMetadata = useMemo(() => {
     const array = new Float32Array(COUNT * 4)

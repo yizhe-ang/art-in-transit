@@ -1,8 +1,14 @@
 import { create } from "zustand"
 
+const clamp01 = (value) => Math.min(1, Math.max(0, value))
+
 export const useStore = create((set) => ({
   artworkLayout: "map",
   setArtworkLayout: (artworkLayout) => set({ artworkLayout }),
+
+  artworkLineProgress: 0,
+  setArtworkLineProgress: (artworkLineProgress) =>
+    set({ artworkLineProgress: clamp01(artworkLineProgress) }),
 
   openArtworkDialog: false,
   setOpenArtworkDialog: (openArtworkDialog) => set({ openArtworkDialog }),
