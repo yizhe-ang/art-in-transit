@@ -58,6 +58,7 @@ const COUNT = data.artworks.length
 
 const Artworks = () => {
   const gl = useThree((state) => state.gl)
+  const invalidate = useThree((state) => state.invalidate)
   const map = useMap()
   const artworkLayout = useStore((state) => state.artworkLayout)
   const artworkCameraFocusRequest = useStore(
@@ -245,13 +246,14 @@ const Artworks = () => {
 
     if (progress < 1) {
       renderPositionBuffer.array.set(animatedPositionsRef.current.value.array)
-      renderPositionBuffer.needsUpdate = true
-      return
+    } else {
+      renderPositionBuffer.array.set(finalPositionArray)
     }
 
-    renderPositionBuffer.array.set(finalPositionArray)
     renderPositionBuffer.needsUpdate = true
-  }, [artworkRoutes, finalPositionArray, lineStagger, progress])
+    invalidate()
+    map?.triggerRepaint?.()
+  }, [artworkRoutes, finalPositionArray, invalidate, lineStagger, map, progress])
 
   const artworkMetadata = useMemo(() => {
     const array = new Float32Array(COUNT * 4)
