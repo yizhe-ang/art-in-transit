@@ -1,9 +1,10 @@
 import { useRef } from "react"
 import { useGSAP } from "@gsap/react"
 import gsap from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useStore } from "@/store"
 
-gsap.registerPlugin(useGSAP)
+gsap.registerPlugin(useGSAP, ScrollTrigger)
 
 const heroStats = ["112 Stations", "119 Artists", "more than 500 Artworks"]
 
@@ -37,9 +38,31 @@ const HeroTitle = () => {
           y: 0,
           filter: "blur(0px)",
         })
+
+        const step = document.getElementById("step-1")
+
+        if (!step || !containerRef.current) {
+          return
+        }
+
+        const exitTween = gsap.to(containerRef.current, {
+          autoAlpha: 0,
+          ease: "none",
+          scrollTrigger: {
+            trigger: step,
+            start: "top top",
+            end: "+=85%",
+            scrub: 0.8,
+          },
+        })
+
+        return () => {
+          exitTween.kill()
+        }
       })
 
       media.add("(prefers-reduced-motion: no-preference)", () => {
+        const step = document.getElementById("step-1")
         const timeline = gsap.timeline({
           defaults: {
             duration: 0.74,
@@ -78,8 +101,26 @@ const HeroTitle = () => {
             "-=0.36"
           )
 
+        let exitTween: gsap.core.Tween | undefined
+
+        if (step && containerRef.current) {
+          exitTween = gsap.to(containerRef.current, {
+            autoAlpha: 0,
+            y: -48,
+            filter: "blur(10px)",
+            ease: "none",
+            scrollTrigger: {
+              trigger: step,
+              start: "top top",
+              end: "+=85%",
+              scrub: 0.8,
+            },
+          })
+        }
+
         return () => {
           timeline.kill()
+          exitTween?.kill()
         }
       })
 
@@ -87,7 +128,11 @@ const HeroTitle = () => {
         media.revert()
       }
     },
-    { dependencies: [isInitialOverlayDismissing], scope: containerRef }
+    {
+      dependencies: [isInitialOverlayDismissing],
+      scope: containerRef,
+      revertOnUpdate: true,
+    }
   )
 
   return (
