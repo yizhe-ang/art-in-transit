@@ -32,3 +32,12 @@ declare module "@/components/scrolly-intro" {
   const ScrollyIntro: () => import("react").JSX.Element
   export default ScrollyIntro
 }
+
+declare module "@/store" {
+  type AppStoreState = {
+    isInitialOverlayDismissing: boolean
+    [key: string]: unknown
+  }
+
+  export const useStore: <T>(selector: (state: AppStoreState) => T) => T
+}

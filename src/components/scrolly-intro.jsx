@@ -2,6 +2,10 @@ import { useGSAP } from "@gsap/react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { button, folder, useControls } from "leva"
+import { ArrowRight } from "lucide-react"
+import { AnimatePresence, motion, useReducedMotion } from "motion/react"
+import { useEffect, useRef, useState } from "react"
+import { Button } from "@/components/ui/button"
 import { useStore } from "@/store"
 import { brushOffsetUniform } from "@/components/three/lines"
 import {
@@ -108,6 +112,15 @@ function applyRailReveal(map, { drawProgress, restOpacity }) {
 
 const ScrollyIntro = () => {
   const map = useStore((state) => state.map)
+  const isMapInteractionUnlocked = useStore(
+    (state) => state.isMapInteractionUnlocked
+  )
+  const setMapInteractionUnlocked = useStore(
+    (state) => state.setMapInteractionUnlocked
+  )
+  const shouldReduceMotion = useReducedMotion()
+  const [showCta, setShowCta] = useState(false)
+  const showCtaRef = useRef(false)
 
   const { brushFlowDistance } = useControls({
     "scrolly intro": folder({
@@ -138,6 +151,36 @@ const ScrollyIntro = () => {
       }),
     }),
   })
+
+  useEffect(() => {
+    if (!isMapInteractionUnlocked) {
+      return
+    }
+
+    const root = document.documentElement
+    const body = document.body
+    const previousStyles = {
+      rootOverflow: root.style.overflow,
+      rootOverscrollBehavior: root.style.overscrollBehavior,
+      bodyOverflow: body.style.overflow,
+      bodyOverscrollBehavior: body.style.overscrollBehavior,
+    }
+    const finalScrollY = Math.max(0, root.scrollHeight - window.innerHeight)
+
+    window.scrollTo({ top: finalScrollY, left: 0, behavior: "auto" })
+    root.style.overflow = "hidden"
+    root.style.overscrollBehavior = "none"
+    body.style.overflow = "hidden"
+    body.style.overscrollBehavior = "none"
+    showCtaRef.current = false
+
+    return () => {
+      root.style.overflow = previousStyles.rootOverflow
+      root.style.overscrollBehavior = previousStyles.rootOverscrollBehavior
+      body.style.overflow = previousStyles.bodyOverflow
+      body.style.overscrollBehavior = previousStyles.bodyOverscrollBehavior
+    }
+  }, [isMapInteractionUnlocked])
 
   useGSAP(
     () => {
@@ -196,6 +239,22 @@ const ScrollyIntro = () => {
           ease: "none",
         },
       })
+      const ctaTrigger = ScrollTrigger.create({
+        trigger: "#step-1",
+        start: "top top",
+        end: "bottom bottom",
+        onUpdate: (self) => {
+          const shouldShow =
+            !useStore.getState().isMapInteractionUnlocked && self.progress >= 0.85
+
+          if (showCtaRef.current === shouldShow) {
+            return
+          }
+
+          showCtaRef.current = shouldShow
+          setShowCta(shouldShow)
+        },
+      })
 
       timeline
         .from(cameraState, {
@@ -235,14 +294,55 @@ const ScrollyIntro = () => {
           0.78
         )
 
-      // return () => {
-      //   setArtworkLineProgress(0)
-      // }
+      return () => {
+        ctaTrigger.kill()
+        // setArtworkLineProgress(0)
+      }
     },
     { dependencies: [brushFlowDistance, map] }
   )
 
-  return <></>
+  return (
+    <AnimatePresence>
+      {showCta && !isMapInteractionUnlocked && (
+        <motion.div
+          className="pointer-events-none fixed inset-x-0 bottom-24 z-30 flex justify-center px-4 sm:bottom-28"
+          initial={
+            shouldReduceMotion
+              ? { opacity: 0 }
+              : { opacity: 0, transform: "translateY(14px)" }
+          }
+          animate={
+            shouldReduceMotion
+              ? { opacity: 1 }
+              : { opacity: 1, transform: "translateY(0px)" }
+          }
+          exit={
+            shouldReduceMotion
+              ? { opacity: 0 }
+              : { opacity: 0, transform: "translateY(8px)" }
+          }
+          transition={
+            shouldReduceMotion
+              ? { duration: 0.06, ease: "linear" }
+              : { type: "spring", bounce: 0.18, visualDuration: 0.42 }
+          }
+        >
+          <Button
+            type="button"
+            size="lg"
+            className="pointer-events-auto gap-2 bg-lta-yellow px-5 text-lta-dark-green shadow-[0_12px_36px_rgba(0,72,81,0.24)] ring-1 ring-white/70 hover:bg-lta-yellow/92"
+            onClick={() => {
+              setMapInteractionUnlocked(true)
+            }}
+          >
+            Explore the map
+            <ArrowRight aria-hidden="true" />
+          </Button>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
 }
 
 export default ScrollyIntro

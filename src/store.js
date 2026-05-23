@@ -10,9 +10,16 @@ export const useStore = create((set) => ({
   map: null,
   setMap: (map) => set({ map }),
 
+  isMapInteractionUnlocked: false,
+  setMapInteractionUnlocked: (isMapInteractionUnlocked) =>
+    set({ isMapInteractionUnlocked }),
+
   mapImagesReady: false,
   threeSceneReady: false,
   isInitialLoading: true,
+  isInitialOverlayDismissing: false,
+  setInitialOverlayDismissing: (isInitialOverlayDismissing) =>
+    set({ isInitialOverlayDismissing }),
   setMapImagesReady: (mapImagesReady) =>
     set((state) => ({
       mapImagesReady,

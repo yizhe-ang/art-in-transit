@@ -2,7 +2,7 @@ import MapImpl from "react-map-gl/maplibre"
 import "maplibre-gl/dist/maplibre-gl.css"
 import Rail from "@/components/map/rail"
 import loadImages from "@/components/map/loadImages"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Three from "@/components/three/three"
 import { bounds } from "@/components/map/constants"
 import { useStore } from "@/store"
@@ -18,14 +18,61 @@ const scrollZoomOptions = {
   around: "center",
 }
 
+const enableMapInteractions = (map) => {
+  map.dragPan.enable(dragPanOptions)
+  map.scrollZoom.enable(scrollZoomOptions)
+  map.touchZoomRotate.enable()
+  map.doubleClickZoom.enable()
+  map.keyboard.enable()
+  map.boxZoom.enable()
+  map.dragRotate.enable()
+}
+
+const disableMapInteractions = (map) => {
+  map.dragPan.disable()
+  map.scrollZoom.disable()
+  map.touchZoomRotate.disable()
+  map.doubleClickZoom.disable()
+  map.keyboard.disable()
+  map.boxZoom.disable()
+  map.dragRotate.disable()
+}
+
 const Map = () => {
   const [imagesLoaded, setImagesLoaded] = useState(false)
+  const mapRef = useRef(null)
   const setMap = useStore((state) => state.setMap)
   const setMapImagesReady = useStore((state) => state.setMapImagesReady)
 
   useEffect(() => {
     setMapImagesReady(false)
   }, [setMapImagesReady])
+
+  useEffect(() => {
+    return useStore.subscribe((state, previousState) => {
+      if (
+        state.isMapInteractionUnlocked ===
+        previousState?.isMapInteractionUnlocked
+      ) {
+        return
+      }
+
+      const map = mapRef.current
+
+      if (!map) {
+        return
+      }
+
+      if (state.isMapInteractionUnlocked) {
+        enableMapInteractions(map)
+        map.scrollZoom.setWheelZoomRate(1 / 700)
+        map.scrollZoom.setZoomRate(1 / 120)
+        return
+      }
+
+      disableMapInteractions(map)
+    })
+  }, [])
 
   return (
     <>
@@ -42,15 +89,26 @@ const Map = () => {
         onLoad={(event) => {
           const map = event.target
 
+          mapRef.current = map
           setMap(map)
 
           map.scrollZoom.setWheelZoomRate(1 / 700)
           map.scrollZoom.setZoomRate(1 / 120)
 
-          loadImages(map).then(() => {
-            setImagesLoaded(true)
-            setMapImagesReady(true)
-          })
+          if (useStore.getState().isMapInteractionUnlocked) {
+            enableMapInteractions(map)
+          } else {
+            disableMapInteractions(map)
+          }
+
+          loadImages(map)
+            .then(() => {
+              setImagesLoaded(true)
+              setMapImagesReady(true)
+            })
+            .catch((error) => {
+              console.error("Map image loading failed:", error)
+            })
         }}
       >
         {imagesLoaded && <Rail />}

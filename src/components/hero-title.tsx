@@ -1,6 +1,7 @@
 import { useRef } from "react"
 import { useGSAP } from "@gsap/react"
 import gsap from "gsap"
+import { useStore } from "@/store"
 
 gsap.registerPlugin(useGSAP)
 
@@ -8,12 +9,27 @@ const heroStats = ["112 Stations", "119 Artists", "more than 500 Artworks"]
 
 const HeroTitle = () => {
   const containerRef = useRef<HTMLElement>(null)
+  const isInitialOverlayDismissing = useStore(
+    (state) => state.isInitialOverlayDismissing
+  )
 
   useGSAP(
     () => {
       const lines = gsap.utils.toArray<HTMLElement>(".hero-title-line")
       const stats = gsap.utils.toArray<HTMLElement>(".hero-stat-line")
       const media = gsap.matchMedia()
+
+      if (!isInitialOverlayDismissing) {
+        gsap.set(lines, {
+          autoAlpha: 0,
+          y: 28,
+          filter: "blur(10px)",
+        })
+
+        return () => {
+          media.revert()
+        }
+      }
 
       media.add("(prefers-reduced-motion: reduce)", () => {
         gsap.set(lines, {
@@ -32,19 +48,27 @@ const HeroTitle = () => {
         })
 
         timeline
-          .set(lines, {
-            autoAlpha: 0,
-            y: 28,
-            filter: "blur(10px)",
-          })
-          .to(".hero-heading", {
-            autoAlpha: 1,
-            y: 0,
-            filter: "blur(0px)",
-            duration: 0.9,
-          })
-          .to(
+          .fromTo(
+            ".hero-heading",
+            {
+              autoAlpha: 0,
+              y: 28,
+              filter: "blur(10px)",
+            },
+            {
+              autoAlpha: 1,
+              y: 0,
+              filter: "blur(0px)",
+              duration: 0.9,
+            }
+          )
+          .fromTo(
             stats,
+            {
+              autoAlpha: 0,
+              y: 28,
+              filter: "blur(10px)",
+            },
             {
               autoAlpha: 1,
               y: 0,
@@ -63,7 +87,7 @@ const HeroTitle = () => {
         media.revert()
       }
     },
-    { scope: containerRef }
+    { dependencies: [isInitialOverlayDismissing], scope: containerRef }
   )
 
   return (

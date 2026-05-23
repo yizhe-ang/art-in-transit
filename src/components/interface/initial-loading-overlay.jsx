@@ -8,6 +8,9 @@ const InitialLoadingOverlay = () => {
   const isInitialLoading = useStore((state) => state.isInitialLoading)
   const mapImagesReady = useStore((state) => state.mapImagesReady)
   const threeSceneReady = useStore((state) => state.threeSceneReady)
+  const setInitialOverlayDismissing = useStore(
+    (state) => state.setInitialOverlayDismissing
+  )
   const readiness = [
     { key: "map", label: "Map", ready: mapImagesReady },
     { key: "art", label: "Art", ready: threeSceneReady },
@@ -19,6 +22,7 @@ const InitialLoadingOverlay = () => {
   useEffect(() => {
     if (isInitialLoading) {
       shownAtRef.current = Date.now()
+      setInitialOverlayDismissing(false)
 
       const frame = requestAnimationFrame(() => {
         setShouldRender(true)
@@ -35,6 +39,7 @@ const InitialLoadingOverlay = () => {
     let removeTimer
 
     const fadeTimer = setTimeout(() => {
+      setInitialOverlayDismissing(true)
       setIsVisible(false)
       removeTimer = setTimeout(() => {
         setShouldRender(false)
@@ -45,7 +50,7 @@ const InitialLoadingOverlay = () => {
       clearTimeout(fadeTimer)
       clearTimeout(removeTimer)
     }
-  }, [isInitialLoading])
+  }, [isInitialLoading, setInitialOverlayDismissing])
 
   if (!shouldRender) {
     return null
