@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from "react"
 import { buildRailRoutes } from "@/components/three/rail-routes"
-import { useLoader } from "@react-three/fiber"
+import { useLoader, useThree } from "@react-three/fiber"
+import { useMap } from "react-three-map/maplibre"
 import { folder, useControls } from "leva"
 import * as THREE from "three/webgpu"
 import { float, max, select, texture, uniform, uv, vec2 } from "three/tsl"
@@ -12,6 +13,8 @@ const MIN_BRUSH_REPEATS = 1
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const drawTUniform = uniform(1)
+// eslint-disable-next-line react-refresh/only-export-components
+export const brushOffsetUniform = uniform(0)
 const brushRepeatLengthUniform = uniform(BRUSH_REPEAT_LENGTH)
 const strokeOpacityUniform = uniform(1)
 const alphaCutoffUniform = uniform(0.08)
@@ -32,7 +35,7 @@ function createLineNodes(strokeTexture, routeLength) {
     float(MIN_BRUSH_REPEATS),
     float(routeLength).div(brushRepeatLengthUniform)
   )
-  const brushUv = vec2(uv().x.mul(brushRepeats), uv().y)
+  const brushUv = vec2(uv().x.mul(brushRepeats).sub(brushOffsetUniform), uv().y)
   const brushAlpha = texture(strokeTexture, brushUv).a
   const drawMask = select(uv().x.lessThanEqual(drawTUniform), float(1), float(0))
 
@@ -56,6 +59,8 @@ const PainterlyRoute = ({ route, strokeTexture }) => {
 }
 
 const Lines = () => {
+  const invalidate = useThree((state) => state.invalidate)
+  const map = useMap()
   const strokeTexture = useLoader(THREE.TextureLoader, "/textures/stroke.png")
 
   useEffect(() => {
@@ -93,7 +98,9 @@ const Lines = () => {
     alphaCutoffUniform.value = alphaCutoff
     brushRepeatLengthUniform.value = brushRepeatLength
     strokeOpacityUniform.value = strokeOpacity
-  }, [alphaCutoff, brushRepeatLength, strokeOpacity])
+    invalidate()
+    map?.triggerRepaint?.()
+  }, [alphaCutoff, brushRepeatLength, invalidate, map, strokeOpacity])
 
   return (
     <>

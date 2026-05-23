@@ -3,6 +3,7 @@ import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { button, folder, useControls } from "leva"
 import { useStore } from "@/store"
+import { brushOffsetUniform } from "@/components/three/lines"
 import {
   RAIL_DRAW_LAYERS,
   RAIL_REST_LAYER_PAINTS,
@@ -108,8 +109,14 @@ function applyRailReveal(map, { drawProgress, restOpacity }) {
 const ScrollyIntro = () => {
   const map = useStore((state) => state.map)
 
-  useControls({
+  const { brushFlowDistance } = useControls({
     "scrolly intro": folder({
+      brushFlowDistance: {
+        value: 1.5,
+        min: 0,
+        max: 8,
+        step: 0.05,
+      },
       "Log camera keyframe": button(() => {
         const currentMap = useStore.getState().map
 
@@ -164,6 +171,7 @@ const ScrollyIntro = () => {
 
       setArtworkLineProgress(0)
       scrollState.value = 0
+      brushOffsetUniform.value = 0
       applyRailReveal(map, railState)
 
       const timeline = gsap.timeline({
@@ -203,6 +211,14 @@ const ScrollyIntro = () => {
           "<"
         )
         .to(
+          brushOffsetUniform,
+          {
+            value: brushFlowDistance,
+            duration: 1,
+          },
+          "<"
+        )
+        .to(
           railState,
           {
             drawProgress: 1,
@@ -223,7 +239,7 @@ const ScrollyIntro = () => {
       //   setArtworkLineProgress(0)
       // }
     },
-    { dependencies: [map] }
+    { dependencies: [brushFlowDistance, map] }
   )
 
   return <></>
