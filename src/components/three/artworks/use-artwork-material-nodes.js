@@ -1,5 +1,6 @@
 import {
   ALTITUDE,
+  ARTWORK_DEPTH_STEP,
   HOVER_ALTITUDE_OFFSET,
   HOVER_SCALE,
 } from "@/components/three/artworks/constants"
@@ -133,9 +134,14 @@ export function useArtworkMaterialNodes({
       hoverInfluenceNode.mul(HOVER_ALTITUDE_OFFSET),
       float(0)
     )
+    const instanceDepthLift = vec3(
+      float(0),
+      float(instanceIndex).mul(ARTWORK_DEPTH_STEP),
+      float(0)
+    )
 
     return billboarding({
-      position: embeddingLayoutPosition.add(hoverLift),
+      position: embeddingLayoutPosition.add(hoverLift).add(instanceDepthLift),
       horizontal: false,
       vertical: true,
     })

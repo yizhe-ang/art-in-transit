@@ -47,6 +47,7 @@ import { folder, useControls } from "leva"
 import { instancedArray, uniformArray } from "three/tsl"
 
 const COUNT = data.artworks.length
+const ARTWORK_DEPTH_WRITE_PROGRESS = 0.999
 
 // TODO: Some shadow? Ambient occlusion?
 
@@ -98,6 +99,7 @@ const Artworks = () => {
     return instancedArray(array, "vec3")
   }, [artworkRoutes])
   const animatedPositionsRef = useRef(animatedPositions)
+  const materialRef = useRef(null)
 
   const renderPositions = useMemo(() => {
     const array = createArtworkLinePositionArray(artworkRoutes)
@@ -245,6 +247,12 @@ const Artworks = () => {
       }
 
       renderPositionBuffer.needsUpdate = true
+
+      // if (materialRef.current) {
+      //   materialRef.current.depthWrite =
+      //     progress >= ARTWORK_DEPTH_WRITE_PROGRESS
+      // }
+
       invalidate()
       map?.triggerRepaint?.()
     }
@@ -346,11 +354,18 @@ const Artworks = () => {
       <instancedMesh
         args={[geometry, undefined, COUNT]}
         frustumCulled={false}
+        // renderOrder={10}
         receiveShadow
         castShadow
       >
         <meshBasicNodeMaterial
+          ref={materialRef}
           transparent
+          // depthTest
+          // depthWrite={
+          //   useStore.getState().artworkLineProgress >=
+          //   ARTWORK_DEPTH_WRITE_PROGRESS
+          // }
           positionNode={positionNode}
           vertexNode={vertexNode}
           colorNode={colorNode}
