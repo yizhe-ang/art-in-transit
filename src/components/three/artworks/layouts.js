@@ -28,8 +28,24 @@ function getStationSortNumber(stationCode) {
   return Number(stationCode?.match(/^[A-Z]+(\d+)/)?.[1] ?? Infinity)
 }
 
+const STATION_PREFIX_LAYOUT_ORDER = {
+  CE: 0,
+  CC: 1,
+}
+
+function getStationPrefix(stationCode) {
+  return stationCode?.match(/^[A-Z]+/)?.[0] ?? null
+}
+
+function getStationPrefixLayoutOrder(stationCode) {
+  const prefix = getStationPrefix(stationCode)
+  return STATION_PREFIX_LAYOUT_ORDER[prefix] ?? Number.MAX_SAFE_INTEGER
+}
+
 function compareArtworkStations(a, b) {
   return (
+    getStationPrefixLayoutOrder(a.stationCode) -
+      getStationPrefixLayoutOrder(b.stationCode) ||
     getStationSortNumber(a.stationCode) - getStationSortNumber(b.stationCode) ||
     (a.stationCode ?? "").localeCompare(b.stationCode ?? "") ||
     a.originalIndex - b.originalIndex
@@ -205,7 +221,7 @@ export function createArtworkLineRowLayout(artworkRoutes, lineColors = []) {
     const sortedItems = [...row.items].sort(compareArtworkStations)
     const columnCenterOffset =
       (sortedItems.length - 1) * LINE_ROW_COLUMN_GAP * 0.5
-    const z = rowCenterOffset - rowIndex * LINE_ROW_GAP
+    const z = rowIndex * LINE_ROW_GAP - rowCenterOffset
 
     sortedItems.forEach((artworkRoute, columnIndex) => {
       setPositionAt(

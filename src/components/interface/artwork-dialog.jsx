@@ -259,6 +259,15 @@ function getStationCodeParts(artwork) {
   }
 }
 
+const STATION_PREFIX_NAVIGATION_ORDER = {
+  CE: 0,
+  CC: 1,
+}
+
+function getStationPrefixNavigationOrder(prefix) {
+  return STATION_PREFIX_NAVIGATION_ORDER[prefix] ?? Number.MAX_SAFE_INTEGER
+}
+
 function compareArtworkStationCodes(a, b) {
   const aParts = getStationCodeParts(a)
   const bParts = getStationCodeParts(b)
@@ -268,6 +277,14 @@ function compareArtworkStationCodes(a, b) {
   }
 
   if (aParts.prefix !== bParts.prefix) {
+    const prefixOrderDifference =
+      getStationPrefixNavigationOrder(aParts.prefix) -
+      getStationPrefixNavigationOrder(bParts.prefix)
+
+    if (prefixOrderDifference !== 0) {
+      return prefixOrderDifference
+    }
+
     return aParts.prefix.localeCompare(bParts.prefix)
   }
 
