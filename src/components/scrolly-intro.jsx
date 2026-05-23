@@ -1,6 +1,7 @@
 import { useGSAP } from "@gsap/react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { button, folder, useControls } from "leva"
 import { useStore } from "@/store"
 
 gsap.registerPlugin(useGSAP, ScrollTrigger)
@@ -9,6 +10,30 @@ gsap.registerPlugin(useGSAP, ScrollTrigger)
 
 const ScrollyIntro = () => {
   const map = useStore((state) => state.map)
+
+  useControls({
+    "scrolly intro": folder({
+      "Log camera keyframe": button(() => {
+        const currentMap = useStore.getState().map
+
+        if (!currentMap) {
+          console.warn("Scrolly intro camera keyframe: map is not ready yet.")
+          return
+        }
+
+        const center = currentMap.getCenter()
+        const keyframe = {
+          longitude: center.lng,
+          latitude: center.lat,
+          zoom: currentMap.getZoom(),
+          pitch: currentMap.getPitch(),
+          bearing: currentMap.getBearing(),
+        }
+
+        console.log("Scrolly intro camera keyframe:", keyframe)
+      }),
+    }),
+  })
 
   useGSAP(
     () => {

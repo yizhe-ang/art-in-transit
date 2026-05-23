@@ -1,6 +1,8 @@
 import { LINE_ORDER, getPointAtDistance } from "@/components/three/rail-routes"
 import { MathUtils, Vector3 } from "three"
 
+const RAIL_PROGRESS_END = 0.9
+
 export function getLineProgress(progress, lineIndex, lineStagger, lineCount) {
   if (lineIndex < 0) {
     return progress
@@ -43,6 +45,7 @@ export function updateArtworkLineProgress({
   const positionBuffer = positions.value
   const array = positionBuffer.array
   const currentPosition = new Vector3()
+  const renderedPosition = new Vector3()
 
   artworkRoutes.forEach((artworkRoute, index) => {
     const lineProgress = getLineProgress(
@@ -52,14 +55,25 @@ export function updateArtworkLineProgress({
       LINE_ORDER.length
     )
 
-    if (!artworkRoute.route || lineProgress >= 1) {
+    if (!artworkRoute.route) {
       setPositionAt(array, index, artworkRoute.finalPosition)
       return
     }
 
-    const distance = artworkRoute.targetDistance * lineProgress
+    const routeProgress = MathUtils.clamp(lineProgress / RAIL_PROGRESS_END, 0, 1)
+    const settleProgress = MathUtils.clamp(
+      (lineProgress - RAIL_PROGRESS_END) / (1 - RAIL_PROGRESS_END),
+      0,
+      1
+    )
+    const distance = artworkRoute.targetDistance * routeProgress
+
     getPointAtDistance(artworkRoute.route, distance, currentPosition)
-    setPositionAt(array, index, currentPosition)
+    renderedPosition.copy(currentPosition).lerp(
+      artworkRoute.finalPosition,
+      settleProgress
+    )
+    setPositionAt(array, index, renderedPosition)
   })
 
   positionBuffer.needsUpdate = true
