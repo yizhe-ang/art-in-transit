@@ -240,6 +240,10 @@ function getArtworkLineName(artwork) {
   return getLineNameForStationCode(getArtworkStationCode(artwork))
 }
 
+function getArtworkYear(artwork) {
+  return artwork?.year ?? artwork?.description?.match(/\bYear:\s*(\d{4})\b/)?.[1]
+}
+
 function getStationCodeParts(artwork) {
   const stationCode = getArtworkStationCode(artwork)
   const match = stationCode?.match(/^([A-Z]+)(\d+)([A-Z]?)$/)
@@ -314,6 +318,7 @@ const ArtworkDialog = () => {
     selectedArtwork?.imageUrls?.[0] ?? selectedArtwork?.thumbnailUrl
   const title = selectedArtwork?.artworkTitle
   const artist = selectedArtwork?.artist
+  const year = getArtworkYear(selectedArtwork)
   const stationCode = selectedArtwork?.stationCode
   const stationName = selectedArtwork?.stationName
   const readMoreUrl = selectedArtwork?.itemUrl
@@ -416,14 +421,15 @@ const ArtworkDialog = () => {
 
                 {artworkSequence.length > 1 && (
                   <div
-                    className="pointer-events-none absolute inset-x-3 top-1/2 z-10 flex -translate-y-1/2 justify-between sm:inset-x-5"
+                    className="pointer-events-none absolute inset-x-3 inset-y-0 z-10 sm:inset-x-5"
                     aria-label="Artwork navigation"
                   >
                     <Button
                       type="button"
                       variant="secondary"
+                      size="icon-lg"
                       aria-label="Previous artwork"
-                      className="pointer-events-auto size-12 rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur"
+                      className="pointer-events-auto absolute left-0 top-1/2 size-12 -translate-y-1/2 rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur active:translate-y-[calc(-50%+1px)]"
                       onPointerDown={handlePreviousArtworkPointerDown}
                     >
                       <ArrowLeft className="size-7 stroke-3" />
@@ -431,8 +437,9 @@ const ArtworkDialog = () => {
                     <Button
                       type="button"
                       variant="secondary"
+                      size="icon-lg"
                       aria-label="Next artwork"
-                      className="pointer-events-auto size-12 rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur"
+                      className="pointer-events-auto absolute right-0 top-1/2 size-12 -translate-y-1/2 rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur active:translate-y-[calc(-50%+1px)]"
                       onPointerDown={handleNextArtworkPointerDown}
                     >
                       <ArrowRight className="size-7 stroke-3" />
@@ -478,6 +485,12 @@ const ArtworkDialog = () => {
                     {artist && (
                       <p className="text-base text-muted-foreground">
                         {artist}
+                      </p>
+                    )}
+
+                    {year && (
+                      <p className="text-base text-muted-foreground">
+                        {year}
                       </p>
                     )}
 
