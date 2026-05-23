@@ -146,6 +146,8 @@ function groupRoutesByLine(routes) {
 }
 
 function createArtworkRouteItems(artworks, routesByLine) {
+  const travelDirection = new THREE.Vector3()
+
   return artworks.map((artwork) => {
     const finalPosition = getArtworkPosition(artwork)
     const stationCode = getArtworkStationCode(artwork)
@@ -168,6 +170,12 @@ function createArtworkRouteItems(artworks, routesByLine) {
       }
     })
 
+    getRouteDirectionAtDistance(
+      selectedRoute,
+      selectedClosestPoint?.distanceAlong ?? 0,
+      travelDirection
+    )
+
     return {
       clusterKey: getArtworkClusterKey(artwork),
       depthSlot: 0,
@@ -176,6 +184,7 @@ function createArtworkRouteItems(artworks, routesByLine) {
       route: selectedRoute,
       stationCode,
       targetDistance: selectedClosestPoint?.distanceAlong ?? 0,
+      travelDirection: travelDirection.clone(),
     }
   })
 }

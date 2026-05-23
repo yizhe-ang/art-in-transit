@@ -19,6 +19,8 @@ import { uniform } from "three/tsl"
 export const borderWidthUniform = uniform(DEFAULT_BORDER_WIDTH)
 export const borderIntensityUniform = uniform(DEFAULT_BORDER_INTENSITY)
 export const borderOpacityUniform = uniform(DEFAULT_BORDER_OPACITY)
+export const artworkDistortionStrengthUniform = uniform(1)
+export const artworkDistortionVelocityUniform = uniform(0)
 export const lineLayoutProgressUniform = uniform(0)
 export const timeLayoutProgressUniform = uniform(0)
 export const embeddingLayoutProgressUniform = uniform(0)
@@ -37,6 +39,8 @@ export function useArtworkTransitions({
   borderIntensity,
   borderOpacity,
   borderWidth,
+  distortionDamping,
+  distortionStrength,
 }) {
   const invalidate = useThree((state) => state.invalidate)
   const map = useMap()
@@ -122,6 +126,7 @@ export function useArtworkTransitions({
       previousHoveredArtworkStartInfluenceUniform.value = 0
       hoverAnimationActiveRef.current = false
       layoutAnimationActiveRef.current = false
+      artworkDistortionVelocityUniform.value = 0
       embeddingRawLayoutProgressUniform.value = 0
       layoutTargetRef.current = LAYOUT_TARGETS.map
     }
@@ -138,7 +143,8 @@ export function useArtworkTransitions({
     borderWidthUniform.value = borderWidth
     borderIntensityUniform.value = borderIntensity
     borderOpacityUniform.value = borderOpacity
-  }, [borderIntensity, borderOpacity, borderWidth])
+    artworkDistortionStrengthUniform.value = distortionStrength
+  }, [borderIntensity, borderOpacity, borderWidth, distortionStrength])
 
   useFrame((_, delta) => {
     if (!hoverAnimationActiveRef.current) return
@@ -218,6 +224,21 @@ export function useArtworkTransitions({
     embeddingLayoutProgressUniform.value = target.embedding
     embeddingRawLayoutProgressUniform.value = target.embeddingRaw
     layoutAnimationActiveRef.current = false
+  })
+
+  useFrame((_, delta) => {
+    if (Math.abs(artworkDistortionVelocityUniform.value) <= 0.001) {
+      artworkDistortionVelocityUniform.value = 0
+      return
+    }
+
+    artworkDistortionVelocityUniform.value = THREE.MathUtils.damp(
+      artworkDistortionVelocityUniform.value,
+      0,
+      distortionDamping,
+      delta
+    )
+    scheduleRepaint()
   })
 
   return {

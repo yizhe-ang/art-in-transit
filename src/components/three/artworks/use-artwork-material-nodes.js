@@ -3,9 +3,12 @@ import {
   ARTWORK_DEPTH_STEP,
   HOVER_ALTITUDE_OFFSET,
   HOVER_SCALE,
+  SIZE,
 } from "@/components/three/artworks/constants"
 import { artworkZoomScale } from "@/components/three/artworks/zoom-scale"
 import {
+  artworkDistortionStrengthUniform,
+  artworkDistortionVelocityUniform,
   borderIntensityUniform,
   borderOpacityUniform,
   borderWidthUniform,
@@ -22,6 +25,7 @@ import {
 import { useMemo } from "react"
 import {
   billboarding,
+  cos,
   equal,
   float,
   instanceIndex,
@@ -30,6 +34,7 @@ import {
   or,
   positionLocal,
   select,
+  sin,
   texture,
   uv,
   vec3,
@@ -90,11 +95,46 @@ export function useArtworkMaterialNodes({
       embeddingRawLayoutProgressUniform
     )
     const hoverScale = mix(float(1), float(HOVER_SCALE), hoverInfluenceNode)
+    const normalizedX = positionLocal.x.div(float(SIZE * 0.5))
+    const normalizedY = positionLocal.y.div(float(SIZE * 0.5))
+    const horizontalCurve = normalizedX.mul(normalizedX)
+    const verticalCurve = normalizedY.mul(normalizedY)
+    const edgeWeight = horizontalCurve.mul(0.65).add(verticalCurve.mul(0.35))
+    const centerBelly = float(1)
+      .sub(horizontalCurve)
+      .mul(float(1).sub(verticalCurve.mul(0.35)))
+    const linePhase = sin(artworkMetadataAttribute.w.mul(1.618))
+      .mul(0.18)
+      .add(1)
+    const distortion = artworkDistortionVelocityUniform
+      .mul(artworkDistortionStrengthUniform)
+      .mul(linePhase)
+    const travelAngle = artworkMetadataAttribute.y
+    const directionX = cos(travelAngle)
+    const directionZ = sin(travelAngle)
+    const along = vec3(
+      directionX,
+      float(0),
+      directionZ
+    )
+    const across = vec3(
+      directionZ.negate(),
+      float(0),
+      directionX
+    )
+    const trail = normalizedY.mul(distortion).mul(SIZE * 0.52)
+    const curl = horizontalCurve.mul(distortion).mul(SIZE * -0.34)
+    const edgeBow = edgeWeight.mul(distortion).mul(SIZE * 0.14)
+    const bellyBow = centerBelly.mul(distortion).mul(SIZE * -0.3)
+    const routeOffset = along
+      .mul(trail.add(edgeBow).add(bellyBow))
+      .add(across.mul(curl))
 
     return positionLocal
-      .mul(artworkMetadataAttribute.xyz)
+      .mul(vec3(artworkMetadataAttribute.x, float(1), float(1)))
       .mul(embeddingZoomScale)
       .mul(hoverScale)
+      .add(routeOffset)
   }, [artworkMetadataAttribute, hoverInfluenceNode])
 
   const vertexNode = useMemo(() => {

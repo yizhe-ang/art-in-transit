@@ -30,6 +30,7 @@ import {
 import { useArtworkCameraFocus } from "@/components/three/artworks/use-artwork-camera-focus"
 import { useArtworkMaterialNodes } from "@/components/three/artworks/use-artwork-material-nodes"
 import {
+  artworkDistortionVelocityUniform,
   embeddingLayoutProgressUniform,
   embeddingRawLayoutProgressUniform,
   lineLayoutProgressUniform,
@@ -132,6 +133,8 @@ const Artworks = () => {
     borderWidth,
     borderIntensity,
     borderOpacity,
+    distortionStrength,
+    distortionDamping,
   } = useControls({
     artworks: folder({
       lineStagger: {
@@ -165,6 +168,18 @@ const Artworks = () => {
         max: 1,
         step: 0.01,
       },
+      distortionStrength: {
+        value: 1,
+        min: 0,
+        max: 2.5,
+        step: 0.01,
+      },
+      distortionDamping: {
+        value: 4.5,
+        min: 1,
+        max: 20,
+        step: 0.1,
+      },
     }),
   })
 
@@ -173,6 +188,8 @@ const Artworks = () => {
     borderIntensity,
     borderOpacity,
     borderWidth,
+    distortionDamping,
+    distortionStrength,
   })
 
   const aspectRatios = useMemo(() => {
@@ -229,7 +246,9 @@ const Artworks = () => {
   }, [artworkRoutes, timeStackBaseline])
 
   useEffect(() => {
-    const applyArtworkLineProgress = (progress) => {
+    const applyArtworkLineProgress = (progress, velocity = 0) => {
+      artworkDistortionVelocityUniform.value = velocity
+
       updateArtworkLineProgress({
         positions: animatedPositionsRef.current,
         artworkRoutes,
@@ -256,16 +275,24 @@ const Artworks = () => {
       map?.triggerRepaint?.()
     }
 
-    applyArtworkLineProgress(useStore.getState().artworkLineProgress)
+    const initialState = useStore.getState()
+    applyArtworkLineProgress(
+      initialState.artworkLineProgress,
+      initialState.artworkLineVelocity
+    )
 
     return useStore.subscribe((state, previousState) => {
       if (
-        state.artworkLineProgress === previousState.artworkLineProgress
+        state.artworkLineProgress === previousState.artworkLineProgress &&
+        state.artworkLineVelocity === previousState.artworkLineVelocity
       ) {
         return
       }
 
-      applyArtworkLineProgress(state.artworkLineProgress)
+      applyArtworkLineProgress(
+        state.artworkLineProgress,
+        state.artworkLineVelocity
+      )
     })
   }, [artworkRoutes, finalPositionArray, invalidate, lineStagger, map])
 
@@ -273,8 +300,10 @@ const Artworks = () => {
     const array = new Float32Array(COUNT * 4)
 
     aspectRatios.forEach((aspectRatio, index) => {
+      const direction = artworkRoutes[index]?.travelDirection
+
       array[index * 4 + 0] = aspectRatio
-      array[index * 4 + 1] = 1
+      array[index * 4 + 1] = Math.atan2(direction?.z ?? 0, direction?.x ?? 1)
       array[index * 4 + 2] = artworkRoutes[index]?.depthSlot ?? 0
     })
 
@@ -294,7 +323,7 @@ const Artworks = () => {
   }, [lineBorderColors])
 
   const geometry = useMemo(() => {
-    const geometry = new THREE.PlaneGeometry(SIZE, SIZE)
+    const geometry = new THREE.PlaneGeometry(SIZE, SIZE, 16, 16)
     // geometry.rotateX(-Math.PI / 2)
     return geometry
   }, [])
