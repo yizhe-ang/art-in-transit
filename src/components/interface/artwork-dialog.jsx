@@ -359,19 +359,27 @@ const ArtworkDialog = () => {
   )
   const shouldReduceMotion = useReducedMotion()
   const [navigationDirection, setNavigationDirection] = useState(1)
+  const [displayedArtwork, setDisplayedArtwork] = useState(null)
   const artworkSequence = useMemo(() => getLineArtworkSequence(), [])
   const selectedArtwork = normalizeArtworkStation(storedSelectedArtwork)
+  const visibleArtwork = normalizeArtworkStation(displayedArtwork)
 
-  const selectedArtworkKey = getArtworkKey(selectedArtwork)
+  const selectedArtworkKey = getArtworkKey(visibleArtwork)
   const imageUrl =
-    selectedArtwork?.imageUrls?.[0] ?? selectedArtwork?.thumbnailUrl
-  const title = selectedArtwork?.artworkTitle
-  const artist = selectedArtwork?.artist
-  const year = getArtworkYear(selectedArtwork)
-  const stationCode = selectedArtwork?.stationCode
-  const stationName = selectedArtwork?.stationName
-  const readMoreUrl = selectedArtwork?.itemUrl
-  const credits = selectedArtwork?.credits
+    visibleArtwork?.imageUrls?.[0] ?? visibleArtwork?.thumbnailUrl
+  const title = visibleArtwork?.artworkTitle
+  const artist = visibleArtwork?.artist
+  const year = getArtworkYear(visibleArtwork)
+  const stationCode = visibleArtwork?.stationCode
+  const stationName = visibleArtwork?.stationName
+  const readMoreUrl = visibleArtwork?.itemUrl
+  const credits = visibleArtwork?.credits
+
+  useEffect(() => {
+    if (openArtworkDialog && storedSelectedArtwork) {
+      setDisplayedArtwork(normalizeArtworkStation(storedSelectedArtwork))
+    }
+  }, [openArtworkDialog, storedSelectedArtwork])
 
   const handleOpenChange = (open) => {
     setOpenArtworkDialog(open)
@@ -383,6 +391,12 @@ const ArtworkDialog = () => {
 
   const handleBackgroundPointerDown = () => {
     handleOpenChange(false)
+  }
+
+  const handleDialogAnimationEnd = () => {
+    if (!openArtworkDialog) {
+      setDisplayedArtwork(null)
+    }
   }
 
   const stopPointerPropagation = (event) => {
@@ -435,8 +449,9 @@ const ArtworkDialog = () => {
       <DialogContent
         showCloseButton={false}
         className="h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] gap-0 overflow-visible rounded-lg bg-transparent p-0 sm:max-w-[calc(100vw-2rem)]"
+        onAnimationEnd={handleDialogAnimationEnd}
       >
-        {selectedArtwork && (
+        {visibleArtwork && (
           <div
             className="flex min-h-0 flex-1 flex-col"
             onPointerDown={handleBackgroundPointerDown}
@@ -461,7 +476,7 @@ const ArtworkDialog = () => {
                   >
                     <ArtworkImageViewer
                       key={imageUrl}
-                      imageAlt={selectedArtwork.imageAlt ?? title ?? "Artwork"}
+                      imageAlt={visibleArtwork.imageAlt ?? title ?? "Artwork"}
                       imageUrl={imageUrl}
                       stopPointerPropagation={stopPointerPropagation}
                     />
