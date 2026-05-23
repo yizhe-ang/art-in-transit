@@ -1,9 +1,19 @@
-const steps = () => {
+import { cn } from "@/lib/utils"
+
+const Steps = () => {
   return (
     <div>
-
+      <Step id="step-1" className=""></Step>
     </div>
   )
 }
 
-export default steps
+const Step = ({ className, children, ...props }) => {
+  return (
+    <div className={cn("h-[100vh]", className)} {...props}>
+      {children}
+    </div>
+  )
+}
+
+export default Steps

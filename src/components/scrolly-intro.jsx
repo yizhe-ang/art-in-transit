@@ -1,9 +1,12 @@
+import { useGSAP } from "@gsap/react"
+import gsap from "gsap"
 
+gsap.registerPlugin(useGSAP)
+
+// TODO: Lenis?
 
 const ScrollyIntro = () => {
-  return (
-    <></>
-  )
+  return <></>
 }
 
 export default ScrollyIntro

@@ -157,42 +157,42 @@ function getPositionFromArray(array, index, target) {
   return target.set(array[offset], array[offset + 1], array[offset + 2])
 }
 
-function getCurrentArtworkLayoutPosition({
+function getArtworkLayoutTargetPosition({
+  artworkLayout,
   embeddingLayoutPositions,
+  finalPositions,
   index,
   lineRowPositions,
-  renderPositions,
   target,
   timePositions,
 }) {
-  const rowPosition = new THREE.Vector3()
-  const timePosition = new THREE.Vector3()
-  const snappedEmbeddingPosition = new THREE.Vector3()
-  const rawEmbeddingPosition = new THREE.Vector3()
   const embeddingOffset = index * 4
 
-  getPositionFromArray(renderPositions, index, target)
-  getPositionFromArray(lineRowPositions, index, rowPosition)
-  target.lerp(rowPosition, lineLayoutProgressUniform.value)
+  if (artworkLayout === "line") {
+    return getPositionFromArray(lineRowPositions, index, target)
+  }
 
-  getPositionFromArray(timePositions, index, timePosition)
-  target.lerp(timePosition, timeLayoutProgressUniform.value)
+  if (artworkLayout === "time") {
+    return getPositionFromArray(timePositions, index, target)
+  }
 
-  snappedEmbeddingPosition.set(
-    embeddingLayoutPositions[embeddingOffset],
-    ALTITUDE,
-    embeddingLayoutPositions[embeddingOffset + 1]
-  )
-  target.lerp(snappedEmbeddingPosition, embeddingLayoutProgressUniform.value)
+  if (artworkLayout === "embedding") {
+    return target.set(
+      embeddingLayoutPositions[embeddingOffset],
+      ALTITUDE,
+      embeddingLayoutPositions[embeddingOffset + 1]
+    )
+  }
 
-  rawEmbeddingPosition.set(
-    embeddingLayoutPositions[embeddingOffset + 2],
-    ALTITUDE,
-    embeddingLayoutPositions[embeddingOffset + 3]
-  )
-  target.lerp(rawEmbeddingPosition, embeddingRawLayoutProgressUniform.value)
+  if (artworkLayout === "embeddingRaw") {
+    return target.set(
+      embeddingLayoutPositions[embeddingOffset + 2],
+      ALTITUDE,
+      embeddingLayoutPositions[embeddingOffset + 3]
+    )
+  }
 
-  return target
+  return getPositionFromArray(finalPositions, index, target)
 }
 
 function shouldReduceCameraMotion() {
@@ -677,11 +677,12 @@ const Artworks = () => {
       return
     }
 
-    const targetPosition = getCurrentArtworkLayoutPosition({
+    const targetPosition = getArtworkLayoutTargetPosition({
+      artworkLayout,
       embeddingLayoutPositions: embeddingLayoutPositions.value.array,
+      finalPositions: finalPositionArray,
       index: artworkIndex,
       lineRowPositions: lineRowLayout.positions,
-      renderPositions: renderPositionsRef.current.value.array,
       target: new THREE.Vector3(),
       timePositions: timePositions.value.array,
     })
@@ -697,8 +698,10 @@ const Artworks = () => {
     })
   }, [
     artworkCameraFocusRequest,
+    artworkLayout,
     artworkIndexByKey,
     embeddingLayoutPositions,
+    finalPositionArray,
     lineRowLayout.positions,
     map,
     timePositions,
