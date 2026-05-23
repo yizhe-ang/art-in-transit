@@ -159,12 +159,12 @@ function getPositionFromArray(array, index, target) {
 
 function getArtworkLayoutTargetPosition({
   artworkLayout,
-  embeddingLayoutPositions,
+  embeddingLayoutPositionArray,
   finalPositions,
   index,
   lineRowPositions,
   target,
-  timePositions,
+  timePositionArray,
 }) {
   const embeddingOffset = index * 4
 
@@ -173,22 +173,22 @@ function getArtworkLayoutTargetPosition({
   }
 
   if (artworkLayout === "time") {
-    return getPositionFromArray(timePositions, index, target)
+    return getPositionFromArray(timePositionArray, index, target)
   }
 
   if (artworkLayout === "embedding") {
     return target.set(
-      embeddingLayoutPositions[embeddingOffset],
+      embeddingLayoutPositionArray[embeddingOffset],
       ALTITUDE,
-      embeddingLayoutPositions[embeddingOffset + 1]
+      embeddingLayoutPositionArray[embeddingOffset + 1]
     )
   }
 
   if (artworkLayout === "embeddingRaw") {
     return target.set(
-      embeddingLayoutPositions[embeddingOffset + 2],
+      embeddingLayoutPositionArray[embeddingOffset + 2],
       ALTITUDE,
-      embeddingLayoutPositions[embeddingOffset + 3]
+      embeddingLayoutPositionArray[embeddingOffset + 3]
     )
   }
 
@@ -647,23 +647,29 @@ const Artworks = () => {
     return array
   }, [])
 
-  const timePositions = useMemo(() => {
-    const array = createArtworkTimePositionArray(
+  const timePositionArray = useMemo(() => {
+    return createArtworkTimePositionArray(
       artworkRoutes,
       data.artworks,
       timeStackBaseline
     )
-    return instancedArray(array, "vec3")
   }, [artworkRoutes, timeStackBaseline])
 
-  const embeddingLayoutPositions = useMemo(() => {
-    const array = createArtworkEmbeddingLayoutPositionArray(
+  const timePositions = useMemo(() => {
+    return instancedArray(timePositionArray, "vec3")
+  }, [timePositionArray])
+
+  const embeddingLayoutPositionArray = useMemo(() => {
+    return createArtworkEmbeddingLayoutPositionArray(
       artworkRoutes,
       embeddingLayout,
       aspectRatios
     )
-    return instancedArray(array, "vec4")
   }, [artworkRoutes, aspectRatios])
+
+  const embeddingLayoutPositions = useMemo(() => {
+    return instancedArray(embeddingLayoutPositionArray, "vec4")
+  }, [embeddingLayoutPositionArray])
 
   useEffect(() => {
     if (!map || !artworkCameraFocusRequest?.artwork) {
@@ -679,12 +685,12 @@ const Artworks = () => {
 
     const targetPosition = getArtworkLayoutTargetPosition({
       artworkLayout,
-      embeddingLayoutPositions: embeddingLayoutPositions.value.array,
+      embeddingLayoutPositionArray,
       finalPositions: finalPositionArray,
       index: artworkIndex,
       lineRowPositions: lineRowLayout.positions,
       target: new THREE.Vector3(),
-      timePositions: timePositions.value.array,
+      timePositionArray,
     })
     const targetCoords = vector3ToCoords(targetPosition.toArray(), origin)
     const duration = shouldReduceCameraMotion() ? 0 : CAMERA_FOCUS_DURATION
@@ -700,11 +706,11 @@ const Artworks = () => {
     artworkCameraFocusRequest,
     artworkLayout,
     artworkIndexByKey,
-    embeddingLayoutPositions,
+    embeddingLayoutPositionArray,
     finalPositionArray,
     lineRowLayout.positions,
     map,
-    timePositions,
+    timePositionArray,
   ])
 
   const timeYearLabels = useMemo(() => {
