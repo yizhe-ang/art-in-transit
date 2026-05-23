@@ -42,8 +42,7 @@ const ScrollyIntro = () => {
         return
       }
 
-      const setArtworkLineProgress =
-        useStore.getState().setArtworkLineProgress
+      const setArtworkLineProgress = useStore.getState().setArtworkLineProgress
       const scrollState = {
         value: useStore.getState().artworkLineProgress,
         longitude: map.getCenter().lng,
@@ -54,7 +53,7 @@ const ScrollyIntro = () => {
       }
 
       setArtworkLineProgress(0)
-      drawTUniform.value = 0
+      // drawTUniform.value = 0
       scrollState.value = 0
 
       const timeline = gsap.timeline({
@@ -65,7 +64,7 @@ const ScrollyIntro = () => {
           scrub: 1,
         },
         onUpdate: () => {
-          drawTUniform.value = scrollState.value
+          // drawTUniform.value = scrollState.value
           setArtworkLineProgress(scrollState.value)
           map.jumpTo({
             center: [scrollState.longitude, scrollState.latitude],
@@ -87,10 +86,10 @@ const ScrollyIntro = () => {
         ease: "none",
       })
 
-      return () => {
-        drawTUniform.value = 0
-        setArtworkLineProgress(0)
-      }
+      // return () => {
+      //   drawTUniform.value = 0
+      //   setArtworkLineProgress(0)
+      // }
     },
     { dependencies: [map] }
   )

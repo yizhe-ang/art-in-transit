@@ -46,7 +46,7 @@ const Map = () => {
           })
         }}
       >
-        {imagesLoaded && <Rail />}
+        {/* {imagesLoaded && <Rail />} */}
 
         {/* <PaperOverlay /> */}
 

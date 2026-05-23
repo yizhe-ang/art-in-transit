@@ -11,7 +11,7 @@ const BRUSH_REPEAT_LENGTH = 2_400
 const MIN_BRUSH_REPEATS = 1
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const drawTUniform = uniform(0)
+export const drawTUniform = uniform(1)
 const brushRepeatLengthUniform = uniform(BRUSH_REPEAT_LENGTH)
 const strokeOpacityUniform = uniform(1)
 const alphaCutoffUniform = uniform(0.08)
