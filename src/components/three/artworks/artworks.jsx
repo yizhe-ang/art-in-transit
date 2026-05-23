@@ -47,7 +47,6 @@ import { folder, useControls } from "leva"
 import { instancedArray, uniformArray } from "three/tsl"
 
 const COUNT = data.artworks.length
-const ARTWORK_DEPTH_WRITE_PROGRESS = 0.999
 
 // TODO: Some shadow? Ambient occlusion?
 
@@ -276,7 +275,7 @@ const Artworks = () => {
     aspectRatios.forEach((aspectRatio, index) => {
       array[index * 4 + 0] = aspectRatio
       array[index * 4 + 1] = 1
-      array[index * 4 + 2] = 1
+      array[index * 4 + 2] = artworkRoutes[index]?.depthSlot ?? 0
     })
 
     artworkRoutes.forEach((artworkRoute, index) => {
@@ -361,11 +360,8 @@ const Artworks = () => {
         <meshBasicNodeMaterial
           ref={materialRef}
           transparent
-          // depthTest
-          // depthWrite={
-          //   useStore.getState().artworkLineProgress >=
-          //   ARTWORK_DEPTH_WRITE_PROGRESS
-          // }
+          depthTest
+          depthWrite
           positionNode={positionNode}
           vertexNode={vertexNode}
           colorNode={colorNode}

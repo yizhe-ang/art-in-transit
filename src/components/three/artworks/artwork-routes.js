@@ -170,6 +170,7 @@ function createArtworkRouteItems(artworks, routesByLine) {
 
     return {
       clusterKey: getArtworkClusterKey(artwork),
+      depthSlot: 0,
       finalPosition,
       lineIndex: lineIndex === -1 ? FALLBACK_LINE_INDEX : lineIndex,
       route: selectedRoute,
@@ -193,6 +194,8 @@ function offsetClusteredArtworkRoutes(artworkRoutes) {
     if (group.length <= 1) return
 
     group.forEach((artworkRoute, index) => {
+      artworkRoute.depthSlot = index
+
       getRouteDirectionAtDistance(
         artworkRoute.route,
         artworkRoute.targetDistance,

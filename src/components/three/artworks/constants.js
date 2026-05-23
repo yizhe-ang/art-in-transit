@@ -1,7 +1,7 @@
 import { LINE_ORDER } from "@/components/three/rail-routes"
 
 export const ALTITUDE = 20
-export const ARTWORK_DEPTH_STEP = 0.1
+export const ARTWORK_DEPTH_STEP = 12
 export const SIZE = 1800
 export const DEFAULT_LINE_STAGGER = 0.2
 export const DEFAULT_BORDER_WIDTH = 0.035

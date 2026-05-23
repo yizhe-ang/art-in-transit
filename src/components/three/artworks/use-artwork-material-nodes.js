@@ -136,7 +136,7 @@ export function useArtworkMaterialNodes({
     )
     const instanceDepthLift = vec3(
       float(0),
-      float(instanceIndex).mul(ARTWORK_DEPTH_STEP),
+      artworkMetadataAttribute.z.mul(ARTWORK_DEPTH_STEP),
       float(0)
     )
 
@@ -146,6 +146,7 @@ export function useArtworkMaterialNodes({
       vertical: true,
     })
   }, [
+    artworkMetadataAttribute,
     embeddingLayoutPositions,
     hoverInfluenceNode,
     lineRowPositions,

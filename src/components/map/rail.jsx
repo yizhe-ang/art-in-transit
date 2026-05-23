@@ -1,6 +1,7 @@
 import { Source, Layer } from "react-map-gl/maplibre"
 import rail from "@/data/sg-rail.geo.json"
 import { lineColors } from "@/components/map/constants"
+import { RAIL_DRAW_LAYERS } from "@/components/map/rail-reveal"
 
 // TODO: Tune beforeId
 
@@ -13,10 +14,44 @@ const lineColorsExpression = [
   "#748477",
 ]
 
+const lineGeometryFilter = [
+  "any",
+  ["==", ["geometry-type"], "LineString"],
+  ["==", ["geometry-type"], "MultiLineString"],
+]
+
+const transparentLineColor = "rgba(0, 0, 0, 0)"
+
+function createLineDrawLayer(line) {
+  return {
+    id: line.id,
+    source: "rail",
+    filter: ["all", lineGeometryFilter, ["==", ["get", "name"], line.name]],
+    type: "line",
+    layout: {
+      "line-cap": "round",
+      "line-join": "round",
+    },
+    paint: {
+      "line-width": ["interpolate", ["linear"], ["zoom"], 0, 1, 22, 2],
+      "line-color": line.color,
+      "line-gradient": [
+        "interpolate",
+        ["linear"],
+        ["line-progress"],
+        0,
+        transparentLineColor,
+        1,
+        transparentLineColor,
+      ],
+    },
+  }
+}
+
 const linesCase = {
   id: "lines-case",
   source: "rail",
-  filter: ["==", ["geometry-type"], "LineString"],
+  filter: lineGeometryFilter,
   type: "line",
   minzoom: 11,
   layout: {
@@ -26,30 +61,15 @@ const linesCase = {
   paint: {
     "line-width": ["interpolate", ["linear"], ["zoom"], 10, 1, 22, 30],
     "line-color": lineColorsExpression,
-    "line-opacity": 0.25,
+    "line-opacity": 0,
     "line-blur": ["interpolate", ["linear"], ["zoom"], 10, 0, 22, 14],
-  },
-}
-
-const lines = {
-  id: "lines",
-  source: "rail",
-  filter: ["==", ["geometry-type"], "LineString"],
-  type: "line",
-  layout: {
-    "line-cap": "round",
-    "line-join": "round",
-  },
-  paint: {
-    "line-width": ["interpolate", ["linear"], ["zoom"], 0, 1, 22, 2],
-    "line-color": lineColorsExpression,
   },
 }
 
 const linesLabel = {
   id: "lines-label",
   source: "rail",
-  filter: ["==", ["geometry-type"], "LineString"],
+  filter: lineGeometryFilter,
   type: "symbol",
   minzoom: 13,
   layout: {
@@ -68,6 +88,7 @@ const linesLabel = {
     "text-halo-blur": 1,
     "text-halo-color": "#fff",
     "text-halo-width": 2,
+    "text-opacity": 0,
   },
 }
 
@@ -82,6 +103,9 @@ const stationsPoint = {
     "icon-image": ["get", "station_colors"],
     "icon-size": ["interpolate", ["exponential", 2], ["zoom"], 10, 0.2, 14, 1],
     "icon-allow-overlap": true,
+  },
+  paint: {
+    "icon-opacity": 0,
   },
 }
 
@@ -119,39 +143,7 @@ const stationsPointLabel = {
     "text-halo-color": "rgba(255,255,255,.5)",
     "text-halo-width": 1,
     "text-halo-blur": 1,
-  },
-}
-
-const stationsLabelNonEn = {
-  id: "stations-label-non-en",
-  source: "rail",
-  filter: ["==", ["get", "stop_type"], "station"],
-  type: "symbol",
-  minzoom: 13,
-  layout: {
-    "text-field": [
-      "format",
-      ["get", "name_zh-Hans"],
-      {},
-      "\n",
-      {},
-      ["get", "name_ta"],
-      {
-        // 'text-font': ['literal', ['Noto Sans Tamil Medium']],
-        // 'font-scale': 1.1, // Slightly larger text size for Tamil
-      },
-    ],
-    "text-size": ["interpolate", ["linear"], ["zoom"], 13, 12, 16, 16],
-    // "text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"],
-    "text-anchor": "top",
-    "text-offset": [0, 0.8],
-    "text-max-width": 20,
-    "text-optional": true,
-  },
-  paint: {
-    "text-halo-color": "#fff",
-    "text-halo-width": 2,
-    "text-halo-blur": 1,
+    "text-opacity": 0,
   },
 }
 
@@ -178,19 +170,22 @@ const stationsLabel = {
     "text-halo-color": "#fff",
     "text-halo-width": 2,
     "text-halo-blur": 1,
+    "icon-opacity": 0,
+    "text-opacity": 0,
   },
 }
 
 const Rail = () => {
   return (
     <>
-      <Source id="rail" type="geojson" data={rail}>
+      <Source id="rail" type="geojson" data={rail} lineMetrics>
         <Layer {...linesCase} />
-        <Layer {...lines} />
+        {RAIL_DRAW_LAYERS.map((line) => (
+          <Layer key={line.id} {...createLineDrawLayer(line)} />
+        ))}
         <Layer {...linesLabel} />
         <Layer {...stationsPoint} />
         <Layer {...stationsPointLabel} />
-        {/* <Layer {...stationsLabelNonEn} /> */}
         <Layer {...stationsLabel} />
       </Source>
     </>
