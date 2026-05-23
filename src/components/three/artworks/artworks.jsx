@@ -72,7 +72,7 @@ const Artworks = () => {
 
   const artworksTexture = useLoader(
     KTX2Loader,
-    "/artworks/artworks.ktx2",
+    "/artworks/artworks-256.ktx2",
     (loader) => {
       loader.setTranscoderPath("/basis/")
       loader.detectSupport(gl)

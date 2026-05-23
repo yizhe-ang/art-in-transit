@@ -10,15 +10,60 @@ const MANIFEST_PATH = path.join(ROOT_DIR, "src/data/artwork-texture-manifest.jso
 const ARTWORKS_DIR = path.join(ROOT_DIR, "public/artworks")
 const ARTWORKS_CACHE_DIR = path.join(ROOT_DIR, ".cache/artworks")
 const SOURCE_DIR = path.join(ARTWORKS_CACHE_DIR, "source")
-const OUTPUT_PATH = path.join(ARTWORKS_DIR, "artworks.ktx2")
+const DEFAULT_OUTPUT_PATH = path.join(ARTWORKS_DIR, "artworks-256.ktx2")
 const FILE_LIST_PATH = path.join(ARTWORKS_CACHE_DIR, "artworks-files.txt")
 const PLACEHOLDER_PATH = path.join(SOURCE_DIR, "placeholder.ppm")
-const TILE_SIZE = 512
+const DEFAULT_TILE_SIZE = 256
 const MAX_RETRIES = 3
 const REQUEST_DELAY_MS = 150
 
-const args = new Set(process.argv.slice(2))
-const force = args.has("--force")
+function readCliOptions(argv) {
+  const options = {
+    force: false,
+    outputPath: DEFAULT_OUTPUT_PATH,
+    tileSize: DEFAULT_TILE_SIZE,
+  }
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index]
+
+    if (arg === "--force") {
+      options.force = true
+      continue
+    }
+
+    if (arg === "--size") {
+      const value = argv[index + 1]
+      const tileSize = Number.parseInt(value, 10)
+
+      if (!Number.isInteger(tileSize) || tileSize <= 0) {
+        throw new Error("--size must be a positive integer")
+      }
+
+      options.tileSize = tileSize
+      index += 1
+      continue
+    }
+
+    if (arg === "--output") {
+      const value = argv[index + 1]
+
+      if (!value) {
+        throw new Error("--output must be followed by a file path")
+      }
+
+      options.outputPath = path.resolve(ROOT_DIR, value)
+      index += 1
+      continue
+    }
+
+    throw new Error(`Unknown argument: ${arg}`)
+  }
+
+  return options
+}
+
+const { force, outputPath, tileSize } = readCliOptions(process.argv.slice(2))
 
 function sleep(ms) {
   return new Promise((resolve) => {
@@ -245,6 +290,7 @@ async function main() {
   }
 
   await mkdir(SOURCE_DIR, { recursive: true })
+  await mkdir(path.dirname(outputPath), { recursive: true })
   await writePlaceholder()
 
   const entries = []
@@ -329,29 +375,34 @@ async function main() {
     "1.5",
     "--zcmp",
     "--resize",
-    `${TILE_SIZE}x${TILE_SIZE}`,
-    OUTPUT_PATH,
+    `${tileSize}x${tileSize}`,
+    outputPath,
     `@${path.relative(ROOT_DIR, FILE_LIST_PATH)}`,
   ]
 
-  console.log(`Encoding ${artworks.length} layers to ${path.relative(ROOT_DIR, OUTPUT_PATH)}`)
+  console.log(`Encoding ${artworks.length} layers to ${path.relative(ROOT_DIR, outputPath)}`)
   await run("toktx", toktxArgs)
 
-  console.log(`Validating ${path.relative(ROOT_DIR, OUTPUT_PATH)}`)
-  const validationOutput = await run("basisu", ["-validate", "-file", OUTPUT_PATH], { quiet: true })
+  console.log(`Validating ${path.relative(ROOT_DIR, outputPath)}`)
+  const validationOutput = await run("basisu", ["-validate", "-file", outputPath], { quiet: true })
   const validationSummary =
     validationOutput
       .split("\n")
       .find((line) => line.includes("Success") || line.includes("Failed")) ?? "basisu validation completed"
   console.log(validationSummary)
 
+  const publicRelativeOutputPath = path.relative(path.join(ROOT_DIR, "public"), outputPath)
+  const texturePath = publicRelativeOutputPath.startsWith("..")
+    ? path.relative(ROOT_DIR, outputPath)
+    : `/${publicRelativeOutputPath.split(path.sep).join("/")}`
+
   const manifest = {
     generatedAt: new Date().toISOString(),
     sourceData: path.relative(ROOT_DIR, DATA_PATH),
     texture: {
-      path: "/artworks/artworks.ktx2",
-      width: TILE_SIZE,
-      height: TILE_SIZE,
+      path: texturePath,
+      width: tileSize,
+      height: tileSize,
       layers: artworks.length,
       encoding: "uastc",
       mipmaps: true,

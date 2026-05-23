@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-05-15T21:26:22.371Z",
+  "generatedAt": "2026-05-23T19:07:36.945Z",
   "sourceData": "src/data/bloomberg-art-in-transit-gallery.json",
   "texture": {
-    "path": "/artworks/artworks.ktx2",
-    "width": 512,
-    "height": 512,
+    "path": "/artworks/artworks-256.ktx2",
+    "width": 256,
+    "height": 256,
     "layers": 117,
     "encoding": "uastc",
     "mipmaps": true,
