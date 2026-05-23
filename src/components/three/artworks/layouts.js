@@ -52,6 +52,19 @@ function compareArtworkStations(a, b) {
   )
 }
 
+function compareArtworkTimeStackItems(artworkRoutes, aIndex, bIndex) {
+  const a = artworkRoutes[aIndex]
+  const b = artworkRoutes[bIndex]
+
+  return (
+    (a?.lineIndex ?? FALLBACK_LINE_INDEX) -
+      (b?.lineIndex ?? FALLBACK_LINE_INDEX) ||
+    getStationSortNumber(a?.stationCode) - getStationSortNumber(b?.stationCode) ||
+    (a?.stationCode ?? "").localeCompare(b?.stationCode ?? "") ||
+    aIndex - bIndex
+  )
+}
+
 function getArtworkYearValue(artwork) {
   const year = Number.parseInt(artwork?.year, 10)
   return Number.isFinite(year) ? year : Infinity
@@ -158,11 +171,29 @@ function createArtworkTimeGroups(artworkRoutes, artworks) {
     groupsByYear.set(year, group)
   })
 
-  const years = [...groupsByYear.keys()].sort((a, b) => a - b)
+  const finiteYears = [...groupsByYear.keys()]
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b)
+  const firstYear = finiteYears[0]
+  const lastYear = finiteYears.at(-1)
+  const years =
+    firstYear === undefined
+      ? []
+      : Array.from(
+          { length: lastYear - firstYear + 1 },
+          (_, index) => firstYear + index
+        )
+
+  if (groupsByYear.has(Infinity)) {
+    years.push(Infinity)
+  }
+
   const yearCenterOffset = (years.length - 1) * TIME_COLUMN_GAP * 0.5
 
   return years.map((year, yearIndex) => {
-    const group = groupsByYear.get(year)
+    const group = [...(groupsByYear.get(year) ?? [])].sort((aIndex, bIndex) =>
+      compareArtworkTimeStackItems(artworkRoutes, aIndex, bIndex)
+    )
 
     return {
       group,

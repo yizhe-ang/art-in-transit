@@ -9,10 +9,14 @@ import { uniform } from "three/tsl"
 
 const FONT_URL = "/fonts/msdf/LTAIdentity.Medium-msdf.json"
 const ATLAS_URL = "/fonts/msdf/LTAIdentity.Medium-msdf-atlas.png"
-const LABEL_SCALE = 11
+const LABEL_SCALE = 13
 const LABEL_COLOR = "#004851"
+const LABEL_STROKE_COLOR = "#f7f1df"
+const LABEL_STROKE_OUTSET_WIDTH = 0.9
+const LABEL_STROKE_INSET_WIDTH = 0
 const LABEL_ALPHA_TEST = 0.01
 const LABEL_RENDER_ORDER = 1000
+const LABEL_LOCAL_Y_OFFSET = 120
 const labelOpacityUniform = uniform(1)
 
 function parseFontData(fontData) {
@@ -36,13 +40,24 @@ function createLabelGeometry(label, font) {
   })
 }
 
-const TimeYearLabel = ({ camera, font, label, material, position }) => {
+const TimeYearLabel = ({
+  camera,
+  fillMaterial,
+  font,
+  label,
+  outlineMaterial,
+  position,
+}) => {
   const groupRef = useRef(null)
   const geometry = useMemo(() => {
     return createLabelGeometry(label, font)
   }, [font, label])
   const centeredPosition = useMemo(() => {
-    return [-geometry.layout.width * 0.5, -geometry.layout.height * 0.5, 0]
+    return [
+      -geometry.layout.width * 0.5,
+      -geometry.layout.height * 0.5 + LABEL_LOCAL_Y_OFFSET,
+      0,
+    ]
   }, [geometry])
 
   useEffect(() => {
@@ -65,7 +80,14 @@ const TimeYearLabel = ({ camera, font, label, material, position }) => {
       <mesh
         frustumCulled={false}
         geometry={geometry}
-        material={material}
+        material={outlineMaterial}
+        position={centeredPosition}
+        renderOrder={LABEL_RENDER_ORDER - 1}
+      />
+      <mesh
+        frustumCulled={false}
+        geometry={geometry}
+        material={fillMaterial}
         position={centeredPosition}
         renderOrder={LABEL_RENDER_ORDER}
       />
@@ -84,7 +106,7 @@ const TimeYearLabels = ({
   const fontData = useLoader(THREE.FileLoader, FONT_URL)
   const atlasTexture = useLoader(THREE.TextureLoader, ATLAS_URL)
   const font = useMemo(() => parseFontData(fontData), [fontData])
-  const material = useMemo(() => {
+  const fillMaterial = useMemo(() => {
     const material = new MSDFTextNodeMaterial({
       alphaTest: LABEL_ALPHA_TEST,
       color: LABEL_COLOR,
@@ -92,6 +114,30 @@ const TimeYearLabels = ({
       depthWrite: false,
       map: atlasTexture,
       opacity: 1,
+      strokeColor: LABEL_COLOR,
+      strokeInsetWidth: 0,
+      strokeOutsetWidth: 0,
+      transparent: true,
+    })
+
+    material.depthTest = false
+    material.depthWrite = false
+    material.opacityNode = labelOpacityUniform.mul(material.opacityNode)
+    material.side = THREE.DoubleSide
+
+    return material
+  }, [atlasTexture])
+  const outlineMaterial = useMemo(() => {
+    const material = new MSDFTextNodeMaterial({
+      alphaTest: LABEL_ALPHA_TEST,
+      color: LABEL_STROKE_COLOR,
+      depthTest: false,
+      depthWrite: false,
+      map: atlasTexture,
+      opacity: 1,
+      strokeColor: LABEL_STROKE_COLOR,
+      strokeInsetWidth: LABEL_STROKE_INSET_WIDTH,
+      strokeOutsetWidth: LABEL_STROKE_OUTSET_WIDTH,
       transparent: true,
     })
 
@@ -109,9 +155,15 @@ const TimeYearLabels = ({
 
   useEffect(() => {
     return () => {
-      material.dispose()
+      fillMaterial.dispose()
     }
-  }, [material])
+  }, [fillMaterial])
+
+  useEffect(() => {
+    return () => {
+      outlineMaterial.dispose()
+    }
+  }, [outlineMaterial])
 
   useFrame(() => {
     const nextOpacity =
@@ -130,10 +182,11 @@ const TimeYearLabels = ({
       {labels.map((label) => (
         <TimeYearLabel
           camera={camera}
+          fillMaterial={fillMaterial}
           font={font}
           key={label.key}
           label={label.label}
-          material={material}
+          outlineMaterial={outlineMaterial}
           position={label.position}
         />
       ))}
