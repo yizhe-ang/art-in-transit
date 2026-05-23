@@ -52,6 +52,33 @@ const InitialLoadingOverlay = () => {
     }
   }, [isInitialLoading, setInitialOverlayDismissing])
 
+  useEffect(() => {
+    if (!shouldRender) {
+      return
+    }
+
+    const root = document.documentElement
+    const body = document.body
+    const previousStyles = {
+      rootOverflow: root.style.overflow,
+      rootOverscrollBehavior: root.style.overscrollBehavior,
+      bodyOverflow: body.style.overflow,
+      bodyOverscrollBehavior: body.style.overscrollBehavior,
+    }
+
+    root.style.overflow = "hidden"
+    root.style.overscrollBehavior = "none"
+    body.style.overflow = "hidden"
+    body.style.overscrollBehavior = "none"
+
+    return () => {
+      root.style.overflow = previousStyles.rootOverflow
+      root.style.overscrollBehavior = previousStyles.rootOverscrollBehavior
+      body.style.overflow = previousStyles.bodyOverflow
+      body.style.overscrollBehavior = previousStyles.bodyOverscrollBehavior
+    }
+  }, [shouldRender])
+
   if (!shouldRender) {
     return null
   }

@@ -207,6 +207,19 @@ export function useArtworkGpuPicking({
     [restoreCursor]
   )
 
+  const setDefaultCursor = useCallback(
+    (target) => {
+      if (cursorTargetRef.current !== target) {
+        restoreCursor()
+        cursorTargetRef.current = target
+        previousCursorRef.current = target.style.cursor
+      }
+
+      target.style.cursor = "default"
+    },
+    [restoreCursor]
+  )
+
   const pickingScene = useMemo(() => new THREE.Scene(), [])
   const pickingTexture = useMemo(() => {
     const renderTarget = new THREE.RenderTarget(1, 1, {
@@ -328,6 +341,7 @@ export function useArtworkGpuPicking({
       pickRequestIdRef.current += 1
       pickInFlightRef.current = false
       clearHover()
+      setDefaultCursor(eventTarget)
       return undefined
     }
 
@@ -341,7 +355,7 @@ export function useArtworkGpuPicking({
       eventTarget.removeEventListener("click", handleClick)
       restoreCursor()
     }
-  }, [enabled, gl, map, restoreCursor])
+  }, [enabled, gl, map, restoreCursor, setDefaultCursor])
 
   useFrame(({ gl, camera }) => {
     if (!enabled || pickInFlightRef.current) return

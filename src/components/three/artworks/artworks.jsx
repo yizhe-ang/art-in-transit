@@ -62,6 +62,9 @@ const Artworks = () => {
   const invalidate = useThree((state) => state.invalidate)
   const map = useMap()
   const artworkLayout = useStore((state) => state.artworkLayout)
+  const isMapInteractionUnlocked = useStore(
+    (state) => state.isMapInteractionUnlocked
+  )
   const artworkCameraFocusRequest = useStore(
     (state) => state.artworkCameraFocusRequest
   )
@@ -266,11 +269,6 @@ const Artworks = () => {
 
       renderPositionBuffer.needsUpdate = true
 
-      // if (materialRef.current) {
-      //   materialRef.current.depthWrite =
-      //     progress >= ARTWORK_DEPTH_WRITE_PROGRESS
-      // }
-
       invalidate()
       map?.triggerRepaint?.()
     }
@@ -366,6 +364,7 @@ const Artworks = () => {
     positionNode,
     vertexNode,
     count: COUNT,
+    enabled: isMapInteractionUnlocked,
     onHoverChange: handleArtworkHoverChange,
     onClick: handleArtworkClick,
   })
@@ -390,7 +389,7 @@ const Artworks = () => {
           ref={materialRef}
           transparent
           depthTest
-          depthWrite
+          depthWrite={isMapInteractionUnlocked}
           positionNode={positionNode}
           vertexNode={vertexNode}
           colorNode={colorNode}
