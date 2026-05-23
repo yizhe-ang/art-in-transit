@@ -154,3 +154,136 @@
     @apply font-sans;
   }
 }
+
+@layer components {
+  .initial-loading-grid {
+    background-image:
+      linear-gradient(rgba(0, 72, 81, 0.2) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 72, 81, 0.2) 1px, transparent 1px);
+    background-size: 46px 46px;
+    mask-image: linear-gradient(to bottom, transparent, black 18%, black 82%, transparent);
+  }
+
+  .initial-route {
+    position: relative;
+  }
+
+  .initial-route-track,
+  .initial-route-progress {
+    position: absolute;
+    top: 50%;
+    left: 5%;
+    width: 90%;
+    height: 6px;
+    border-radius: 999px;
+    transform: translateY(-50%);
+  }
+
+  .initial-route-track {
+    background:
+      linear-gradient(90deg, rgba(0, 72, 81, 0.16), rgba(0, 72, 81, 0.06)),
+      repeating-linear-gradient(90deg, transparent 0 13px, rgba(0, 72, 81, 0.24) 13px 16px);
+  }
+
+  .initial-route-progress {
+    background: linear-gradient(90deg, var(--lta-yellow), var(--lta-light-green), var(--lta-dark-green));
+    transform: translateY(-50%) scaleX(0);
+    transform-origin: left center;
+    animation: initial-route-draw 1.6s cubic-bezier(0.72, 0, 0.24, 1) infinite;
+  }
+
+  .initial-route-stop {
+    position: absolute;
+    top: 50%;
+    width: 18px;
+    height: 18px;
+    border: 3px solid var(--lta-dark-green);
+    border-radius: 999px;
+    background: #f8f4e8;
+    box-shadow: 0 0 0 5px rgba(248, 244, 232, 0.82);
+    transform: translate(-50%, -50%);
+  }
+
+  .initial-route-stop-a {
+    left: 10%;
+  }
+
+  .initial-route-stop-b {
+    left: 50%;
+  }
+
+  .initial-route-stop-c {
+    left: 90%;
+  }
+
+  .initial-route-train {
+    position: absolute;
+    top: 50%;
+    left: 8%;
+    width: 34px;
+    height: 16px;
+    border-radius: 999px 999px 999px 4px;
+    background: var(--lta-dark-green);
+    box-shadow:
+      0 6px 18px rgba(0, 72, 81, 0.24),
+      inset 15px 0 0 var(--lta-yellow);
+    transform: translate(-50%, -50%);
+    animation: initial-route-train 1.6s cubic-bezier(0.72, 0, 0.24, 1) infinite;
+  }
+
+  @keyframes initial-route-draw {
+    0% {
+      transform: translateY(-50%) scaleX(0);
+      opacity: 0.45;
+    }
+
+    18%,
+    74% {
+      opacity: 1;
+    }
+
+    86%,
+    100% {
+      transform: translateY(-50%) scaleX(1);
+      opacity: 0.45;
+    }
+  }
+
+  @keyframes initial-route-train {
+    0% {
+      left: 8%;
+      opacity: 0;
+    }
+
+    16% {
+      opacity: 1;
+    }
+
+    84% {
+      opacity: 1;
+    }
+
+    100% {
+      left: 92%;
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .initial-loading-overlay,
+    .initial-route-progress,
+    .initial-route-train {
+      animation: none;
+      transition-duration: 1ms;
+    }
+
+    .initial-route-progress {
+      transform: translateY(-50%) scaleX(0.72);
+    }
+
+    .initial-route-train {
+      left: 72%;
+      opacity: 1;
+    }
+  }
+}

@@ -5,6 +5,7 @@ import HeroTitle from "@/components/hero-title"
 import ArtworkDialog from "@/components/interface/artwork-dialog"
 import AboutDialog from "@/components/interface/about-dialog"
 import LayoutControls from "@/components/interface/layout-controls"
+import InitialLoadingOverlay from "@/components/interface/initial-loading-overlay"
 import { Leva } from "leva"
 
 export function App() {
@@ -29,6 +30,8 @@ export function App() {
           <LayoutControls />
         </div>
       </div>
+
+      <InitialLoadingOverlay />
     </>
   )
 }

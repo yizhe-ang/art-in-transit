@@ -2,7 +2,7 @@ import MapImpl from "react-map-gl/maplibre"
 import "maplibre-gl/dist/maplibre-gl.css"
 import Rail from "@/components/map/rail"
 import loadImages from "@/components/map/loadImages"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Three from "@/components/three/three"
 import { bounds } from "@/components/map/constants"
 import { useStore } from "@/store"
@@ -21,6 +21,11 @@ const scrollZoomOptions = {
 const Map = () => {
   const [imagesLoaded, setImagesLoaded] = useState(false)
   const setMap = useStore((state) => state.setMap)
+  const setMapImagesReady = useStore((state) => state.setMapImagesReady)
+
+  useEffect(() => {
+    setMapImagesReady(false)
+  }, [setMapImagesReady])
 
   return (
     <>
@@ -44,6 +49,7 @@ const Map = () => {
 
           loadImages(map).then(() => {
             setImagesLoaded(true)
+            setMapImagesReady(true)
           })
         }}
       >

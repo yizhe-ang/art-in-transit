@@ -10,6 +10,20 @@ export const useStore = create((set) => ({
   map: null,
   setMap: (map) => set({ map }),
 
+  mapImagesReady: false,
+  threeSceneReady: false,
+  isInitialLoading: true,
+  setMapImagesReady: (mapImagesReady) =>
+    set((state) => ({
+      mapImagesReady,
+      isInitialLoading: !(mapImagesReady && state.threeSceneReady),
+    })),
+  setThreeSceneReady: (threeSceneReady) =>
+    set((state) => ({
+      threeSceneReady,
+      isInitialLoading: !(state.mapImagesReady && threeSceneReady),
+    })),
+
   artworkLayout: "map",
   setArtworkLayout: (artworkLayout) => set({ artworkLayout }),
 

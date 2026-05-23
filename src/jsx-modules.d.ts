@@ -13,6 +13,11 @@ declare module "@/components/interface/layout-controls" {
   export default LayoutControls
 }
 
+declare module "@/components/interface/initial-loading-overlay" {
+  const InitialLoadingOverlay: () => import("react").JSX.Element
+  export default InitialLoadingOverlay
+}
+
 declare module "@/components/map/map" {
   const Map: () => import("react").JSX.Element
   export default Map

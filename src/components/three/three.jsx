@@ -1,12 +1,24 @@
 import { Canvas } from "react-three-map/maplibre"
 import Scene from "@/components/three/scene"
 import { center } from "@/components/map/constants"
+import { useStore } from "@/store"
 import * as THREE from "three/webgpu"
 import { extend } from "@react-three/fiber"
+import { useEffect } from "react"
 
 extend(THREE)
 
 const Three = () => {
+  const setThreeSceneReady = useStore((state) => state.setThreeSceneReady)
+
+  useEffect(() => {
+    setThreeSceneReady(false)
+
+    return () => {
+      setThreeSceneReady(false)
+    }
+  }, [setThreeSceneReady])
+
   return (
     <>
       <Canvas
@@ -21,6 +33,9 @@ const Three = () => {
           })
           await renderer.init()
           renderer.setClearColor(0x000000, 0)
+          requestAnimationFrame(() => {
+            setThreeSceneReady(true)
+          })
           return renderer
         }}
       >
