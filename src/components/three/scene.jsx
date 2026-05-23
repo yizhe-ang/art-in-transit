@@ -10,9 +10,9 @@ const Scene = () => {
 
       <Artworks />
 
-      <FluidSim>
+      {/* <FluidSim>
         {(fluidMaskNode) => <PostProcessing fluidMaskNode={fluidMaskNode} />}
-      </FluidSim>
+      </FluidSim> */}
     </>
   )
 }

@@ -1,8 +1,6 @@
 import {
   ArrowLeft,
   ArrowRight,
-  ChevronLeftIcon,
-  ChevronRightIcon,
   ExternalLinkIcon,
   RotateCcwIcon,
   XIcon,
@@ -407,7 +405,7 @@ const ArtworkDialog = () => {
                 initial={false}
                 mode="popLayout"
               >
-                <div
+                <motion.div
                   key={selectedArtworkKey}
                   custom={animationCustom}
                   variants={artworkDetailsVariants}
@@ -415,7 +413,7 @@ const ArtworkDialog = () => {
                   animate="center"
                   exit="exit"
                   transition={detailsTransition}
-                  className="grid w-fit max-w-[calc(100vw-2rem)] gap-5 rounded bg-muted px-7 py-3"
+                  className="grid w-[min(calc(100vw-2rem),32rem)] max-w-[calc(100vw-2rem)] gap-5 rounded bg-muted px-7 py-3"
                   style={{ willChange: "transform, opacity" }}
                   onPointerDown={stopPointerPropagation}
                 >
@@ -476,7 +474,7 @@ const ArtworkDialog = () => {
                       <ExternalLinkIcon data-icon="inline-end" />
                     </a>
                   )}
-                </div>
+                </motion.div>
               </AnimatePresence>
             </div>
           </div>

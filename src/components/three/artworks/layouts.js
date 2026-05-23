@@ -7,8 +7,8 @@ const LINE_ROW_GAP = DEFAULT_SIZE * 1.45
 const LINE_ROW_GUIDE_PADDING = DEFAULT_SIZE * 0.5
 const TIME_COLUMN_GAP = DEFAULT_SIZE * 1.98
 const TIME_STACK_GAP = DEFAULT_SIZE * 1.25
-const TIME_YEAR_LABEL_ALTITUDE_OFFSET = DEFAULT_SIZE * 0.5
-const TIME_YEAR_LABEL_STACK_OFFSET = DEFAULT_SIZE * 0.42
+const TIME_YEAR_LABEL_ALTITUDE = 0
+const TIME_YEAR_LABEL_STACK_GAP = DEFAULT_SIZE * 0.42
 const FALLBACK_LINE_INDEX = LINE_ORDER.length
 export const TIME_STACK_BASELINES = {
   CENTERED: "centered",
@@ -181,6 +181,36 @@ export function createArtworkTimePositionArray(
   return array
 }
 
+export function createArtworkEmbeddingLayoutPositionArray(
+  artworkRoutes,
+  layout
+) {
+  const array = new Float32Array(artworkRoutes.length * 4)
+  const positionsByIndex = new Map(
+    (layout?.items ?? []).map((item) => [
+      item.index,
+      {
+        snapped: item.position,
+        raw: item.umapPosition,
+      },
+    ])
+  )
+
+  artworkRoutes.forEach((artworkRoute, index) => {
+    const positions = positionsByIndex.get(index)
+    const snapped = positions?.snapped ?? artworkRoute.finalPosition
+    const raw = positions?.raw ?? snapped
+    const offset = index * 4
+
+    array[offset + 0] = snapped.x
+    array[offset + 1] = snapped.z
+    array[offset + 2] = raw.x
+    array[offset + 3] = raw.z
+  })
+
+  return array
+}
+
 export function createArtworkTimeYearLabels(
   artworkRoutes,
   artworks,
@@ -190,7 +220,7 @@ export function createArtworkTimeYearLabels(
 
   return groups.map(({ group, label, x, year }) => {
     const stackCenterOffset = (group.length - 1) * TIME_STACK_GAP * 0.5
-    const stackTopZ =
+    const labelStackEdgeZ =
       timeStackBaseline === TIME_STACK_BASELINES.ZERO_DOWN
         ? 0
         : stackCenterOffset
@@ -200,8 +230,8 @@ export function createArtworkTimeYearLabels(
       label,
       position: [
         x,
-        DEFAULT_ALTITUDE + TIME_YEAR_LABEL_ALTITUDE_OFFSET,
-        stackTopZ + TIME_YEAR_LABEL_STACK_OFFSET,
+        TIME_YEAR_LABEL_ALTITUDE,
+        labelStackEdgeZ + TIME_YEAR_LABEL_STACK_GAP,
       ],
     }
   })

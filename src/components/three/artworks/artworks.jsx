@@ -1,4 +1,5 @@
 import data from "@/data/bloomberg-art-in-transit-gallery.json"
+import embeddingLayout from "@/data/artwork-embedding-layout.json"
 import manifest from "@/data/artwork-texture-manifest.json"
 import { origin } from "@/components/map/constants"
 import { useStore } from "@/store"
@@ -15,6 +16,7 @@ import {
 } from "@/components/three/artworks/line-progress"
 import {
   createArtworkFinalPositionArray,
+  createArtworkEmbeddingLayoutPositionArray,
   createArtworkLineRowLayout,
   createArtworkTimePositionArray,
   createArtworkTimeYearLabels,
@@ -73,16 +75,34 @@ const FALLBACK_LINE_INDEX = LINE_ORDER.length
 const FALLBACK_LINE_COLOR = "#748477"
 const LAYOUT_TARGETS = {
   map: {
+    embedding: 0,
+    embeddingRaw: 0,
     line: 0,
     time: 0,
   },
   line: {
+    embedding: 0,
+    embeddingRaw: 0,
     line: 1,
     time: 0,
   },
   time: {
+    embedding: 0,
+    embeddingRaw: 0,
     line: 1,
     time: 1,
+  },
+  embedding: {
+    embedding: 1,
+    embeddingRaw: 0,
+    line: 0,
+    time: 0,
+  },
+  embeddingRaw: {
+    embedding: 0,
+    embeddingRaw: 1,
+    line: 0,
+    time: 0,
   },
 }
 
@@ -91,6 +111,8 @@ const borderIntensityUniform = uniform(DEFAULT_BORDER_INTENSITY)
 const borderOpacityUniform = uniform(DEFAULT_BORDER_OPACITY)
 const lineLayoutProgressUniform = uniform(0)
 const timeLayoutProgressUniform = uniform(0)
+const embeddingLayoutProgressUniform = uniform(0)
+const embeddingRawLayoutProgressUniform = uniform(0)
 const hoveredArtworkIdUniform = uniform(NO_HOVERED_ARTWORK_ID, "int")
 const previousHoveredArtworkIdUniform = uniform(NO_HOVERED_ARTWORK_ID, "int")
 const hoverTransitionUniform = uniform(1)
@@ -268,6 +290,7 @@ const Artworks = () => {
       previousHoveredArtworkStartInfluenceUniform.value = 0
       hoverAnimationActiveRef.current = false
       layoutAnimationActiveRef.current = false
+      embeddingRawLayoutProgressUniform.value = 0
       layoutTargetRef.current = LAYOUT_TARGETS.map
     }
   }, [])
@@ -320,13 +343,33 @@ const Artworks = () => {
       LAYOUT_TRANSITION_DAMPING,
       transitionDelta
     )
+    embeddingLayoutProgressUniform.value = THREE.MathUtils.damp(
+      embeddingLayoutProgressUniform.value,
+      target.embedding,
+      LAYOUT_TRANSITION_DAMPING,
+      transitionDelta
+    )
+    embeddingRawLayoutProgressUniform.value = THREE.MathUtils.damp(
+      embeddingRawLayoutProgressUniform.value,
+      target.embeddingRaw,
+      LAYOUT_TRANSITION_DAMPING,
+      transitionDelta
+    )
 
     const lineDistance = Math.abs(lineLayoutProgressUniform.value - target.line)
     const timeDistance = Math.abs(timeLayoutProgressUniform.value - target.time)
+    const embeddingDistance = Math.abs(
+      embeddingLayoutProgressUniform.value - target.embedding
+    )
+    const embeddingRawDistance = Math.abs(
+      embeddingRawLayoutProgressUniform.value - target.embeddingRaw
+    )
 
     if (
       lineDistance > LAYOUT_TRANSITION_EPSILON ||
-      timeDistance > LAYOUT_TRANSITION_EPSILON
+      timeDistance > LAYOUT_TRANSITION_EPSILON ||
+      embeddingDistance > LAYOUT_TRANSITION_EPSILON ||
+      embeddingRawDistance > LAYOUT_TRANSITION_EPSILON
     ) {
       scheduleRepaint()
       return
@@ -334,6 +377,8 @@ const Artworks = () => {
 
     lineLayoutProgressUniform.value = target.line
     timeLayoutProgressUniform.value = target.time
+    embeddingLayoutProgressUniform.value = target.embedding
+    embeddingRawLayoutProgressUniform.value = target.embeddingRaw
     layoutAnimationActiveRef.current = false
   })
 
@@ -531,6 +576,14 @@ const Artworks = () => {
     return instancedArray(array, "vec3")
   }, [artworkRoutes, timeStackBaseline])
 
+  const embeddingLayoutPositions = useMemo(() => {
+    const array = createArtworkEmbeddingLayoutPositionArray(
+      artworkRoutes,
+      embeddingLayout
+    )
+    return instancedArray(array, "vec4")
+  }, [artworkRoutes])
+
   const timeYearLabels = useMemo(() => {
     return createArtworkTimeYearLabels(
       artworkRoutes,
@@ -634,25 +687,47 @@ const Artworks = () => {
   }, [])
 
   const positionNode = useMemo(() => {
-    const zoomScale = mix(
-      mix(artworkZoomScale, float(1), lineLayoutProgressUniform),
+    const lineZoomScale = mix(
+      artworkZoomScale,
+      float(1),
+      lineLayoutProgressUniform
+    )
+    const timeZoomScale = mix(
+      lineZoomScale,
       float(1),
       timeLayoutProgressUniform
     )
-    const hoverScale = mix(
+    const zoomScale = mix(
+      timeZoomScale,
       float(1),
-      float(HOVER_SCALE),
-      hoverInfluenceNode
+      embeddingLayoutProgressUniform
     )
+    const embeddingZoomScale = mix(
+      zoomScale,
+      float(1),
+      embeddingRawLayoutProgressUniform
+    )
+    const hoverScale = mix(float(1), float(HOVER_SCALE), hoverInfluenceNode)
     const positionNode = positionLocal
       .mul(artworkMetadataAttribute.xyz)
-      .mul(zoomScale)
+      .mul(embeddingZoomScale)
       .mul(hoverScale)
 
     return positionNode
   }, [artworkMetadataAttribute, hoverInfluenceNode])
 
   const vertexNode = useMemo(() => {
+    const embeddingLayoutAttribute = embeddingLayoutPositions.toAttribute()
+    const snappedEmbeddingPosition = vec3(
+      embeddingLayoutAttribute.x,
+      float(ALTITUDE),
+      embeddingLayoutAttribute.y
+    )
+    const rawEmbeddingPosition = vec3(
+      embeddingLayoutAttribute.z,
+      float(ALTITUDE),
+      embeddingLayoutAttribute.w
+    )
     const rowLayoutPosition = mix(
       renderPositions.toAttribute(),
       lineRowPositions.toAttribute(),
@@ -663,6 +738,16 @@ const Artworks = () => {
       timePositions.toAttribute(),
       timeLayoutProgressUniform
     )
+    const organizedLayoutPosition = mix(
+      layoutPosition,
+      snappedEmbeddingPosition,
+      embeddingLayoutProgressUniform
+    )
+    const embeddingLayoutPosition = mix(
+      organizedLayoutPosition,
+      rawEmbeddingPosition,
+      embeddingRawLayoutProgressUniform
+    )
     const hoverLift = vec3(
       float(0),
       hoverInfluenceNode.mul(HOVER_ALTITUDE_OFFSET),
@@ -670,11 +755,17 @@ const Artworks = () => {
     )
 
     return billboarding({
-      position: layoutPosition.add(hoverLift),
+      position: embeddingLayoutPosition.add(hoverLift),
       horizontal: false,
       vertical: true,
     })
-  }, [hoverInfluenceNode, lineRowPositions, renderPositions, timePositions])
+  }, [
+    embeddingLayoutPositions,
+    hoverInfluenceNode,
+    lineRowPositions,
+    renderPositions,
+    timePositions,
+  ])
 
   const colorNode = useMemo(() => {
     const uvNode = uv()
@@ -763,6 +854,8 @@ const Artworks = () => {
     <>
       <LineLayoutGuides
         guides={lineRowLayout.guides}
+        embeddingLayoutProgressUniform={embeddingLayoutProgressUniform}
+        embeddingRawLayoutProgressUniform={embeddingRawLayoutProgressUniform}
         lineLayoutProgressUniform={lineLayoutProgressUniform}
         timeLayoutProgressUniform={timeLayoutProgressUniform}
       />
@@ -782,6 +875,8 @@ const Artworks = () => {
         />
       </instancedMesh>
       <TimeYearLabels
+        embeddingLayoutProgressUniform={embeddingLayoutProgressUniform}
+        embeddingRawLayoutProgressUniform={embeddingRawLayoutProgressUniform}
         labels={timeYearLabels}
         timeLayoutProgressUniform={timeLayoutProgressUniform}
       />

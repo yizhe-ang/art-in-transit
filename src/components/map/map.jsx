@@ -45,7 +45,7 @@ const Map = () => {
       >
         {imagesLoaded && <Rail />}
 
-        <PaperOverlay />
+        {/* <PaperOverlay /> */}
 
         <Three />
       </MapImpl>

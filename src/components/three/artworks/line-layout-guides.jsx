@@ -55,6 +55,8 @@ const LineLayoutGuide = ({ guide }) => {
 
 const LineLayoutGuides = ({
   guides,
+  embeddingLayoutProgressUniform,
+  embeddingRawLayoutProgressUniform,
   lineLayoutProgressUniform,
   timeLayoutProgressUniform,
 }) => {
@@ -62,7 +64,10 @@ const LineLayoutGuides = ({
 
   useFrame(() => {
     const nextOpacity = THREE.MathUtils.clamp(
-      lineLayoutProgressUniform.value * (1 - timeLayoutProgressUniform.value),
+      lineLayoutProgressUniform.value *
+        (1 - timeLayoutProgressUniform.value) *
+        (1 - embeddingLayoutProgressUniform.value) *
+        (1 - embeddingRawLayoutProgressUniform.value),
       0,
       1
     )

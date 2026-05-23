@@ -10,10 +10,10 @@ import { uniform } from "three/tsl"
 const FONT_URL = "/fonts/msdf/LTAIdentity.Medium-msdf.json"
 const ATLAS_URL = "/fonts/msdf/LTAIdentity.Medium-msdf-atlas.png"
 const LABEL_SCALE = 11
-const LABEL_COLOR = "#f7f3e8"
+const LABEL_COLOR = "#004851"
 const LABEL_ALPHA_TEST = 0.01
-const LABEL_RENDER_ORDER = 5
-const labelOpacityUniform = uniform(0)
+const LABEL_RENDER_ORDER = 1000
+const labelOpacityUniform = uniform(1)
 
 function parseFontData(fontData) {
   return typeof fontData === "string" ? JSON.parse(fontData) : fontData
@@ -42,11 +42,7 @@ const TimeYearLabel = ({ camera, font, label, material, position }) => {
     return createLabelGeometry(label, font)
   }, [font, label])
   const centeredPosition = useMemo(() => {
-    return [
-      -geometry.layout.width * 0.5,
-      -geometry.layout.height * 0.5,
-      0,
-    ]
+    return [-geometry.layout.width * 0.5, -geometry.layout.height * 0.5, 0]
   }, [geometry])
 
   useEffect(() => {
@@ -64,7 +60,7 @@ const TimeYearLabel = ({ camera, font, label, material, position }) => {
       ref={groupRef}
       frustumCulled={false}
       position={position}
-      scale={LABEL_SCALE}
+      scale={[LABEL_SCALE, -LABEL_SCALE, LABEL_SCALE]}
     >
       <mesh
         frustumCulled={false}
@@ -77,7 +73,12 @@ const TimeYearLabel = ({ camera, font, label, material, position }) => {
   )
 }
 
-const TimeYearLabels = ({ labels, timeLayoutProgressUniform }) => {
+const TimeYearLabels = ({
+  embeddingLayoutProgressUniform,
+  embeddingRawLayoutProgressUniform,
+  labels,
+  timeLayoutProgressUniform,
+}) => {
   const camera = useThree((state) => state.camera)
   const invalidate = useThree((state) => state.invalidate)
   const fontData = useLoader(THREE.FileLoader, FONT_URL)
@@ -97,6 +98,7 @@ const TimeYearLabels = ({ labels, timeLayoutProgressUniform }) => {
     material.depthTest = false
     material.depthWrite = false
     material.opacityNode = labelOpacityUniform.mul(material.opacityNode)
+    material.side = THREE.DoubleSide
 
     return material
   }, [atlasTexture])
@@ -112,7 +114,10 @@ const TimeYearLabels = ({ labels, timeLayoutProgressUniform }) => {
   }, [material])
 
   useFrame(() => {
-    const nextOpacity = timeLayoutProgressUniform.value
+    const nextOpacity =
+      timeLayoutProgressUniform.value *
+      (1 - embeddingLayoutProgressUniform.value) *
+      (1 - embeddingRawLayoutProgressUniform.value)
 
     if (labelOpacityUniform.value !== nextOpacity) {
       labelOpacityUniform.value = nextOpacity

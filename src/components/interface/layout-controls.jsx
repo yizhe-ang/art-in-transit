@@ -5,6 +5,8 @@ const LAYOUTS = [
   { id: "map", label: "Map" },
   { id: "line", label: "Line" },
   { id: "time", label: "Time" },
+  { id: "embedding", label: "Embedding" },
+  { id: "embeddingRaw", label: "UMAP" },
 ]
 
 const LayoutControls = () => {

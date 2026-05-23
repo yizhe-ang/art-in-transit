@@ -1,0 +1,2966 @@
+{
+  "sourceData": "src/data/bloomberg-art-in-transit-gallery.json",
+  "sourceScrapedAt": "2026-05-21T18:44:02.359Z",
+  "sourceHash": "dc582aab26ac493d7053bd50f951e42c31ec46e2c843402b137cef5bac0ece8e",
+  "textureManifest": "src/data/artwork-texture-manifest.json",
+  "textureGeneratedAt": "2026-05-15T21:26:22.371Z",
+  "textureManifestHash": "c12a5d1cd3ea03de9bb09421385d89fd73cb67ea3a25940f3a25a9a5ade645c9",
+  "model": {
+    "id": "Xenova/clip-vit-base-patch32",
+    "dtype": "q8",
+    "dimensions": 512
+  },
+  "reduction": {
+    "method": "umap-js",
+    "seed": 419,
+    "nComponents": 2,
+    "nEpochs": 500,
+    "nNeighbors": 12,
+    "minDist": 0.16
+  },
+  "layout": {
+    "defaultMethod": "morton-grid",
+    "altitude": 20,
+    "baseSize": 1800,
+    "snappedGrid": {
+      "method": "morton-grid",
+      "columns": 11,
+      "rows": 11,
+      "cellWidth": 3564,
+      "cellDepth": 2610
+    },
+    "rawUmap": {
+      "method": "raw-umap",
+      "width": 17820,
+      "depth": 13050
+    }
+  },
+  "count": 117,
+  "items": [
+    {
+      "index": 0,
+      "artworkTitle": "The Amazing Neverending Underwater Adventures!",
+      "artist": "Tai Kai Syng",
+      "stationCode": "CC1",
+      "stationName": "Bras Basah",
+      "umap": {
+        "x": -0.086647,
+        "y": -0.061098
+      },
+      "grid": {
+        "column": 10,
+        "row": 0
+      },
+      "position": {
+        "x": 17820,
+        "y": 20,
+        "z": 13050
+      },
+      "umapPosition": {
+        "x": -1544.058,
+        "y": 20,
+        "z": 797.326
+      }
+    },
+    {
+      "index": 1,
+      "artworkTitle": "Man and Environment",
+      "artist": "Baet Yeok Kuan",
+      "stationCode": "CC1",
+      "stationName": "Dhoby Ghaut",
+      "umap": {
+        "x": 0.462502,
+        "y": -0.497925
+      },
+      "grid": {
+        "column": 8,
+        "row": 3
+      },
+      "position": {
+        "x": 10692,
+        "y": 20,
+        "z": 5220
+      },
+      "umapPosition": {
+        "x": 8241.778,
+        "y": 20,
+        "z": 6497.921
+      }
+    },
+    {
+      "index": 2,
+      "artworkTitle": "Virtuous Cycle",
+      "artist": "Kay Kok Chung Oi",
+      "stationCode": "CC10",
+      "stationName": "Macpherson",
+      "umap": {
+        "x": -0.86368,
+        "y": 0.169972
+      },
+      "grid": {
+        "column": 0,
+        "row": 7
+      },
+      "position": {
+        "x": -17820,
+        "y": 20,
+        "z": -5220
+      },
+      "umapPosition": {
+        "x": -15390.784,
+        "y": 20,
+        "z": -2218.13
+      }
+    },
+    {
+      "index": 3,
+      "artworkTitle": "Equilibrium",
+      "artist": "Francis Ng",
+      "stationCode": "CC11",
+      "stationName": "Tai Seng",
+      "umap": {
+        "x": -0.517474,
+        "y": 0.607803
+      },
+      "grid": {
+        "column": 3,
+        "row": 10
+      },
+      "position": {
+        "x": -7128,
+        "y": 20,
+        "z": -13050
+      },
+      "umapPosition": {
+        "x": -9221.395,
+        "y": 20,
+        "z": -7931.824
+      }
+    },
+    {
+      "index": 4,
+      "artworkTitle": "The Coin Mat",
+      "artist": "Jane Lee",
+      "stationCode": "CC12",
+      "stationName": "Bartley",
+      "umap": {
+        "x": -0.741687,
+        "y": -0.669176
+      },
+      "grid": {
+        "column": 2,
+        "row": 1
+      },
+      "position": {
+        "x": -10692,
+        "y": 20,
+        "z": 10440
+      },
+      "umapPosition": {
+        "x": -13216.868,
+        "y": 20,
+        "z": 8732.744
+      }
+    },
+    {
+      "index": 5,
+      "artworkTitle": "View of Life",
+      "artist": "Sarkasi Said",
+      "stationCode": "CC13",
+      "stationName": "Serangoon",
+      "umap": {
+        "x": -0.274221,
+        "y": 0.762578
+      },
+      "grid": {
+        "column": 6,
+        "row": 6
+      },
+      "position": {
+        "x": 3564,
+        "y": 20,
+        "z": -2610
+      },
+      "umapPosition": {
+        "x": -4886.616,
+        "y": 20,
+        "z": -9951.649
+      }
+    },
+    {
+      "index": 6,
+      "artworkTitle": "Through the Looking Glass",
+      "artist": "A Dose of Light; Yoma Studio",
+      "stationCode": "CC14",
+      "stationName": "Lorong Chuan",
+      "umap": {
+        "x": -0.982577,
+        "y": -0.014925
+      },
+      "grid": {
+        "column": 5,
+        "row": 0
+      },
+      "position": {
+        "x": 0,
+        "y": 20,
+        "z": 13050
+      },
+      "umapPosition": {
+        "x": -17509.517,
+        "y": 20,
+        "z": 194.767
+      }
+    },
+    {
+      "index": 7,
+      "artworkTitle": "Move!",
+      "artist": "Soh Ee Shaun",
+      "stationCode": "CC15",
+      "stationName": "Bishan",
+      "umap": {
+        "x": -0.949879,
+        "y": 0.306434
+      },
+      "grid": {
+        "column": 3,
+        "row": 5
+      },
+      "position": {
+        "x": -7128,
+        "y": 20,
+        "z": 0
+      },
+      "umapPosition": {
+        "x": -16926.846,
+        "y": 20,
+        "z": -3998.966
+      }
+    },
+    {
+      "index": 8,
+      "artworkTitle": "Superstring",
+      "artist": "Joshua Yang",
+      "stationCode": "CC16",
+      "stationName": "Marymount",
+      "umap": {
+        "x": -0.516736,
+        "y": -0.25815
+      },
+      "grid": {
+        "column": 4,
+        "row": 3
+      },
+      "position": {
+        "x": -3564,
+        "y": 20,
+        "z": 5220
+      },
+      "umapPosition": {
+        "x": -9208.233,
+        "y": 20,
+        "z": 3368.852
+      }
+    },
+    {
+      "index": 9,
+      "artworkTitle": "The Cartography of Memories",
+      "artist": "Hazel Lim",
+      "stationCode": "CC17",
+      "stationName": "Caldecott",
+      "umap": {
+        "x": -0.339993,
+        "y": -0.113196
+      },
+      "grid": {
+        "column": 8,
+        "row": 1
+      },
+      "position": {
+        "x": 10692,
+        "y": 20,
+        "z": 10440
+      },
+      "umapPosition": {
+        "x": -6058.672,
+        "y": 20,
+        "z": 1477.207
+      }
+    },
+    {
+      "index": 10,
+      "artworkTitle": "Aquatic Fauna No. 1",
+      "artist": "Lam Hoi Lit; Chua Chye Teck",
+      "stationCode": "CC19",
+      "stationName": "Botanic Gardens",
+      "umap": {
+        "x": -0.775744,
+        "y": -0.335248
+      },
+      "grid": {
+        "column": 1,
+        "row": 4
+      },
+      "position": {
+        "x": -14256,
+        "y": 20,
+        "z": 2610
+      },
+      "umapPosition": {
+        "x": -13823.765,
+        "y": 20,
+        "z": 4374.982
+      }
+    },
+    {
+      "index": 11,
+      "artworkTitle": "Art Lineage",
+      "artist": "Erzan Bin Adam",
+      "stationCode": "CC20",
+      "stationName": "Farrer Road",
+      "umap": {
+        "x": -0.313836,
+        "y": 0.962409
+      },
+      "grid": {
+        "column": 7,
+        "row": 5
+      },
+      "position": {
+        "x": 7128,
+        "y": 20,
+        "z": 0
+      },
+      "umapPosition": {
+        "x": -5592.564,
+        "y": 20,
+        "z": -12559.441
+      }
+    },
+    {
+      "index": 12,
+      "artworkTitle": "Holland Beat",
+      "artist": "Jeremy Sharma",
+      "stationCode": "CC21",
+      "stationName": "Holland Village",
+      "umap": {
+        "x": -0.213844,
+        "y": 0.252254
+      },
+      "grid": {
+        "column": 3,
+        "row": 8
+      },
+      "position": {
+        "x": -7128,
+        "y": 20,
+        "z": -7830
+      },
+      "umapPosition": {
+        "x": -3810.694,
+        "y": 20,
+        "z": -3291.918
+      }
+    },
+    {
+      "index": 13,
+      "artworkTitle": "The Tree of Life",
+      "artist": "Gilles Massot",
+      "stationCode": "CC22",
+      "stationName": "Buona Vista",
+      "umap": {
+        "x": -0.015046,
+        "y": -0.122645
+      },
+      "grid": {
+        "column": 9,
+        "row": 0
+      },
+      "position": {
+        "x": 14256,
+        "y": 20,
+        "z": 13050
+      },
+      "umapPosition": {
+        "x": -268.114,
+        "y": 20,
+        "z": 1600.512
+      }
+    },
+    {
+      "index": 14,
+      "artworkTitle": "A Visual Narrative of Pandemonic Rhythmic Movement",
+      "artist": "Yek Wong",
+      "stationCode": "CC23",
+      "stationName": "one-north",
+      "umap": {
+        "x": -0.22211,
+        "y": -0.726739
+      },
+      "grid": {
+        "column": 4,
+        "row": 2
+      },
+      "position": {
+        "x": -3564,
+        "y": 20,
+        "z": 7830
+      },
+      "umapPosition": {
+        "x": -3957.995,
+        "y": 20,
+        "z": 9483.938
+      }
+    },
+    {
+      "index": 15,
+      "artworkTitle": "Poetry Mix-Up",
+      "artist": "Mixed Reality Lab",
+      "stationCode": "CC24",
+      "stationName": "Kent Ridge",
+      "umap": {
+        "x": -0.52603,
+        "y": -0.894138
+      },
+      "grid": {
+        "column": 1,
+        "row": 0
+      },
+      "position": {
+        "x": -14256,
+        "y": 20,
+        "z": 13050
+      },
+      "umapPosition": {
+        "x": -9373.857,
+        "y": 20,
+        "z": 11668.506
+      }
+    },
+    {
+      "index": 16,
+      "artworkTitle": "Eroclamation",
+      "artist": "Tan Wee Lit",
+      "stationCode": "CC25",
+      "stationName": "Haw Par Villa",
+      "umap": {
+        "x": 0.199356,
+        "y": 0.577161
+      },
+      "grid": {
+        "column": 6,
+        "row": 9
+      },
+      "position": {
+        "x": 3564,
+        "y": 20,
+        "z": -10440
+      },
+      "umapPosition": {
+        "x": 3552.517,
+        "y": 20,
+        "z": -7531.953
+      }
+    },
+    {
+      "index": 17,
+      "artworkTitle": "Lieutenant Adnan",
+      "artist": "Ho Tzu Nyen",
+      "stationCode": "CC26",
+      "stationName": "Pasir Panjang",
+      "umap": {
+        "x": -0.423106,
+        "y": -1
+      },
+      "grid": {
+        "column": 2,
+        "row": 2
+      },
+      "position": {
+        "x": -10692,
+        "y": 20,
+        "z": 7830
+      },
+      "umapPosition": {
+        "x": -7539.753,
+        "y": 20,
+        "z": 13050
+      }
+    },
+    {
+      "index": 18,
+      "artworkTitle": "Stride Alongside the Bo-men",
+      "artist": "Daisy Boman",
+      "stationCode": "CC26",
+      "stationName": "Pasir Panjang",
+      "umap": {
+        "x": 0.990885,
+        "y": -0.046932
+      },
+      "grid": {
+        "column": 2,
+        "row": 5
+      },
+      "position": {
+        "x": -10692,
+        "y": 20,
+        "z": 0
+      },
+      "umapPosition": {
+        "x": 17657.568,
+        "y": 20,
+        "z": 612.463
+      }
+    },
+    {
+      "index": 19,
+      "artworkTitle": "Without Which / Would Have Been / Impossible",
+      "artist": "Heman Chong",
+      "stationCode": "CC27",
+      "stationName": "Labrador Park",
+      "umap": {
+        "x": -0.632803,
+        "y": -0.14273
+      },
+      "grid": {
+        "column": 5,
+        "row": 1
+      },
+      "position": {
+        "x": 0,
+        "y": 20,
+        "z": 10440
+      },
+      "umapPosition": {
+        "x": -11276.554,
+        "y": 20,
+        "z": 1862.622
+      }
+    },
+    {
+      "index": 20,
+      "artworkTitle": "Notes Towards a Museum of Cooking Pot Bay",
+      "artist": "Michael Lee",
+      "stationCode": "CC28",
+      "stationName": "Telok Blangah",
+      "umap": {
+        "x": -0.273293,
+        "y": -0.219963
+      },
+      "grid": {
+        "column": 7,
+        "row": 2
+      },
+      "position": {
+        "x": 7128,
+        "y": 20,
+        "z": 7830
+      },
+      "umapPosition": {
+        "x": -4870.075,
+        "y": 20,
+        "z": 2870.52
+      }
+    },
+    {
+      "index": 21,
+      "artworkTitle": "Commuting Waves",
+      "artist": "Jason Ong",
+      "stationCode": "CC29",
+      "stationName": "HarbourFront",
+      "umap": {
+        "x": 0.290121,
+        "y": -0.874612
+      },
+      "grid": {
+        "column": 10,
+        "row": 1
+      },
+      "position": {
+        "x": 17820,
+        "y": 20,
+        "z": 10440
+      },
+      "umapPosition": {
+        "x": 5169.957,
+        "y": 20,
+        "z": 11413.683
+      }
+    },
+    {
+      "index": 22,
+      "artworkTitle": "A Piece of Ice-Clear Heart",
+      "artist": "Lim Mu Hue @ Lim Aik Lee",
+      "stationCode": "CC3",
+      "stationName": "Esplanade",
+      "umap": {
+        "x": 0.312627,
+        "y": 0.829083
+      },
+      "grid": {
+        "column": 9,
+        "row": 8
+      },
+      "position": {
+        "x": 14256,
+        "y": 20,
+        "z": -7830
+      },
+      "umapPosition": {
+        "x": 5571.009,
+        "y": 20,
+        "z": -10819.53
+      }
+    },
+    {
+      "index": 23,
+      "artworkTitle": "Dreams in Social Cosmic Odyssey",
+      "artist": "PHUNK",
+      "stationCode": "CC4",
+      "stationName": "Promenade",
+      "umap": {
+        "x": 0.418487,
+        "y": 0.553682
+      },
+      "grid": {
+        "column": 6,
+        "row": 10
+      },
+      "position": {
+        "x": 3564,
+        "y": 20,
+        "z": -13050
+      },
+      "umapPosition": {
+        "x": 7457.437,
+        "y": 20,
+        "z": -7225.556
+      }
+    },
+    {
+      "index": 24,
+      "artworkTitle": "Re-Claiming The Peripherals",
+      "artist": "Khiew Huey Chian",
+      "stationCode": "CC5",
+      "stationName": "Nicoll Highway",
+      "umap": {
+        "x": -0.08413,
+        "y": 0.090804
+      },
+      "grid": {
+        "column": 1,
+        "row": 10
+      },
+      "position": {
+        "x": -14256,
+        "y": 20,
+        "z": -13050
+      },
+      "umapPosition": {
+        "x": -1499.204,
+        "y": 20,
+        "z": -1184.992
+      }
+    },
+    {
+      "index": 25,
+      "artworkTitle": "The Perfect Moment",
+      "artist": "Roy Zhang",
+      "stationCode": null,
+      "stationName": "CC6: Stadium",
+      "umap": {
+        "x": 0.329637,
+        "y": -0.406297
+      },
+      "grid": {
+        "column": 7,
+        "row": 4
+      },
+      "position": {
+        "x": 7128,
+        "y": 20,
+        "z": 2610
+      },
+      "umapPosition": {
+        "x": 5874.124,
+        "y": 20,
+        "z": 5302.174
+      }
+    },
+    {
+      "index": 26,
+      "artworkTitle": "Lord Mountbatten Thinks of Pink",
+      "artist": "Jason Wee",
+      "stationCode": "CC7",
+      "stationName": "Mountbatten",
+      "umap": {
+        "x": -0.653867,
+        "y": -0.379262
+      },
+      "grid": {
+        "column": 2,
+        "row": 4
+      },
+      "position": {
+        "x": -10692,
+        "y": 20,
+        "z": 2610
+      },
+      "umapPosition": {
+        "x": -11651.907,
+        "y": 20,
+        "z": 4949.366
+      }
+    },
+    {
+      "index": 27,
+      "artworkTitle": "Little Things, Little Stories",
+      "artist": "A Dose of Light",
+      "stationCode": "CC8",
+      "stationName": "Dakota",
+      "umap": {
+        "x": -0.345978,
+        "y": 0.293443
+      },
+      "grid": {
+        "column": 2,
+        "row": 10
+      },
+      "position": {
+        "x": -10692,
+        "y": 20,
+        "z": -13050
+      },
+      "umapPosition": {
+        "x": -6165.327,
+        "y": 20,
+        "z": -3829.436
+      }
+    },
+    {
+      "index": 28,
+      "artworkTitle": "The Signs of Times",
+      "artist": "Salleh Japar",
+      "stationCode": "CC9",
+      "stationName": "Paya Lebar",
+      "umap": {
+        "x": -0.780432,
+        "y": 0.497578
+      },
+      "grid": {
+        "column": 3,
+        "row": 7
+      },
+      "position": {
+        "x": -7128,
+        "y": 20,
+        "z": -5220
+      },
+      "umapPosition": {
+        "x": -13907.297,
+        "y": 20,
+        "z": -6493.395
+      }
+    },
+    {
+      "index": 29,
+      "artworkTitle": "When the Ship Comes in",
+      "artist": "Lee Wen",
+      "stationCode": "CE1",
+      "stationName": "/ DT16 Bayfront",
+      "umap": {
+        "x": -1,
+        "y": 0.346214
+      },
+      "grid": {
+        "column": 3,
+        "row": 6
+      },
+      "position": {
+        "x": -7128,
+        "y": 20,
+        "z": -2610
+      },
+      "umapPosition": {
+        "x": -17820,
+        "y": 20,
+        "z": -4518.087
+      }
+    },
+    {
+      "index": 30,
+      "artworkTitle": "Punctum of the Long Hills",
+      "artist": "John Clang",
+      "stationCode": "DT1",
+      "stationName": "Bukit Panjang",
+      "umap": {
+        "x": -0.620614,
+        "y": -0.900945
+      },
+      "grid": {
+        "column": 0,
+        "row": 0
+      },
+      "position": {
+        "x": -17820,
+        "y": 20,
+        "z": 13050
+      },
+      "umapPosition": {
+        "x": -11059.346,
+        "y": 20,
+        "z": 11757.331
+      }
+    },
+    {
+      "index": 31,
+      "artworkTitle": "PIN – 23040",
+      "artist": "Om Mee Ai",
+      "stationCode": "DT10",
+      "stationName": "Stevens",
+      "umap": {
+        "x": 0.564509,
+        "y": 0.248276
+      },
+      "grid": {
+        "column": 9,
+        "row": 7
+      },
+      "position": {
+        "x": 14256,
+        "y": 20,
+        "z": -5220
+      },
+      "umapPosition": {
+        "x": 10059.549,
+        "y": 20,
+        "z": -3239.999
+      }
+    },
+    {
+      "index": 32,
+      "artworkTitle": "Newton",
+      "artist": "Tan Zi Xi aka MessyMsxi",
+      "stationCode": "DT11",
+      "stationName": "Newton",
+      "umap": {
+        "x": 0.600047,
+        "y": 0.061063
+      },
+      "grid": {
+        "column": 8,
+        "row": 7
+      },
+      "position": {
+        "x": 10692,
+        "y": 20,
+        "z": -5220
+      },
+      "umapPosition": {
+        "x": 10692.841,
+        "y": 20,
+        "z": -796.872
+      }
+    },
+    {
+      "index": 33,
+      "artworkTitle": "Woven Field",
+      "artist": "Grace Tan",
+      "stationCode": "DT12",
+      "stationName": "Little India",
+      "umap": {
+        "x": -0.229583,
+        "y": -0.285584
+      },
+      "grid": {
+        "column": 5,
+        "row": 2
+      },
+      "position": {
+        "x": 0,
+        "y": 20,
+        "z": 7830
+      },
+      "umapPosition": {
+        "x": -4091.17,
+        "y": 20,
+        "z": 3726.877
+      }
+    },
+    {
+      "index": 34,
+      "artworkTitle": "Tracing Memories",
+      "artist": "LASALLE College of the Arts",
+      "stationCode": "DT13",
+      "stationName": "Rochor",
+      "umap": {
+        "x": -0.628118,
+        "y": -0.510564
+      },
+      "grid": {
+        "column": 1,
+        "row": 2
+      },
+      "position": {
+        "x": -14256,
+        "y": 20,
+        "z": 7830
+      },
+      "umapPosition": {
+        "x": -11193.057,
+        "y": 20,
+        "z": 6662.866
+      }
+    },
+    {
+      "index": 35,
+      "artworkTitle": "Ephemeral",
+      "artist": "Patrick Chia",
+      "stationCode": "DT14",
+      "stationName": "Bugis",
+      "umap": {
+        "x": 0.476565,
+        "y": -0.812462
+      },
+      "grid": {
+        "column": 9,
+        "row": 2
+      },
+      "position": {
+        "x": 14256,
+        "y": 20,
+        "z": 7830
+      },
+      "umapPosition": {
+        "x": 8492.394,
+        "y": 20,
+        "z": 10602.63
+      }
+    },
+    {
+      "index": 36,
+      "artworkTitle": "Earthcake",
+      "artist": "Ana Prvacki",
+      "stationCode": "DT15",
+      "stationName": "Promenade",
+      "umap": {
+        "x": -0.973912,
+        "y": 0.118665
+      },
+      "grid": {
+        "column": 2,
+        "row": 6
+      },
+      "position": {
+        "x": -10692,
+        "y": 20,
+        "z": -2610
+      },
+      "umapPosition": {
+        "x": -17355.117,
+        "y": 20,
+        "z": -1548.574
+      }
+    },
+    {
+      "index": 37,
+      "artworkTitle": "Leaves",
+      "artist": "Jason Lim",
+      "stationCode": "DT17",
+      "stationName": "Downtown",
+      "umap": {
+        "x": -0.148945,
+        "y": -0.670812
+      },
+      "grid": {
+        "column": 0,
+        "row": 3
+      },
+      "position": {
+        "x": -17820,
+        "y": 20,
+        "z": 5220
+      },
+      "umapPosition": {
+        "x": -2654.203,
+        "y": 20,
+        "z": 8754.099
+      }
+    },
+    {
+      "index": 38,
+      "artworkTitle": "Charm of Bay",
+      "artist": "Lim Shing Ee",
+      "stationCode": "DT18",
+      "stationName": "Telok Ayer",
+      "umap": {
+        "x": -0.050872,
+        "y": -0.690787
+      },
+      "grid": {
+        "column": 1,
+        "row": 3
+      },
+      "position": {
+        "x": -14256,
+        "y": 20,
+        "z": 5220
+      },
+      "umapPosition": {
+        "x": -906.534,
+        "y": 20,
+        "z": 9014.774
+      }
+    },
+    {
+      "index": 39,
+      "artworkTitle": "Flying Colours",
+      "artist": "Cheo Chai-Hiang",
+      "stationCode": "DT19",
+      "stationName": "Chinatown",
+      "umap": {
+        "x": -0.065114,
+        "y": 0.855335
+      },
+      "grid": {
+        "column": 5,
+        "row": 7
+      },
+      "position": {
+        "x": 0,
+        "y": 20,
+        "z": -5220
+      },
+      "umapPosition": {
+        "x": -1160.335,
+        "y": 20,
+        "z": -11162.128
+      }
+    },
+    {
+      "index": 40,
+      "artworkTitle": "Project Eden",
+      "artist": "Donna Ong",
+      "stationCode": "DT2",
+      "stationName": "Cashew",
+      "umap": {
+        "x": 0.577626,
+        "y": -0.5656
+      },
+      "grid": {
+        "column": 6,
+        "row": 4
+      },
+      "position": {
+        "x": 3564,
+        "y": 20,
+        "z": 2610
+      },
+      "umapPosition": {
+        "x": 10293.292,
+        "y": 20,
+        "z": 7381.08
+      }
+    },
+    {
+      "index": 41,
+      "artworkTitle": "Tracing Memories",
+      "artist": "Nanyang Academy of Fine Arts (NAFA)",
+      "stationCode": "DT21",
+      "stationName": "Bencoolen",
+      "umap": {
+        "x": -0.276294,
+        "y": 0.039205
+      },
+      "grid": {
+        "column": 0,
+        "row": 9
+      },
+      "position": {
+        "x": -17820,
+        "y": 20,
+        "z": -10440
+      },
+      "umapPosition": {
+        "x": -4923.559,
+        "y": 20,
+        "z": -511.623
+      }
+    },
+    {
+      "index": 42,
+      "artworkTitle": "A Kaleidoscopic World",
+      "artist": "Lydia Wong",
+      "stationCode": "DT22",
+      "stationName": "Jalan Besar",
+      "umap": {
+        "x": 0.138836,
+        "y": 0.617267
+      },
+      "grid": {
+        "column": 5,
+        "row": 9
+      },
+      "position": {
+        "x": 0,
+        "y": 20,
+        "z": -10440
+      },
+      "umapPosition": {
+        "x": 2474.056,
+        "y": 20,
+        "z": -8055.338
+      }
+    },
+    {
+      "index": 43,
+      "artworkTitle": "And A New World",
+      "artist": "Cristene Chang",
+      "stationCode": "DT23",
+      "stationName": "Bendemeer",
+      "umap": {
+        "x": 0.513388,
+        "y": -0.334131
+      },
+      "grid": {
+        "column": 10,
+        "row": 4
+      },
+      "position": {
+        "x": 17820,
+        "y": 20,
+        "z": 2610
+      },
+      "umapPosition": {
+        "x": 9148.573,
+        "y": 20,
+        "z": 4360.408
+      }
+    },
+    {
+      "index": 44,
+      "artworkTitle": "Constructed Memories",
+      "artist": "Marienne Yang",
+      "stationCode": "DT24",
+      "stationName": "Geylang Bahru",
+      "umap": {
+        "x": -0.169669,
+        "y": 0.458817
+      },
+      "grid": {
+        "column": 4,
+        "row": 8
+      },
+      "position": {
+        "x": -3564,
+        "y": 20,
+        "z": -7830
+      },
+      "umapPosition": {
+        "x": -3023.507,
+        "y": 20,
+        "z": -5987.561
+      }
+    },
+    {
+      "index": 45,
+      "artworkTitle": "Agar Panel",
+      "artist": "Genevieve Chua",
+      "stationCode": "DT25",
+      "stationName": "Mattar",
+      "umap": {
+        "x": 0.221246,
+        "y": 0.154602
+      },
+      "grid": {
+        "column": 8,
+        "row": 6
+      },
+      "position": {
+        "x": 10692,
+        "y": 20,
+        "z": -2610
+      },
+      "umapPosition": {
+        "x": 3942.597,
+        "y": 20,
+        "z": -2017.55
+      }
+    },
+    {
+      "index": 46,
+      "artworkTitle": "Trails of Thoughts",
+      "artist": "Aminah Mohd Sa'at aka Neng",
+      "stationCode": "DT26",
+      "stationName": "MacPherson",
+      "umap": {
+        "x": -0.093557,
+        "y": -0.971203
+      },
+      "grid": {
+        "column": 4,
+        "row": 1
+      },
+      "position": {
+        "x": -3564,
+        "y": 20,
+        "z": 10440
+      },
+      "umapPosition": {
+        "x": -1667.185,
+        "y": 20,
+        "z": 12674.197
+      }
+    },
+    {
+      "index": 47,
+      "artworkTitle": "Staple",
+      "artist": "Zainudin Samsuri",
+      "stationCode": "DT27",
+      "stationName": "Ubi",
+      "umap": {
+        "x": 0.627533,
+        "y": -0.18167
+      },
+      "grid": {
+        "column": 0,
+        "row": 6
+      },
+      "position": {
+        "x": -17820,
+        "y": 20,
+        "z": -2610
+      },
+      "umapPosition": {
+        "x": 11182.642,
+        "y": 20,
+        "z": 2370.789
+      }
+    },
+    {
+      "index": 48,
+      "artworkTitle": "Welcome to Kaki Bukit",
+      "artist": "Hans Tan",
+      "stationCode": "DT28",
+      "stationName": "Kaki Bukit",
+      "umap": {
+        "x": -0.268319,
+        "y": -0.893672
+      },
+      "grid": {
+        "column": 3,
+        "row": 0
+      },
+      "position": {
+        "x": -7128,
+        "y": 20,
+        "z": 13050
+      },
+      "umapPosition": {
+        "x": -4781.436,
+        "y": 20,
+        "z": 11662.414
+      }
+    },
+    {
+      "index": 49,
+      "artworkTitle": "Dedaun Masa (Leaves of Time)",
+      "artist": "Ahmad Abu Bakar",
+      "stationCode": "DT29",
+      "stationName": "Bedok North",
+      "umap": {
+        "x": 0.158665,
+        "y": -0.566879
+      },
+      "grid": {
+        "column": 5,
+        "row": 3
+      },
+      "position": {
+        "x": 0,
+        "y": 20,
+        "z": 5220
+      },
+      "umapPosition": {
+        "x": 2827.41,
+        "y": 20,
+        "z": 7397.777
+      }
+    },
+    {
+      "index": 50,
+      "artworkTitle": "What Remains",
+      "artist": "Darren Soh",
+      "stationCode": "DT3",
+      "stationName": "Hillview",
+      "umap": {
+        "x": -0.183981,
+        "y": -0.450219
+      },
+      "grid": {
+        "column": 7,
+        "row": 1
+      },
+      "position": {
+        "x": 7128,
+        "y": 20,
+        "z": 10440
+      },
+      "umapPosition": {
+        "x": -3278.546,
+        "y": 20,
+        "z": 5875.355
+      }
+    },
+    {
+      "index": 51,
+      "artworkTitle": "Somewhere Else",
+      "artist": "Ng Chee Yong",
+      "stationCode": "DT30",
+      "stationName": "Bedok Reservoir",
+      "umap": {
+        "x": -0.461584,
+        "y": -0.823725
+      },
+      "grid": {
+        "column": 3,
+        "row": 1
+      },
+      "position": {
+        "x": -7128,
+        "y": 20,
+        "z": 10440
+      },
+      "umapPosition": {
+        "x": -8225.427,
+        "y": 20,
+        "z": 10749.616
+      }
+    },
+    {
+      "index": 52,
+      "artworkTitle": "Welcome to Jingapore!",
+      "artist": "Jing Quek",
+      "stationCode": "DT31",
+      "stationName": "Tampines West",
+      "umap": {
+        "x": -0.549689,
+        "y": 0.25235
+      },
+      "grid": {
+        "column": 4,
+        "row": 7
+      },
+      "position": {
+        "x": -3564,
+        "y": 20,
+        "z": -5220
+      },
+      "umapPosition": {
+        "x": -9795.452,
+        "y": 20,
+        "z": -3293.173
+      }
+    },
+    {
+      "index": 53,
+      "artworkTitle": "The Big Round & The Tall Long",
+      "artist": "Studio Juju",
+      "stationCode": "DT32",
+      "stationName": "Tampines",
+      "umap": {
+        "x": 0.391844,
+        "y": -0.615779
+      },
+      "grid": {
+        "column": 6,
+        "row": 3
+      },
+      "position": {
+        "x": 3564,
+        "y": 20,
+        "z": 5220
+      },
+      "umapPosition": {
+        "x": 6982.652,
+        "y": 20,
+        "z": 8035.911
+      }
+    },
+    {
+      "index": 54,
+      "artworkTitle": "Welcome to Jingapore!",
+      "artist": "Jing Quek",
+      "stationCode": "DT33",
+      "stationName": "Tampines East",
+      "umap": {
+        "x": -0.492816,
+        "y": 0.228326
+      },
+      "grid": {
+        "column": 1,
+        "row": 9
+      },
+      "position": {
+        "x": -14256,
+        "y": 20,
+        "z": -10440
+      },
+      "umapPosition": {
+        "x": -8781.984,
+        "y": 20,
+        "z": -2979.657
+      }
+    },
+    {
+      "index": 55,
+      "artworkTitle": "I Am Anonymous",
+      "artist": "Boo Junfeng",
+      "stationCode": "DT34",
+      "stationName": "Upper Changi",
+      "umap": {
+        "x": 0.510324,
+        "y": -0.147359
+      },
+      "grid": {
+        "column": 1,
+        "row": 5
+      },
+      "position": {
+        "x": -14256,
+        "y": 20,
+        "z": 0
+      },
+      "umapPosition": {
+        "x": 9093.973,
+        "y": 20,
+        "z": 1923.041
+      }
+    },
+    {
+      "index": 56,
+      "artworkTitle": "A Banquet",
+      "artist": "Yeo Chee Kiong",
+      "stationCode": "DT35",
+      "stationName": "Expo",
+      "umap": {
+        "x": 0.405024,
+        "y": 0.308263
+      },
+      "grid": {
+        "column": 10,
+        "row": 6
+      },
+      "position": {
+        "x": 17820,
+        "y": 20,
+        "z": -2610
+      },
+      "umapPosition": {
+        "x": 7217.524,
+        "y": 20,
+        "z": -4022.838
+      }
+    },
+    {
+      "index": 57,
+      "artworkTitle": "Asemic Lines",
+      "artist": "Boedi Widjaja",
+      "stationCode": "DT5",
+      "stationName": "Beauty World",
+      "umap": {
+        "x": 0.370897,
+        "y": -0.28349
+      },
+      "grid": {
+        "column": 9,
+        "row": 3
+      },
+      "position": {
+        "x": 14256,
+        "y": 20,
+        "z": 5220
+      },
+      "umapPosition": {
+        "x": 6609.392,
+        "y": 20,
+        "z": 3699.539
+      }
+    },
+    {
+      "index": 58,
+      "artworkTitle": "The Natural History of Singapore's Mythical Botanic Creatures",
+      "artist": "Soh Pei Ling; Chan Mei Hsien; Long Yinghan",
+      "stationCode": null,
+      "stationName": "DT6: King Albert Park",
+      "umap": {
+        "x": 0.056661,
+        "y": 0.396793
+      },
+      "grid": {
+        "column": 10,
+        "row": 5
+      },
+      "position": {
+        "x": 17820,
+        "y": 20,
+        "z": 0
+      },
+      "umapPosition": {
+        "x": 1009.701,
+        "y": 20,
+        "z": -5178.155
+      }
+    },
+    {
+      "index": 59,
+      "artworkTitle": "Gratitude (饮水思源) and Resilience (自强不息)",
+      "artist": "Hwa Chong Institution",
+      "stationCode": "DT8",
+      "stationName": "Tan Kah Kee",
+      "umap": {
+        "x": -0.267412,
+        "y": 0.008172
+      },
+      "grid": {
+        "column": 2,
+        "row": 8
+      },
+      "position": {
+        "x": -10692,
+        "y": 20,
+        "z": -7830
+      },
+      "umapPosition": {
+        "x": -4765.291,
+        "y": 20,
+        "z": -106.641
+      }
+    },
+    {
+      "index": 60,
+      "artworkTitle": "WHAT IS A TREE?",
+      "artist": "Shirley Soh",
+      "stationCode": "DT9",
+      "stationName": "Botanic Gardens",
+      "umap": {
+        "x": -0.415914,
+        "y": -0.231114
+      },
+      "grid": {
+        "column": 6,
+        "row": 2
+      },
+      "position": {
+        "x": 3564,
+        "y": 20,
+        "z": 7830
+      },
+      "umapPosition": {
+        "x": -7411.582,
+        "y": 20,
+        "z": 3016.038
+      }
+    },
+    {
+      "index": 61,
+      "artworkTitle": "Enigmatic Appearances",
+      "artist": "Ian Woo",
+      "stationCode": "NE1",
+      "stationName": "Harbourfront",
+      "umap": {
+        "x": -0.855477,
+        "y": -0.644939
+      },
+      "grid": {
+        "column": 0,
+        "row": 1
+      },
+      "position": {
+        "x": -17820,
+        "y": 20,
+        "z": 10440
+      },
+      "umapPosition": {
+        "x": -15244.602,
+        "y": 20,
+        "z": 8416.453
+      }
+    },
+    {
+      "index": 62,
+      "artworkTitle": "Point of View",
+      "artist": "Matthew Ngui",
+      "stationCode": "NE10",
+      "stationName": "Potong Pasir",
+      "umap": {
+        "x": -0.867987,
+        "y": -0.390476
+      },
+      "grid": {
+        "column": 0,
+        "row": 4
+      },
+      "position": {
+        "x": -17820,
+        "y": 20,
+        "z": 2610
+      },
+      "umapPosition": {
+        "x": -15467.524,
+        "y": 20,
+        "z": 5095.713
+      }
+    },
+    {
+      "index": 63,
+      "artworkTitle": "Slow Motion",
+      "artist": "April Ng",
+      "stationCode": "NE11",
+      "stationName": "Woodleigh",
+      "umap": {
+        "x": 0.17442,
+        "y": 0.421724
+      },
+      "grid": {
+        "column": 9,
+        "row": 6
+      },
+      "position": {
+        "x": 14256,
+        "y": 20,
+        "z": -2610
+      },
+      "umapPosition": {
+        "x": 3108.158,
+        "y": 20,
+        "z": -5503.504
+      }
+    },
+    {
+      "index": 64,
+      "artworkTitle": "Memories of Childhood",
+      "artist": "Eng Joo Heng",
+      "stationCode": "NE12",
+      "stationName": "Serangoon",
+      "umap": {
+        "x": -0.386326,
+        "y": 0.800413
+      },
+      "grid": {
+        "column": 5,
+        "row": 6
+      },
+      "position": {
+        "x": 0,
+        "y": 20,
+        "z": -2610
+      },
+      "umapPosition": {
+        "x": -6884.336,
+        "y": 20,
+        "z": -10445.392
+      }
+    },
+    {
+      "index": 65,
+      "artworkTitle": "The Trade-off",
+      "artist": "Eng Tow",
+      "stationCode": "NE13",
+      "stationName": "Kovan",
+      "umap": {
+        "x": 0.071748,
+        "y": 0.924752
+      },
+      "grid": {
+        "column": 7,
+        "row": 10
+      },
+      "position": {
+        "x": 7128,
+        "y": 20,
+        "z": -13050
+      },
+      "umapPosition": {
+        "x": 1278.551,
+        "y": 20,
+        "z": -12068.014
+      }
+    },
+    {
+      "index": 66,
+      "artworkTitle": "Hands Up for Hougang",
+      "artist": "Seck Yok Ying",
+      "stationCode": "NE14",
+      "stationName": "Hougang",
+      "umap": {
+        "x": -0.68194,
+        "y": 0.59438
+      },
+      "grid": {
+        "column": 3,
+        "row": 9
+      },
+      "position": {
+        "x": -7128,
+        "y": 20,
+        "z": -10440
+      },
+      "umapPosition": {
+        "x": -12152.168,
+        "y": 20,
+        "z": -7756.664
+      }
+    },
+    {
+      "index": 67,
+      "artworkTitle": "Water, Nature & Contemporary",
+      "artist": "Vincent Leow",
+      "stationCode": "NE15",
+      "stationName": "Buangkok",
+      "umap": {
+        "x": -0.554246,
+        "y": 0.481322
+      },
+      "grid": {
+        "column": 1,
+        "row": 8
+      },
+      "position": {
+        "x": -14256,
+        "y": 20,
+        "z": -7830
+      },
+      "umapPosition": {
+        "x": -9876.665,
+        "y": 20,
+        "z": -6281.249
+      }
+    },
+    {
+      "index": 68,
+      "artworkTitle": "T.R.A.N.S.I.T.I.O.N.S.",
+      "artist": "Koh Bee Liang",
+      "stationCode": "NE16",
+      "stationName": "Sengkang",
+      "umap": {
+        "x": -0.659634,
+        "y": 0.399281
+      },
+      "grid": {
+        "column": 0,
+        "row": 8
+      },
+      "position": {
+        "x": -17820,
+        "y": 20,
+        "z": -7830
+      },
+      "umapPosition": {
+        "x": -11754.684,
+        "y": 20,
+        "z": -5210.612
+      }
+    },
+    {
+      "index": 69,
+      "artworkTitle": "Water, Landscape & Future",
+      "artist": "Goh Beng Kwan",
+      "stationCode": "NE17",
+      "stationName": "Punggol",
+      "umap": {
+        "x": -0.699642,
+        "y": -0.082708
+      },
+      "grid": {
+        "column": 6,
+        "row": 1
+      },
+      "position": {
+        "x": 3564,
+        "y": 20,
+        "z": 10440
+      },
+      "umapPosition": {
+        "x": -12467.618,
+        "y": 20,
+        "z": 1079.343
+      }
+    },
+    {
+      "index": 70,
+      "artworkTitle": "TRAJECTORIES",
+      "artist": "Zul Othman aka ZERO",
+      "stationCode": "NE18",
+      "stationName": "Punggol Coast",
+      "umap": {
+        "x": -0.079675,
+        "y": 0.70299
+      },
+      "grid": {
+        "column": 6,
+        "row": 5
+      },
+      "position": {
+        "x": 3564,
+        "y": 20,
+        "z": 0
+      },
+      "umapPosition": {
+        "x": -1419.813,
+        "y": 20,
+        "z": -9174.023
+      }
+    },
+    {
+      "index": 71,
+      "artworkTitle": "The Phoenix's-Eye Domain",
+      "artist": "Tan Swie Hian",
+      "stationCode": "NE4",
+      "stationName": "Chinatown",
+      "umap": {
+        "x": -0.632103,
+        "y": 0.742382
+      },
+      "grid": {
+        "column": 4,
+        "row": 10
+      },
+      "position": {
+        "x": -3564,
+        "y": 20,
+        "z": -13050
+      },
+      "umapPosition": {
+        "x": -11264.08,
+        "y": 20,
+        "z": -9688.089
+      }
+    },
+    {
+      "index": 72,
+      "artworkTitle": "The Reflections",
+      "artist": "Chua Ek Kay",
+      "stationCode": "NE5",
+      "stationName": "Clarke Quay",
+      "umap": {
+        "x": 0.248085,
+        "y": 0.73365
+      },
+      "grid": {
+        "column": 5,
+        "row": 10
+      },
+      "position": {
+        "x": 0,
+        "y": 20,
+        "z": -13050
+      },
+      "umapPosition": {
+        "x": 4420.883,
+        "y": 20,
+        "z": -9574.137
+      }
+    },
+    {
+      "index": 73,
+      "artworkTitle": "Rhythmic Exuberance",
+      "artist": "Poh Siew Wah",
+      "stationCode": "NE8",
+      "stationName": "Farrer Park",
+      "umap": {
+        "x": -0.75259,
+        "y": 0.143427
+      },
+      "grid": {
+        "column": 1,
+        "row": 7
+      },
+      "position": {
+        "x": -14256,
+        "y": 20,
+        "z": -5220
+      },
+      "umapPosition": {
+        "x": -13411.146,
+        "y": 20,
+        "z": -1871.726
+      }
+    },
+    {
+      "index": 74,
+      "artworkTitle": "Metamorphosis",
+      "artist": "Lim Poh Teck",
+      "stationCode": "NE9",
+      "stationName": "Boon Keng",
+      "umap": {
+        "x": -0.741207,
+        "y": 0.684277
+      },
+      "grid": {
+        "column": 4,
+        "row": 9
+      },
+      "position": {
+        "x": -3564,
+        "y": 20,
+        "z": -10440
+      },
+      "umapPosition": {
+        "x": -13208.313,
+        "y": 20,
+        "z": -8929.812
+      }
+    },
+    {
+      "index": 75,
+      "artworkTitle": "Symbiosis",
+      "artist": "Tan Zi Xi aka MessyMsxi",
+      "stationCode": "NS12",
+      "stationName": "Canberra",
+      "umap": {
+        "x": -0.910457,
+        "y": -0.125919
+      },
+      "grid": {
+        "column": 4,
+        "row": 4
+      },
+      "position": {
+        "x": -3564,
+        "y": 20,
+        "z": 2610
+      },
+      "umapPosition": {
+        "x": -16224.345,
+        "y": 20,
+        "z": 1643.24
+      }
+    },
+    {
+      "index": 76,
+      "artworkTitle": "Symphony",
+      "artist": "Rosa Serra",
+      "stationCode": "NS26",
+      "stationName": "/ EW14 Raffles Place",
+      "umap": {
+        "x": 0.625065,
+        "y": -0.303327
+      },
+      "grid": {
+        "column": 0,
+        "row": 5
+      },
+      "position": {
+        "x": -17820,
+        "y": 20,
+        "z": 0
+      },
+      "umapPosition": {
+        "x": 11138.666,
+        "y": 20,
+        "z": 3958.419
+      }
+    },
+    {
+      "index": 77,
+      "artworkTitle": "SG50 Singapore Tapestry",
+      "artist": "Delia Prvacki",
+      "stationCode": "NS28",
+      "stationName": "Marina South Pier",
+      "umap": {
+        "x": -0.476242,
+        "y": -0.045964
+      },
+      "grid": {
+        "column": 8,
+        "row": 0
+      },
+      "position": {
+        "x": 10692,
+        "y": 20,
+        "z": 13050
+      },
+      "umapPosition": {
+        "x": -8486.63,
+        "y": 20,
+        "z": 599.828
+      }
+    },
+    {
+      "index": 78,
+      "artworkTitle": "New Departures",
+      "artist": "Amanda Heng",
+      "stationCode": "TE1",
+      "stationName": "Woodlands North",
+      "umap": {
+        "x": -0.480791,
+        "y": -0.415654
+      },
+      "grid": {
+        "column": 7,
+        "row": 0
+      },
+      "position": {
+        "x": 7128,
+        "y": 20,
+        "z": 13050
+      },
+      "umapPosition": {
+        "x": -8567.703,
+        "y": 20,
+        "z": 5424.281
+      }
+    },
+    {
+      "index": 79,
+      "artworkTitle": "A Syllabus For Stevens",
+      "artist": "Shubigi Rao",
+      "stationCode": "TE11",
+      "stationName": "Stevens",
+      "umap": {
+        "x": -0.587702,
+        "y": 0.101519
+      },
+      "grid": {
+        "column": 2,
+        "row": 7
+      },
+      "position": {
+        "x": -10692,
+        "y": 20,
+        "z": -5220
+      },
+      "umapPosition": {
+        "x": -10472.858,
+        "y": 20,
+        "z": -1324.824
+      }
+    },
+    {
+      "index": 80,
+      "artworkTitle": "Botanical Art",
+      "artist": "National Parks Board",
+      "stationCode": "TE12",
+      "stationName": "Napier",
+      "umap": {
+        "x": -0.083665,
+        "y": 0.181121
+      },
+      "grid": {
+        "column": 2,
+        "row": 9
+      },
+      "position": {
+        "x": -10692,
+        "y": 20,
+        "z": -10440
+      },
+      "umapPosition": {
+        "x": -1490.912,
+        "y": 20,
+        "z": -2363.625
+      }
+    },
+    {
+      "index": 81,
+      "artworkTitle": "PULSE",
+      "artist": "Twardzik Ching Chor Leng",
+      "stationCode": "TE13",
+      "stationName": "Orchard Boulevard",
+      "umap": {
+        "x": 0.682372,
+        "y": -0.481493
+      },
+      "grid": {
+        "column": 9,
+        "row": 4
+      },
+      "position": {
+        "x": 14256,
+        "y": 20,
+        "z": 2610
+      },
+      "umapPosition": {
+        "x": 12159.874,
+        "y": 20,
+        "z": 6283.479
+      }
+    },
+    {
+      "index": 82,
+      "artworkTitle": "Scotts Road / Orchard Road from ION Sky",
+      "artist": "Mintio",
+      "stationCode": "TE14",
+      "stationName": "Orchard",
+      "umap": {
+        "x": -0.361448,
+        "y": -0.535209
+      },
+      "grid": {
+        "column": 3,
+        "row": 2
+      },
+      "position": {
+        "x": -7128,
+        "y": 20,
+        "z": 7830
+      },
+      "umapPosition": {
+        "x": -6441,
+        "y": 20,
+        "z": 6984.483
+      }
+    },
+    {
+      "index": 83,
+      "artworkTitle": "Great World, Great Times",
+      "artist": "Deanna Ng",
+      "stationCode": "TE15",
+      "stationName": "Great World",
+      "umap": {
+        "x": -0.453484,
+        "y": 0.225043
+      },
+      "grid": {
+        "column": 0,
+        "row": 10
+      },
+      "position": {
+        "x": -17820,
+        "y": 20,
+        "z": -13050
+      },
+      "umapPosition": {
+        "x": -8081.08,
+        "y": 20,
+        "z": -2936.817
+      }
+    },
+    {
+      "index": 84,
+      "artworkTitle": "Havelock Traces",
+      "artist": "Anonymous",
+      "stationCode": "TE16",
+      "stationName": "Havelock",
+      "umap": {
+        "x": 0.534705,
+        "y": -0.455868
+      },
+      "grid": {
+        "column": 8,
+        "row": 4
+      },
+      "position": {
+        "x": 10692,
+        "y": 20,
+        "z": 2610
+      },
+      "umapPosition": {
+        "x": 9528.437,
+        "y": 20,
+        "z": 5949.071
+      }
+    },
+    {
+      "index": 85,
+      "artworkTitle": "mata-mata",
+      "artist": "Hafiz Osman",
+      "stationCode": "TE17",
+      "stationName": "Outram Park",
+      "umap": {
+        "x": 0.317143,
+        "y": 0.85822
+      },
+      "grid": {
+        "column": 10,
+        "row": 8
+      },
+      "position": {
+        "x": 17820,
+        "y": 20,
+        "z": -7830
+      },
+      "umapPosition": {
+        "x": 5651.495,
+        "y": 20,
+        "z": -11199.766
+      }
+    },
+    {
+      "index": 86,
+      "artworkTitle": "Old Chinatown In New Maxwell Life",
+      "artist": "Justin Lee",
+      "stationCode": "TE18",
+      "stationName": "Maxwell",
+      "umap": {
+        "x": -0.128492,
+        "y": -0.946311
+      },
+      "grid": {
+        "column": 4,
+        "row": 0
+      },
+      "position": {
+        "x": -3564,
+        "y": 20,
+        "z": 13050
+      },
+      "umapPosition": {
+        "x": -2289.725,
+        "y": 20,
+        "z": 12349.359
+      }
+    },
+    {
+      "index": 87,
+      "artworkTitle": "The Day’s Thoughts of a Homespun Journey into Night",
+      "artist": "Terence Lin",
+      "stationCode": "TE2",
+      "stationName": "Woodlands",
+      "umap": {
+        "x": -0.794186,
+        "y": -0.017612
+      },
+      "grid": {
+        "column": 6,
+        "row": 0
+      },
+      "position": {
+        "x": 3564,
+        "y": 20,
+        "z": 13050
+      },
+      "umapPosition": {
+        "x": -14152.398,
+        "y": 20,
+        "z": 229.831
+      }
+    },
+    {
+      "index": 88,
+      "artworkTitle": "Walking Into The Interstitial",
+      "artist": "Tang Ling Nah",
+      "stationCode": "TE20",
+      "stationName": "Marina Bay",
+      "umap": {
+        "x": 0.184159,
+        "y": -0.174822
+      },
+      "grid": {
+        "column": 10,
+        "row": 3
+      },
+      "position": {
+        "x": 17820,
+        "y": 20,
+        "z": 5220
+      },
+      "umapPosition": {
+        "x": 3281.721,
+        "y": 20,
+        "z": 2281.43
+      }
+    },
+    {
+      "index": 89,
+      "artworkTitle": "Planting Shadows",
+      "artist": "Vertical Submarine",
+      "stationCode": "TE22",
+      "stationName": "Gardens by the Bay",
+      "umap": {
+        "x": 0.555764,
+        "y": -0.623585
+      },
+      "grid": {
+        "column": 5,
+        "row": 4
+      },
+      "position": {
+        "x": 0,
+        "y": 20,
+        "z": 2610
+      },
+      "umapPosition": {
+        "x": 9903.717,
+        "y": 20,
+        "z": 8137.785
+      }
+    },
+    {
+      "index": 90,
+      "artworkTitle": "telinga ekologi kita",
+      "artist": "bani haykal",
+      "stationCode": "TE23",
+      "stationName": "Tanjong Rhu",
+      "umap": {
+        "x": 0.306197,
+        "y": -0.750842
+      },
+      "grid": {
+        "column": 8,
+        "row": 2
+      },
+      "position": {
+        "x": 10692,
+        "y": 20,
+        "z": 7830
+      },
+      "umapPosition": {
+        "x": 5456.435,
+        "y": 20,
+        "z": 9798.492
+      }
+    },
+    {
+      "index": 91,
+      "artworkTitle": "“The waters are blue; Yet I pine for you”",
+      "artist": "Sim Chi Yin",
+      "stationCode": "TE25",
+      "stationName": "Tanjong Katong",
+      "umap": {
+        "x": 0.088368,
+        "y": 0.964253
+      },
+      "grid": {
+        "column": 8,
+        "row": 8
+      },
+      "position": {
+        "x": 10692,
+        "y": 20,
+        "z": -7830
+      },
+      "umapPosition": {
+        "x": 1574.722,
+        "y": 20,
+        "z": -12583.5
+      }
+    },
+    {
+      "index": 92,
+      "artworkTitle": "WALK",
+      "artist": "Ang Sookoon",
+      "stationCode": "TE26",
+      "stationName": "Marine Parade",
+      "umap": {
+        "x": 0.917465,
+        "y": -0.133921
+      },
+      "grid": {
+        "column": 1,
+        "row": 6
+      },
+      "position": {
+        "x": -14256,
+        "y": 20,
+        "z": -2610
+      },
+      "umapPosition": {
+        "x": 16349.233,
+        "y": 20,
+        "z": 1747.664
+      }
+    },
+    {
+      "index": 93,
+      "artworkTitle": "A seat at the end of the long, long, long table",
+      "artist": "Moses Tan",
+      "stationCode": "TE27",
+      "stationName": "Marine Terrace",
+      "umap": {
+        "x": 0.549078,
+        "y": -0.760202
+      },
+      "grid": {
+        "column": 7,
+        "row": 3
+      },
+      "position": {
+        "x": 7128,
+        "y": 20,
+        "z": 5220
+      },
+      "umapPosition": {
+        "x": 9784.569,
+        "y": 20,
+        "z": 9920.642
+      }
+    },
+    {
+      "index": 94,
+      "artworkTitle": "Farther Shores",
+      "artist": "Bruce Quek",
+      "stationCode": "TE29",
+      "stationName": "Bayshore",
+      "umap": {
+        "x": -0.722086,
+        "y": -0.613882
+      },
+      "grid": {
+        "column": 0,
+        "row": 2
+      },
+      "position": {
+        "x": -17820,
+        "y": 20,
+        "z": 7830
+      },
+      "umapPosition": {
+        "x": -12867.57,
+        "y": 20,
+        "z": 8011.154
+      }
+    },
+    {
+      "index": 95,
+      "artworkTitle": "3652 x 50",
+      "artist": "Kng Mian Tze",
+      "stationCode": "TE3",
+      "stationName": "Woodlands South",
+      "umap": {
+        "x": 0.106707,
+        "y": -0.632168
+      },
+      "grid": {
+        "column": 10,
+        "row": 2
+      },
+      "position": {
+        "x": 17820,
+        "y": 20,
+        "z": 7830
+      },
+      "umapPosition": {
+        "x": 1901.523,
+        "y": 20,
+        "z": 8249.794
+      }
+    },
+    {
+      "index": 96,
+      "artworkTitle": "Tree of Memories",
+      "artist": "Koh Hong Teng",
+      "stationCode": "TE4",
+      "stationName": "Springleaf",
+      "umap": {
+        "x": -0.123984,
+        "y": -0.53904
+      },
+      "grid": {
+        "column": 2,
+        "row": 3
+      },
+      "position": {
+        "x": -10692,
+        "y": 20,
+        "z": 5220
+      },
+      "umapPosition": {
+        "x": -2209.403,
+        "y": 20,
+        "z": 7034.471
+      }
+    },
+    {
+      "index": 97,
+      "artworkTitle": "Interlude for Lentor",
+      "artist": "Tan Guo-Liang",
+      "stationCode": "TE5",
+      "stationName": "Lentor",
+      "umap": {
+        "x": 0.150062,
+        "y": 0.028357
+      },
+      "grid": {
+        "column": 7,
+        "row": 7
+      },
+      "position": {
+        "x": 7128,
+        "y": 20,
+        "z": -5220
+      },
+      "umapPosition": {
+        "x": 2674.101,
+        "y": 20,
+        "z": -370.059
+      }
+    },
+    {
+      "index": 98,
+      "artworkTitle": "Bird Sculptures",
+      "artist": "Song-Ming Ang",
+      "stationCode": null,
+      "stationName": "TE6: Mayflower",
+      "umap": {
+        "x": -0.889775,
+        "y": -0.585804
+      },
+      "grid": {
+        "column": 1,
+        "row": 1
+      },
+      "position": {
+        "x": -14256,
+        "y": 20,
+        "z": 10440
+      },
+      "umapPosition": {
+        "x": -15855.797,
+        "y": 20,
+        "z": 7644.736
+      }
+    },
+    {
+      "index": 99,
+      "artworkTitle": "A Kaleidoscopic Nature",
+      "artist": "anGie seah",
+      "stationCode": "TE7",
+      "stationName": "Bright Hill",
+      "umap": {
+        "x": -0.644026,
+        "y": -0.734686
+      },
+      "grid": {
+        "column": 2,
+        "row": 0
+      },
+      "position": {
+        "x": -10692,
+        "y": 20,
+        "z": 13050
+      },
+      "umapPosition": {
+        "x": -11476.538,
+        "y": 20,
+        "z": 9587.657
+      }
+    },
+    {
+      "index": 100,
+      "artworkTitle": "Lost In Our (Concrete) Jungle",
+      "artist": "Troy Chin",
+      "stationCode": "TE8",
+      "stationName": "Upper Thomson",
+      "umap": {
+        "x": -0.030559,
+        "y": 0.549035
+      },
+      "grid": {
+        "column": 5,
+        "row": 5
+      },
+      "position": {
+        "x": 0,
+        "y": 20,
+        "z": 0
+      },
+      "umapPosition": {
+        "x": -544.56,
+        "y": 20,
+        "z": -7164.911
+      }
+    },
+    {
+      "index": 101,
+      "artworkTitle": ":) (:",
+      "artist": "Claire Lim",
+      "stationCode": "TE9",
+      "stationName": "Caldecott",
+      "umap": {
+        "x": 0.524252,
+        "y": 0.368852
+      },
+      "grid": {
+        "column": 7,
+        "row": 8
+      },
+      "position": {
+        "x": 7128,
+        "y": 20,
+        "z": -7830
+      },
+      "umapPosition": {
+        "x": 9342.163,
+        "y": 20,
+        "z": -4813.515
+      }
+    },
+    {
+      "index": 102,
+      "artworkTitle": "Train Rides on Rainy Days",
+      "artist": "Nah Yong En",
+      "stationCode": "CE2",
+      "stationName": "Marina Bay",
+      "umap": {
+        "x": -0.511774,
+        "y": -0.410256
+      },
+      "grid": {
+        "column": 3,
+        "row": 3
+      },
+      "position": {
+        "x": -7128,
+        "y": 20,
+        "z": 5220
+      },
+      "umapPosition": {
+        "x": -9119.816,
+        "y": 20,
+        "z": 5353.845
+      }
+    },
+    {
+      "index": 103,
+      "artworkTitle": "Flowers in Blossom II",
+      "artist": "Tay Chee Toh",
+      "stationCode": "CE2",
+      "stationName": "Marina Bay",
+      "umap": {
+        "x": 0.549221,
+        "y": 0.576672
+      },
+      "grid": {
+        "column": 8,
+        "row": 10
+      },
+      "position": {
+        "x": 10692,
+        "y": 20,
+        "z": -13050
+      },
+      "umapPosition": {
+        "x": 9787.123,
+        "y": 20,
+        "z": -7525.568
+      }
+    },
+    {
+      "index": 104,
+      "artworkTitle": "Through His Eyes",
+      "artist": "Lim Tze Peng",
+      "stationCode": "DT20",
+      "stationName": "Fort Canning",
+      "umap": {
+        "x": 0.322452,
+        "y": 0.683231
+      },
+      "grid": {
+        "column": 7,
+        "row": 9
+      },
+      "position": {
+        "x": 7128,
+        "y": 20,
+        "z": -10440
+      },
+      "umapPosition": {
+        "x": 5746.087,
+        "y": 20,
+        "z": -8916.16
+      }
+    },
+    {
+      "index": 105,
+      "artworkTitle": "Another Day (The Coolies)",
+      "artist": "Chong Fah Cheong",
+      "stationCode": "DT20",
+      "stationName": "Fort Canning",
+      "umap": {
+        "x": 1,
+        "y": 0.038806
+      },
+      "grid": {
+        "column": 10,
+        "row": 7
+      },
+      "position": {
+        "x": 17820,
+        "y": 20,
+        "z": -5220
+      },
+      "umapPosition": {
+        "x": 17820,
+        "y": 20,
+        "z": -506.422
+      }
+    },
+    {
+      "index": 106,
+      "artworkTitle": "Memories",
+      "artist": "Wang Lu Sheng",
+      "stationCode": "NE3",
+      "stationName": "Outram Park",
+      "umap": {
+        "x": -0.922876,
+        "y": -0.178877
+      },
+      "grid": {
+        "column": 3,
+        "row": 4
+      },
+      "position": {
+        "x": -7128,
+        "y": 20,
+        "z": 2610
+      },
+      "umapPosition": {
+        "x": -16445.648,
+        "y": 20,
+        "z": 2334.347
+      }
+    },
+    {
+      "index": 107,
+      "artworkTitle": "Commuters",
+      "artist": "Teo Eng Seng",
+      "stationCode": "NE3",
+      "stationName": "Outram Park",
+      "umap": {
+        "x": 0.286463,
+        "y": 0.165742
+      },
+      "grid": {
+        "column": 9,
+        "row": 5
+      },
+      "position": {
+        "x": 14256,
+        "y": 20,
+        "z": 0
+      },
+      "umapPosition": {
+        "x": 5104.772,
+        "y": 20,
+        "z": -2162.927
+      }
+    },
+    {
+      "index": 108,
+      "artworkTitle": "Interchange",
+      "artist": "Milenko Prvacki; Delia Prvacki",
+      "stationCode": "NE6",
+      "stationName": "Dhoby Ghaut",
+      "umap": {
+        "x": -0.844855,
+        "y": 0.431272
+      },
+      "grid": {
+        "column": 4,
+        "row": 6
+      },
+      "position": {
+        "x": -3564,
+        "y": 20,
+        "z": -2610
+      },
+      "umapPosition": {
+        "x": -15055.325,
+        "y": 20,
+        "z": -5628.106
+      }
+    },
+    {
+      "index": 109,
+      "artworkTitle": "Universal Language",
+      "artist": "Sun Yu-Li",
+      "stationCode": "NE6",
+      "stationName": "Dhoby Ghaut",
+      "umap": {
+        "x": -0.229633,
+        "y": 0.837919
+      },
+      "grid": {
+        "column": 7,
+        "row": 6
+      },
+      "position": {
+        "x": 7128,
+        "y": 20,
+        "z": -2610
+      },
+      "umapPosition": {
+        "x": -4092.063,
+        "y": 20,
+        "z": -10934.838
+      }
+    },
+    {
+      "index": 110,
+      "artworkTitle": "Memoirs of the Past",
+      "artist": "S. Chandrasekaran",
+      "stationCode": "NE7",
+      "stationName": "Little India",
+      "umap": {
+        "x": 0.089135,
+        "y": 0.172419
+      },
+      "grid": {
+        "column": 8,
+        "row": 5
+      },
+      "position": {
+        "x": 10692,
+        "y": 20,
+        "z": 0
+      },
+      "umapPosition": {
+        "x": 1588.388,
+        "y": 20,
+        "z": -2250.064
+      }
+    },
+    {
+      "index": 111,
+      "artworkTitle": "Seeing History Through the Bamboo Forest",
+      "artist": "Yeo Siak Goon",
+      "stationCode": "NE7",
+      "stationName": "Little India",
+      "umap": {
+        "x": -0.845853,
+        "y": 0.260698
+      },
+      "grid": {
+        "column": 4,
+        "row": 5
+      },
+      "position": {
+        "x": -3564,
+        "y": 20,
+        "z": 0
+      },
+      "umapPosition": {
+        "x": -15073.1,
+        "y": 20,
+        "z": -3402.107
+      }
+    },
+    {
+      "index": 112,
+      "artworkTitle": "Everyday Singapore 每日所见",
+      "artist": "Quek Kiat Sing",
+      "stationCode": "TE19",
+      "stationName": "Shenton Way",
+      "umap": {
+        "x": 0.001331,
+        "y": -0.853042
+      },
+      "grid": {
+        "column": 9,
+        "row": 1
+      },
+      "position": {
+        "x": 14256,
+        "y": 20,
+        "z": 10440
+      },
+      "umapPosition": {
+        "x": 23.711,
+        "y": 20,
+        "z": 11132.193
+      }
+    },
+    {
+      "index": 113,
+      "artworkTitle": "Stride Alongside the Bo-men",
+      "artist": "Daisy Boman",
+      "stationCode": "TE19",
+      "stationName": "Shenton Way",
+      "umap": {
+        "x": 0.951964,
+        "y": 0.084659
+      },
+      "grid": {
+        "column": 5,
+        "row": 8
+      },
+      "position": {
+        "x": 0,
+        "y": 20,
+        "z": -7830
+      },
+      "umapPosition": {
+        "x": 16963.993,
+        "y": 20,
+        "z": -1104.804
+      }
+    },
+    {
+      "index": 114,
+      "artworkTitle": "Sun Woman",
+      "artist": "Juan Ripolles",
+      "stationCode": "TE19",
+      "stationName": "Shenton Way",
+      "umap": {
+        "x": 0.901661,
+        "y": 0.217
+      },
+      "grid": {
+        "column": 6,
+        "row": 8
+      },
+      "position": {
+        "x": 3564,
+        "y": 20,
+        "z": -7830
+      },
+      "umapPosition": {
+        "x": 16067.593,
+        "y": 20,
+        "z": -2831.853
+      }
+    },
+    {
+      "index": 115,
+      "artworkTitle": "The Darkness which Reveals",
+      "artist": "Melissa Tan",
+      "stationCode": "TE28",
+      "stationName": "Siglap",
+      "umap": {
+        "x": 0.283242,
+        "y": 0.924359
+      },
+      "grid": {
+        "column": 8,
+        "row": 9
+      },
+      "position": {
+        "x": 10692,
+        "y": 20,
+        "z": -10440
+      },
+      "umapPosition": {
+        "x": 5047.375,
+        "y": 20,
+        "z": -12062.885
+      }
+    },
+    {
+      "index": 116,
+      "artworkTitle": "Journey Across Sunlight: A Siglap Mosaic",
+      "artist": "Brian Gothong Tan",
+      "stationCode": "TE28",
+      "stationName": "Siglap",
+      "umap": {
+        "x": -0.001286,
+        "y": 1
+      },
+      "grid": {
+        "column": 6,
+        "row": 7
+      },
+      "position": {
+        "x": 3564,
+        "y": 20,
+        "z": -5220
+      },
+      "umapPosition": {
+        "x": -22.925,
+        "y": 20,
+        "z": -13050
+      }
+    }
+  ]
+}

@@ -15,8 +15,12 @@ const Three = () => {
         frameloop="demand"
         overlay
         gl={async (props) => {
-          const renderer = new THREE.WebGPURenderer(props)
+          const renderer = new THREE.WebGPURenderer({
+            ...props,
+            alpha: true,
+          })
           await renderer.init()
+          renderer.setClearColor(0x000000, 0)
           return renderer
         }}
       >
