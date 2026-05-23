@@ -48,6 +48,7 @@ import {
   uniform,
   uniformArray,
   uv,
+  vec3,
   vec4,
 } from "three/tsl"
 
@@ -60,6 +61,7 @@ const COORDINATE_KEY_PRECISION = 6
 const DEFAULT_BORDER_WIDTH = 0.035
 const DEFAULT_BORDER_INTENSITY = 1
 const DEFAULT_BORDER_OPACITY = 0.75
+const HOVER_ALTITUDE_OFFSET = 260
 const HOVER_SCALE = 1.18
 const HOVER_TRANSITION_DAMPING = 14
 const HOVER_TRANSITION_EPSILON = 0.001
@@ -608,12 +610,7 @@ const Artworks = () => {
   // Look towards webgl image galleries for inspiration
 
   // TODO: To remain same size regardless of zoom
-  const positionNode = useMemo(() => {
-    const zoomScale = mix(
-      mix(artworkZoomScale, float(1), lineLayoutProgressUniform),
-      float(1),
-      timeLayoutProgressUniform
-    )
+  const hoverInfluenceNode = useMemo(() => {
     const artworkIndex = int(instanceIndex)
     const hoveredInfluence = select(
       equal(artworkIndex, hoveredArtworkIdUniform),
@@ -633,10 +630,19 @@ const Artworks = () => {
       ),
       float(0)
     )
+    return hoveredInfluence.add(previousHoveredInfluence)
+  }, [])
+
+  const positionNode = useMemo(() => {
+    const zoomScale = mix(
+      mix(artworkZoomScale, float(1), lineLayoutProgressUniform),
+      float(1),
+      timeLayoutProgressUniform
+    )
     const hoverScale = mix(
       float(1),
       float(HOVER_SCALE),
-      hoveredInfluence.add(previousHoveredInfluence)
+      hoverInfluenceNode
     )
     const positionNode = positionLocal
       .mul(artworkMetadataAttribute.xyz)
@@ -644,7 +650,7 @@ const Artworks = () => {
       .mul(hoverScale)
 
     return positionNode
-  }, [artworkMetadataAttribute])
+  }, [artworkMetadataAttribute, hoverInfluenceNode])
 
   const vertexNode = useMemo(() => {
     const rowLayoutPosition = mix(
@@ -652,17 +658,23 @@ const Artworks = () => {
       lineRowPositions.toAttribute(),
       lineLayoutProgressUniform
     )
+    const layoutPosition = mix(
+      rowLayoutPosition,
+      timePositions.toAttribute(),
+      timeLayoutProgressUniform
+    )
+    const hoverLift = vec3(
+      float(0),
+      hoverInfluenceNode.mul(HOVER_ALTITUDE_OFFSET),
+      float(0)
+    )
 
     return billboarding({
-      position: mix(
-        rowLayoutPosition,
-        timePositions.toAttribute(),
-        timeLayoutProgressUniform
-      ),
+      position: layoutPosition.add(hoverLift),
       horizontal: false,
       vertical: true,
     })
-  }, [lineRowPositions, renderPositions, timePositions])
+  }, [hoverInfluenceNode, lineRowPositions, renderPositions, timePositions])
 
   const colorNode = useMemo(() => {
     const uvNode = uv()

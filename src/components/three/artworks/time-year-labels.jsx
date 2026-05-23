@@ -25,18 +25,13 @@ function configureTimeYearLabelAtlas(texture) {
 }
 
 function createTimeYearLabelGeometry(label, font) {
-  const geometry = new MSDFTextGeometry({
+  return new MSDFTextGeometry({
     text: label,
     font,
     align: "center",
     mode: "nowrap",
     letterSpacing: 0,
   })
-
-  geometry.computeBoundingBox()
-  geometry.translate(-geometry.layout.width * 0.5, -geometry.layout.height * 0.5, 0)
-
-  return geometry
 }
 
 function TimeYearLabels({ labels, timeLayoutProgressUniform }) {
@@ -138,7 +133,16 @@ function TimeYearLabels({ labels, timeLayoutProgressUniform }) {
           }}
           scale={TIME_YEAR_LABEL_SCALE}
         >
-          <mesh geometry={geometry} material={material} frustumCulled={false} />
+          <mesh
+            geometry={geometry}
+            material={material}
+            position={[
+              -geometry.layout.width * 0.5,
+              -geometry.layout.height * 0.5,
+              0,
+            ]}
+            frustumCulled={false}
+          />
         </group>
       ))}
     </group>
