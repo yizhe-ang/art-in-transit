@@ -12,7 +12,7 @@ import { Leva } from "leva"
 export function App() {
   return (
     <>
-      <Leva collapsed />
+      <Leva collapsed hidden={import.meta.env.PROD} />
 
       <div className="fixed inset-0">
         <Map />
