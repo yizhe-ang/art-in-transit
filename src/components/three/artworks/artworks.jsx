@@ -2,6 +2,7 @@ import data from "@/data/bloomberg-art-in-transit-gallery.json"
 import embeddingLayout from "@/data/artwork-embedding-layout.json"
 import manifest from "@/data/artwork-texture-manifest.json"
 import { useStore } from "@/store"
+import { publicUrl } from "@/lib/public-url"
 import {
   createArtworkLinePositionArray,
   updateArtworkLineProgress,
@@ -75,9 +76,9 @@ const Artworks = () => {
 
   const artworksTexture = useLoader(
     KTX2Loader,
-    "/artworks/artworks-256.ktx2",
+    publicUrl("/artworks/artworks-256.ktx2"),
     (loader) => {
-      loader.setTranscoderPath("/basis/")
+      loader.setTranscoderPath(publicUrl("/basis/"))
       loader.detectSupport(gl)
     }
   )

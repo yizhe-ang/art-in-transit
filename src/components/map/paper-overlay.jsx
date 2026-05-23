@@ -1,4 +1,5 @@
 import { folder, useControls } from "leva"
+import { publicUrl } from "@/lib/public-url"
 
 const PaperOverlay = () => {
   const { enabled, opacity, blendMode, brightness, contrast } = useControls({
@@ -32,8 +33,9 @@ const PaperOverlay = () => {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 bg-[url('/textures/paper.webp')] bg-cover bg-center bg-no-repeat"
+      className="pointer-events-none absolute inset-0 bg-cover bg-center bg-no-repeat"
       style={{
+        backgroundImage: `url("${publicUrl("/textures/paper.webp")}")`,
         display: enabled ? undefined : "none",
         opacity,
         mixBlendMode: blendMode,

@@ -1,4 +1,5 @@
 import { useFrame, useLoader, useThree } from "@react-three/fiber"
+import { publicUrl } from "@/lib/public-url"
 import { useEffect, useMemo, useRef } from "react"
 import * as THREE from "three/webgpu"
 import {
@@ -7,8 +8,8 @@ import {
 } from "three-msdf-text-utils/webgpu"
 import { uniform } from "three/tsl"
 
-const FONT_URL = "/fonts/msdf/LTAIdentity.Medium-msdf.json"
-const ATLAS_URL = "/fonts/msdf/LTAIdentity.Medium-msdf-atlas.png"
+const FONT_URL = publicUrl("/fonts/msdf/LTAIdentity.Medium-msdf.json")
+const ATLAS_URL = publicUrl("/fonts/msdf/LTAIdentity.Medium-msdf-atlas.png")
 const LABEL_SCALE = 13
 const LABEL_COLOR = "#004851"
 const LABEL_STROKE_COLOR = "#f7f1df"

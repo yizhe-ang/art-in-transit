@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react"
 import { buildRailRoutes } from "@/components/three/rail-routes"
+import { publicUrl } from "@/lib/public-url"
 import { useLoader, useThree } from "@react-three/fiber"
 import { useMap } from "react-three-map/maplibre"
 import { folder, useControls } from "leva"
@@ -61,7 +62,10 @@ const PainterlyRoute = ({ route, strokeTexture }) => {
 const Lines = () => {
   const invalidate = useThree((state) => state.invalidate)
   const map = useMap()
-  const strokeTexture = useLoader(THREE.TextureLoader, "/textures/stroke.png")
+  const strokeTexture = useLoader(
+    THREE.TextureLoader,
+    publicUrl("/textures/stroke.png")
+  )
 
   useEffect(() => {
     configureStrokeTexture(strokeTexture)

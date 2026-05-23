@@ -1,4 +1,5 @@
 import stationsSprite from "@/data/stations.json"
+import { publicUrl } from "@/lib/public-url"
 
 export default async function loadImages(map) {
   const canvas = document.createElement("canvas")
@@ -6,7 +7,7 @@ export default async function loadImages(map) {
     willReadFrequently: true,
   })
 
-  const image = await map.loadImage("/images/stations.png")
+  const image = await map.loadImage(publicUrl("/images/stations.png"))
   const img = image.data
 
   canvas.width = img.width
