@@ -6,6 +6,7 @@ import { useState } from "react"
 import Three from "@/components/three/three"
 import { bounds } from "@/components/map/constants"
 import { useStore } from "@/store"
+import PaperOverlay from "@/components/map/paper-overlay"
 
 const dragPanOptions = {
   linearity: 0.3,
@@ -48,7 +49,7 @@ const Map = () => {
       >
         {imagesLoaded && <Rail />}
 
-        {/* <PaperOverlay /> */}
+        <PaperOverlay />
 
         <Three />
       </MapImpl>
