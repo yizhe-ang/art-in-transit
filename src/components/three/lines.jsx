@@ -10,7 +10,8 @@ import { float, max, select, texture, uniform, uv, vec2 } from "three/tsl"
 const BRUSH_REPEAT_LENGTH = 2_400
 const MIN_BRUSH_REPEATS = 1
 
-const drawTUniform = uniform(0)
+// eslint-disable-next-line react-refresh/only-export-components
+export const drawTUniform = uniform(0)
 const brushRepeatLengthUniform = uniform(BRUSH_REPEAT_LENGTH)
 const strokeOpacityUniform = uniform(1)
 const alphaCutoffUniform = uniform(0.08)
@@ -65,14 +66,8 @@ const Lines = () => {
     return buildRailRoutes()
   }, [])
 
-  const { alphaCutoff, brushRepeatLength, drawT, strokeOpacity } = useControls({
+  const { alphaCutoff, brushRepeatLength, strokeOpacity } = useControls({
     lines: folder({
-      drawT: {
-        value: 1,
-        min: 0,
-        max: 1,
-        step: 0.01,
-      },
       brushRepeatLength: {
         value: BRUSH_REPEAT_LENGTH,
         min: 600,
@@ -93,10 +88,6 @@ const Lines = () => {
       },
     }),
   })
-
-  useEffect(() => {
-    drawTUniform.value = drawT
-  }, [drawT])
 
   useEffect(() => {
     alphaCutoffUniform.value = alphaCutoff

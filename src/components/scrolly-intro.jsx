@@ -3,6 +3,7 @@ import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { button, folder, useControls } from "leva"
 import { useStore } from "@/store"
+import { drawTUniform } from "@/components/three/lines"
 
 gsap.registerPlugin(useGSAP, ScrollTrigger)
 
@@ -53,6 +54,7 @@ const ScrollyIntro = () => {
       }
 
       setArtworkLineProgress(0)
+      drawTUniform.value = 0
       scrollState.value = 0
 
       const timeline = gsap.timeline({
@@ -63,6 +65,7 @@ const ScrollyIntro = () => {
           scrub: 1,
         },
         onUpdate: () => {
+          drawTUniform.value = scrollState.value
           setArtworkLineProgress(scrollState.value)
           map.jumpTo({
             center: [scrollState.longitude, scrollState.latitude],
@@ -85,6 +88,7 @@ const ScrollyIntro = () => {
       })
 
       return () => {
+        drawTUniform.value = 0
         setArtworkLineProgress(0)
       }
     },
