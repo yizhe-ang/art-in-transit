@@ -41,6 +41,7 @@ const FluidSim = forwardRef(function FluidSim(
   {
     children,
     enabled: defaultEnabled = true,
+    persistInactiveTrail: defaultPersistInactiveTrail = true,
     resolutionScale: defaultResolutionScale = DEFAULT_RESOLUTION_SCALE,
     onTexture,
   },
@@ -61,6 +62,7 @@ const FluidSim = forwardRef(function FluidSim(
     lerpSpeed,
     fadeInSpeed,
     fadeOutSpeed,
+    persistInactiveTrail,
     moveThreshold,
     noiseScale,
     displacementStrength,
@@ -77,13 +79,14 @@ const FluidSim = forwardRef(function FluidSim(
       },
       trailSize: {
         // value: 0.2,
-        value: 0.05,
+        value: 0.005,
         min: 0.02,
         max: 0.6,
         step: 0.01,
       },
       minTrailSize: {
-        value: 100,
+        // value: 100,
+        value: 5,
         min: 1,
         max: 400,
         step: 1,
@@ -106,6 +109,7 @@ const FluidSim = forwardRef(function FluidSim(
         max: 0.5,
         step: 0.01,
       },
+      persistInactiveTrail: defaultPersistInactiveTrail,
       moveThreshold: {
         value: 0.5,
         min: 0,
@@ -139,7 +143,8 @@ const FluidSim = forwardRef(function FluidSim(
     }),
   })
 
-  const dpr = viewportDpr ?? gl.getPixelRatio?.() ?? window.devicePixelRatio ?? 1
+  const dpr =
+    viewportDpr ?? gl.getPixelRatio?.() ?? window.devicePixelRatio ?? 1
   const renderSize = useMemo(() => {
     return getRenderSize(size, dpr, resolutionScale)
   }, [dpr, resolutionScale, size])
@@ -170,6 +175,7 @@ const FluidSim = forwardRef(function FluidSim(
       lerpSpeed,
       fadeInSpeed,
       fadeOutSpeed,
+      persistInactiveTrail,
       moveThreshold,
     })
   }, [
@@ -178,6 +184,7 @@ const FluidSim = forwardRef(function FluidSim(
     lerpSpeed,
     minTrailSize,
     moveThreshold,
+    persistInactiveTrail,
     trail,
     trailSize,
   ])

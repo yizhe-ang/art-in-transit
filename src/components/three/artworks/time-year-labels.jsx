@@ -5,6 +5,7 @@ import {
   MSDFTextGeometry,
   MSDFTextNodeMaterial,
 } from "three-msdf-text-utils/webgpu"
+import { uniform } from "three/tsl"
 
 const FONT_URL = "/fonts/msdf/LTAIdentity.Medium-msdf.json"
 const ATLAS_URL = "/fonts/msdf/LTAIdentity.Medium-msdf-atlas.png"
@@ -12,6 +13,7 @@ const LABEL_SCALE = 11
 const LABEL_COLOR = "#f7f3e8"
 const LABEL_ALPHA_TEST = 0.01
 const LABEL_RENDER_ORDER = 5
+const labelOpacityUniform = uniform(0)
 
 function parseFontData(fontData) {
   return typeof fontData === "string" ? JSON.parse(fontData) : fontData
@@ -80,21 +82,24 @@ const TimeYearLabels = ({ labels, timeLayoutProgressUniform }) => {
   const invalidate = useThree((state) => state.invalidate)
   const fontData = useLoader(THREE.FileLoader, FONT_URL)
   const atlasTexture = useLoader(THREE.TextureLoader, ATLAS_URL)
-  const opacityUniformRef = useRef(null)
   const font = useMemo(() => parseFontData(fontData), [fontData])
   const material = useMemo(() => {
-    return new MSDFTextNodeMaterial({
+    const material = new MSDFTextNodeMaterial({
       alphaTest: LABEL_ALPHA_TEST,
       color: LABEL_COLOR,
+      depthTest: false,
+      depthWrite: false,
       map: atlasTexture,
-      opacity: 0,
+      opacity: 1,
       transparent: true,
     })
-  }, [atlasTexture])
 
-  useEffect(() => {
-    opacityUniformRef.current = material.opacity
-  }, [material])
+    material.depthTest = false
+    material.depthWrite = false
+    material.opacityNode = labelOpacityUniform.mul(material.opacityNode)
+
+    return material
+  }, [atlasTexture])
 
   useEffect(() => {
     configureAtlasTexture(atlasTexture)
@@ -107,13 +112,10 @@ const TimeYearLabels = ({ labels, timeLayoutProgressUniform }) => {
   }, [material])
 
   useFrame(() => {
-    const opacityUniform = opacityUniformRef.current
+    const nextOpacity = timeLayoutProgressUniform.value
 
-    if (
-      opacityUniform &&
-      opacityUniform.value !== timeLayoutProgressUniform.value
-    ) {
-      opacityUniform.value = timeLayoutProgressUniform.value
+    if (labelOpacityUniform.value !== nextOpacity) {
+      labelOpacityUniform.value = nextOpacity
       invalidate()
     }
   })

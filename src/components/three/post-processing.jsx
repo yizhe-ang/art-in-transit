@@ -18,12 +18,12 @@ import { useFrame, useThree } from "@react-three/fiber"
 import { useTexture } from "@react-three/drei"
 import { folder, useControls } from "leva"
 
-const strengthUniform = uniform(0.65)
+const strengthUniform = uniform(1)
 const thresholdUniform = uniform(0.08)
 const softnessUniform = uniform(0.35)
-const brightnessUniform = uniform(0.18)
-const saturationUniform = uniform(0.35)
-const contrastUniform = uniform(0.08)
+const brightnessUniform = uniform(0.08)
+const saturationUniform = uniform(-0.65)
+const contrastUniform = uniform(-0.25)
 
 const PostProcessing = ({ fluidMaskNode }) => {
   const renderer = useThree((state) => state.gl)
@@ -48,7 +48,7 @@ const PostProcessing = ({ fluidMaskNode }) => {
       debugMask: false,
       flipY: true,
       strength: {
-        value: 0.65,
+        value: 1,
         min: 0,
         max: 1,
         step: 0.01,
@@ -66,19 +66,19 @@ const PostProcessing = ({ fluidMaskNode }) => {
         step: 0.01,
       },
       brightness: {
-        value: 0.18,
+        value: 0.08,
         min: -0.5,
         max: 0.8,
         step: 0.01,
       },
       saturation: {
-        value: 0.35,
+        value: -0.65,
         min: -1,
         max: 1.5,
         step: 0.01,
       },
       contrast: {
-        value: 0.08,
+        value: -0.25,
         min: -0.5,
         max: 0.8,
         step: 0.01,
@@ -118,24 +118,27 @@ const PostProcessing = ({ fluidMaskNode }) => {
       if (debugMask) {
         outputNode = vec4(vec3(shapedMask), float(1))
       } else {
-        const baseColor = outputNode.rgb
-        const luminanceColor = vec3(luminance(baseColor))
-        const saturatedColor = mix(
+        const normalColor = outputNode.rgb
+        const luminanceColor = vec3(luminance(normalColor))
+        const fadedSaturationColor = mix(
           luminanceColor,
-          baseColor,
+          normalColor,
           float(1).add(saturationUniform)
         )
-        const contrastedColor = saturatedColor
+        const fadedContrastColor = fadedSaturationColor
           .sub(vec3(0.5))
           .mul(float(1).add(contrastUniform))
           .add(vec3(0.5))
-        const affectedColor = clamp(
-          contrastedColor.add(vec3(brightnessUniform)),
+        const fadedColor = clamp(
+          fadedContrastColor.add(vec3(brightnessUniform)),
           vec3(0),
           vec3(1)
         )
 
-        outputNode = vec4(mix(baseColor, affectedColor, shapedMask), outputNode.a)
+        outputNode = vec4(
+          mix(fadedColor, normalColor, shapedMask),
+          outputNode.a
+        )
       }
     }
 

@@ -6,6 +6,7 @@ const DEFAULT_LERP_SPEED = 0.075
 const DEFAULT_FADE_IN_SPEED = 0.1
 const DEFAULT_FADE_OUT_SPEED = 0.1
 const DEFAULT_MOVE_THRESHOLD = 0.5
+const DEFAULT_PERSIST_INACTIVE_TRAIL = true
 
 export default class MouseTrail {
   constructor(width, height) {
@@ -20,6 +21,7 @@ export default class MouseTrail {
     this.fadeInSpeed = DEFAULT_FADE_IN_SPEED
     this.fadeOutSpeed = DEFAULT_FADE_OUT_SPEED
     this.moveThreshold = DEFAULT_MOVE_THRESHOLD
+    this.persistInactiveTrail = DEFAULT_PERSIST_INACTIVE_TRAIL
 
     this.#createCanvas(width, height)
     this.#createTexture()
@@ -92,6 +94,7 @@ export default class MouseTrail {
     fadeInSpeed,
     fadeOutSpeed,
     moveThreshold,
+    persistInactiveTrail,
   }) {
     if (trailSize !== undefined) {
       this.trailSize = trailSize
@@ -117,6 +120,10 @@ export default class MouseTrail {
       this.moveThreshold = moveThreshold
     }
 
+    if (persistInactiveTrail !== undefined) {
+      this.persistInactiveTrail = persistInactiveTrail
+    }
+
     this.#updateLineWidth()
   }
 
@@ -139,7 +146,7 @@ export default class MouseTrail {
 
     if (dist > this.moveThreshold) {
       this.opacity = Math.min(1, this.opacity + this.fadeInSpeed)
-    } else {
+    } else if (!this.persistInactiveTrail) {
       this.opacity = Math.max(0, this.opacity - this.fadeOutSpeed)
     }
   }
