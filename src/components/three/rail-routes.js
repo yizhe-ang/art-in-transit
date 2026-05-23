@@ -4,10 +4,10 @@ import { coordsToVector3 } from "react-three-map/maplibre"
 import * as THREE from "three"
 
 export const LINE_ORDER = [
+  "North South Line",
+  "North East Line",
   "Circle Line",
   "Downtown Line",
-  "North East Line",
-  "North South Line",
   "Thomson-East Coast Line",
 ]
 
