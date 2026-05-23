@@ -567,6 +567,16 @@ const Artworks = () => {
     }),
   })
 
+  const aspectRatios = useMemo(() => {
+    const array = new Float32Array(COUNT)
+
+    manifest.entries.forEach((entry, index) => {
+      array[index] = entry.aspectRatio ?? 1
+    })
+
+    return array
+  }, [])
+
   const timePositions = useMemo(() => {
     const array = createArtworkTimePositionArray(
       artworkRoutes,
@@ -579,10 +589,11 @@ const Artworks = () => {
   const embeddingLayoutPositions = useMemo(() => {
     const array = createArtworkEmbeddingLayoutPositionArray(
       artworkRoutes,
-      embeddingLayout
+      embeddingLayout,
+      aspectRatios
     )
     return instancedArray(array, "vec4")
-  }, [artworkRoutes])
+  }, [artworkRoutes, aspectRatios])
 
   const timeYearLabels = useMemo(() => {
     return createArtworkTimeYearLabels(
@@ -617,16 +628,6 @@ const Artworks = () => {
     renderPositionBuffer.array.set(finalPositionArray)
     renderPositionBuffer.needsUpdate = true
   }, [artworkRoutes, finalPositionArray, lineStagger, progress])
-
-  const aspectRatios = useMemo(() => {
-    const array = new Float32Array(COUNT)
-
-    manifest.entries.forEach((entry, index) => {
-      array[index] = entry.aspectRatio ?? 1
-    })
-
-    return array
-  }, [])
 
   const artworkMetadata = useMemo(() => {
     const array = new Float32Array(COUNT * 4)

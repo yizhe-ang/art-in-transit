@@ -10,6 +10,9 @@ const TIME_STACK_GAP = DEFAULT_SIZE * 1.25
 const TIME_YEAR_LABEL_ALTITUDE = 0
 const TIME_YEAR_LABEL_STACK_GAP = DEFAULT_SIZE * 0.42
 const FALLBACK_LINE_INDEX = LINE_ORDER.length
+const EMBEDDING_RAW_SCALE = 1.5
+const EMBEDDING_RAW_PADDING = DEFAULT_SIZE * 0.04
+const EMBEDDING_RAW_RELAXATION_ITERATIONS = 400
 export const TIME_STACK_BASELINES = {
   CENTERED: "centered",
   ZERO_DOWN: "zero-down",
@@ -40,6 +43,91 @@ function getArtworkYearValue(artwork) {
 
 function getArtworkYearLabel(year) {
   return Number.isFinite(year) ? String(year) : "Unknown"
+}
+
+function separateEmbeddingPair(first, second, padding) {
+  const dx = second.x - first.x
+  const dz = second.z - first.z
+  const overlapX = (first.width + second.width) * 0.5 + padding - Math.abs(dx)
+  const overlapZ =
+    (first.height + second.height) * 0.5 + padding - Math.abs(dz)
+
+  if (overlapX <= 0 || overlapZ <= 0) return
+
+  if (overlapX < overlapZ) {
+    const direction =
+      dx === 0 ? (first.index < second.index ? 1 : -1) : Math.sign(dx)
+    const offset = overlapX * 0.5 * direction
+
+    first.x -= offset
+    second.x += offset
+  } else {
+    const direction =
+      dz === 0 ? (first.index < second.index ? 1 : -1) : Math.sign(dz)
+    const offset = overlapZ * 0.5 * direction
+
+    first.z -= offset
+    second.z += offset
+  }
+}
+
+function createRelaxedEmbeddingRawPositions(
+  artworkRoutes,
+  positionsByIndex,
+  aspectRatios = []
+) {
+  const items = artworkRoutes.map((artworkRoute, index) => {
+    const positions = positionsByIndex.get(index)
+    const snapped = positions?.snapped ?? artworkRoute.finalPosition
+    const raw = positions?.raw ?? snapped
+
+    return {
+      height: DEFAULT_SIZE,
+      index,
+      raw,
+      width: DEFAULT_SIZE * (aspectRatios[index] ?? 1),
+      x: raw.x,
+      z: raw.z,
+    }
+  })
+  const centroid = items.reduce(
+    (acc, item) => {
+      acc.x += item.x
+      acc.z += item.z
+      return acc
+    },
+    { x: 0, z: 0 }
+  )
+
+  centroid.x /= items.length || 1
+  centroid.z /= items.length || 1
+
+  items.forEach((item) => {
+    item.x = centroid.x + (item.x - centroid.x) * EMBEDDING_RAW_SCALE
+    item.z = centroid.z + (item.z - centroid.z) * EMBEDDING_RAW_SCALE
+  })
+
+  for (
+    let iteration = 0;
+    iteration < EMBEDDING_RAW_RELAXATION_ITERATIONS;
+    iteration += 1
+  ) {
+    for (let firstIndex = 0; firstIndex < items.length; firstIndex += 1) {
+      for (
+        let secondIndex = firstIndex + 1;
+        secondIndex < items.length;
+        secondIndex += 1
+      ) {
+        separateEmbeddingPair(
+          items[firstIndex],
+          items[secondIndex],
+          EMBEDDING_RAW_PADDING
+        )
+      }
+    }
+  }
+
+  return new Map(items.map((item) => [item.index, item]))
 }
 
 function createArtworkTimeGroups(artworkRoutes, artworks) {
@@ -183,7 +271,8 @@ export function createArtworkTimePositionArray(
 
 export function createArtworkEmbeddingLayoutPositionArray(
   artworkRoutes,
-  layout
+  layout,
+  aspectRatios
 ) {
   const array = new Float32Array(artworkRoutes.length * 4)
   const positionsByIndex = new Map(
@@ -195,11 +284,16 @@ export function createArtworkEmbeddingLayoutPositionArray(
       },
     ])
   )
+  const rawPositionsByIndex = createRelaxedEmbeddingRawPositions(
+    artworkRoutes,
+    positionsByIndex,
+    aspectRatios
+  )
 
   artworkRoutes.forEach((artworkRoute, index) => {
     const positions = positionsByIndex.get(index)
     const snapped = positions?.snapped ?? artworkRoute.finalPosition
-    const raw = positions?.raw ?? snapped
+    const raw = rawPositionsByIndex.get(index) ?? positions?.raw ?? snapped
     const offset = index * 4
 
     array[offset + 0] = snapped.x
