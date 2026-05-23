@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils"
 const Steps = () => {
   return (
     <div>
-      <Step id="step-1" className="h-[200vh]"></Step>
+      <Step id="step-1" className="h-[300vh]"></Step>
     </div>
   )
 }

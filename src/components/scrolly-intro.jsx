@@ -9,6 +9,14 @@ gsap.registerPlugin(useGSAP, ScrollTrigger)
 
 // TODO: Lenis?
 
+const cameraTo = {
+  longitude: 103.84338723745145,
+  latitude: 1.310764844801426,
+  zoom: 14.090032064289693,
+  pitch: 60,
+  bearing: -34.49132978279283,
+}
+
 const ScrollyIntro = () => {
   const map = useStore((state) => state.map)
 
@@ -43,14 +51,24 @@ const ScrollyIntro = () => {
       }
 
       const setArtworkLineProgress = useStore.getState().setArtworkLineProgress
+
       const scrollState = {
         value: useStore.getState().artworkLineProgress,
+      }
+      const cameraState = {
         longitude: map.getCenter().lng,
         latitude: map.getCenter().lat,
         zoom: map.getZoom(),
         pitch: map.getPitch(),
         bearing: map.getBearing(),
       }
+
+      map.jumpTo({
+        center: [cameraTo.longitude, cameraTo.latitude],
+        zoom: cameraTo.zoom,
+        pitch: cameraTo.pitch,
+        bearing: cameraTo.bearing,
+      })
 
       setArtworkLineProgress(0)
       // drawTUniform.value = 0
@@ -67,24 +85,29 @@ const ScrollyIntro = () => {
           // drawTUniform.value = scrollState.value
           setArtworkLineProgress(scrollState.value)
           map.jumpTo({
-            center: [scrollState.longitude, scrollState.latitude],
-            zoom: scrollState.zoom,
-            pitch: scrollState.pitch,
-            bearing: scrollState.bearing,
+            center: [cameraState.longitude, cameraState.latitude],
+            zoom: cameraState.zoom,
+            pitch: cameraState.pitch,
+            bearing: cameraState.bearing,
           })
           map.triggerRepaint?.()
         },
+        defaults: {
+          ease: "none",
+        },
       })
 
-      timeline.to(scrollState, {
-        value: 1,
-        longitude: 103.85,
-        latitude: 1.31,
-        zoom: 12.5,
-        pitch: 45,
-        bearing: -20,
-        ease: "none",
-      })
+      timeline
+        .from(cameraState, {
+          ...cameraTo,
+        })
+        .to(
+          scrollState,
+          {
+            value: 1,
+          },
+          "<"
+        )
 
       // return () => {
       //   drawTUniform.value = 0
