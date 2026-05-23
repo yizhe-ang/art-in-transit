@@ -53,4 +53,11 @@ export const useStore = create((set) => ({
         id: (state.artworkCameraFocusRequest?.id ?? 0) + 1,
       },
     })),
+  clearArtworkCameraFocusRequest: () =>
+    set((state) => ({
+      artworkCameraFocusRequest: {
+        artwork: null,
+        id: (state.artworkCameraFocusRequest?.id ?? 0) + 1,
+      },
+    })),
 }))

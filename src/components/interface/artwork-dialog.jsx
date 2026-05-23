@@ -357,6 +357,9 @@ const ArtworkDialog = () => {
   const requestArtworkCameraFocus = useStore(
     (state) => state.requestArtworkCameraFocus
   )
+  const clearArtworkCameraFocusRequest = useStore(
+    (state) => state.clearArtworkCameraFocusRequest
+  )
   const shouldReduceMotion = useReducedMotion()
   const [navigationDirection, setNavigationDirection] = useState(1)
   const [displayedArtwork, setDisplayedArtwork] = useState(null)
@@ -386,6 +389,7 @@ const ArtworkDialog = () => {
 
     if (!open) {
       setSelectedArtwork(null)
+      clearArtworkCameraFocusRequest()
     }
   }
 

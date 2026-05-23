@@ -6,7 +6,7 @@ import {
   ORGANIZED_CAMERA_FOCUS_ZOOM,
 } from "@/components/three/artworks/constants"
 import { getArtworkKey } from "@/components/three/artworks/artwork-routes"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { vector3ToCoords } from "react-three-map/maplibre"
 import * as THREE from "three/webgpu"
 
@@ -76,8 +76,14 @@ export function useArtworkCameraFocus({
   map,
   timePositionArray,
 }) {
+  const handledRequestIdRef = useRef(null)
+
   useEffect(() => {
     if (!map || !artworkCameraFocusRequest?.artwork) {
+      return
+    }
+
+    if (handledRequestIdRef.current === artworkCameraFocusRequest.id) {
       return
     }
 
@@ -87,6 +93,8 @@ export function useArtworkCameraFocus({
     if (artworkIndex === undefined) {
       return
     }
+
+    handledRequestIdRef.current = artworkCameraFocusRequest.id
 
     const targetPosition = getArtworkLayoutTargetPosition({
       artworkLayout,
