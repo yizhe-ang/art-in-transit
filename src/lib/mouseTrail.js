@@ -1,5 +1,12 @@
 import * as THREE from "three"
 
+const DEFAULT_TRAIL_SIZE = 0.2
+const DEFAULT_MIN_TRAIL_SIZE = 100
+const DEFAULT_LERP_SPEED = 0.075
+const DEFAULT_FADE_IN_SPEED = 0.1
+const DEFAULT_FADE_OUT_SPEED = 0.1
+const DEFAULT_MOVE_THRESHOLD = 0.5
+
 export default class MouseTrail {
   constructor(width, height) {
     this.currentX = null
@@ -7,10 +14,12 @@ export default class MouseTrail {
     this.lastX = null
     this.lastY = null
     this.opacity = 0
-    this.lerpSpeed = 0.075
-    this.fadeInSpeed = 0.1
-    this.fadeOutSpeed = 0.1
-    this.moveThreshold = 0.5
+    this.trailSize = DEFAULT_TRAIL_SIZE
+    this.minTrailSize = DEFAULT_MIN_TRAIL_SIZE
+    this.lerpSpeed = DEFAULT_LERP_SPEED
+    this.fadeInSpeed = DEFAULT_FADE_IN_SPEED
+    this.fadeOutSpeed = DEFAULT_FADE_OUT_SPEED
+    this.moveThreshold = DEFAULT_MOVE_THRESHOLD
 
     this.#createCanvas(width, height)
     this.#createTexture()
@@ -21,7 +30,7 @@ export default class MouseTrail {
     this.canvas.width = width
     this.canvas.height = height
     this.ctx = this.canvas.getContext("2d")
-    this.lineWidth = Math.max(width * 0.2, 100)
+    this.#updateLineWidth()
 
     this.ctx.fillStyle = "white"
     this.ctx.fillRect(0, 0, width, height)
@@ -72,8 +81,50 @@ export default class MouseTrail {
 
     this.canvas.width = width
     this.canvas.height = height
-    this.lineWidth = Math.max(width * 0.2, 100)
+    this.#updateLineWidth()
     this.reset()
+  }
+
+  setOptions({
+    trailSize,
+    minTrailSize,
+    lerpSpeed,
+    fadeInSpeed,
+    fadeOutSpeed,
+    moveThreshold,
+  }) {
+    if (trailSize !== undefined) {
+      this.trailSize = trailSize
+    }
+
+    if (minTrailSize !== undefined) {
+      this.minTrailSize = minTrailSize
+    }
+
+    if (lerpSpeed !== undefined) {
+      this.lerpSpeed = lerpSpeed
+    }
+
+    if (fadeInSpeed !== undefined) {
+      this.fadeInSpeed = fadeInSpeed
+    }
+
+    if (fadeOutSpeed !== undefined) {
+      this.fadeOutSpeed = fadeOutSpeed
+    }
+
+    if (moveThreshold !== undefined) {
+      this.moveThreshold = moveThreshold
+    }
+
+    this.#updateLineWidth()
+  }
+
+  #updateLineWidth() {
+    this.lineWidth = Math.max(
+      this.canvas.width * this.trailSize,
+      this.minTrailSize
+    )
   }
 
   #lerp(targetX, targetY) {

@@ -15,6 +15,10 @@ import {
 } from "three/tsl"
 import { fbm } from "@/lib/fbm"
 
+const DEFAULT_NOISE_SCALE = 20
+const DEFAULT_DISPLACEMENT_STRENGTH = 0.01
+const DEFAULT_FADE_AMOUNT = 0.015
+
 function getAspectVector(width, height) {
   const aspect = height / width
 
@@ -28,6 +32,9 @@ export default class FluidSim {
     this.width = width
     this.height = height
     this.aspectVecNode = uniform(getAspectVector(width, height))
+    this.noiseScaleUniform = uniform(DEFAULT_NOISE_SCALE)
+    this.displacementStrengthUniform = uniform(DEFAULT_DISPLACEMENT_STRENGTH)
+    this.fadeAmountUniform = uniform(DEFAULT_FADE_AMOUNT)
 
     this.#createRenderTargets()
     this.#createFBOScene()
@@ -72,8 +79,8 @@ export default class FluidSim {
     return Fn(() => {
       const uvCoord = uv()
       const disp = mul(
-        mul(fbm(mul(uvCoord, 20.0)), this.aspectVecNode),
-        0.01
+        mul(fbm(mul(uvCoord, this.noiseScaleUniform)), this.aspectVecNode),
+        this.displacementStrengthUniform
       )
 
       // Sample previous frame with noise displacement (fluid spreading)
@@ -104,7 +111,7 @@ export default class FluidSim {
       const combined = blendDarken(floodcolor, input.rgb)
 
       // Fade back to white
-      return min(vec3(1.0), add(combined, vec3(0.015)))
+      return min(vec3(1.0), add(combined, vec3(this.fadeAmountUniform)))
     })()
   }
 
@@ -135,6 +142,20 @@ export default class FluidSim {
     this.aspectVecNode.value.copy(getAspectVector(width, height))
     this.targetA.setSize(width, height)
     this.targetB.setSize(width, height)
+  }
+
+  setOptions({ noiseScale, displacementStrength, fadeAmount }) {
+    if (noiseScale !== undefined) {
+      this.noiseScaleUniform.value = noiseScale
+    }
+
+    if (displacementStrength !== undefined) {
+      this.displacementStrengthUniform.value = displacementStrength
+    }
+
+    if (fadeAmount !== undefined) {
+      this.fadeAmountUniform.value = fadeAmount
+    }
   }
 
   dispose() {

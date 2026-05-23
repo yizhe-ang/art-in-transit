@@ -7,7 +7,8 @@ const LINE_ROW_GAP = DEFAULT_SIZE * 1.45
 const LINE_ROW_GUIDE_PADDING = DEFAULT_SIZE * 0.5
 const TIME_COLUMN_GAP = DEFAULT_SIZE * 1.98
 const TIME_STACK_GAP = DEFAULT_SIZE * 1.25
-const TIME_YEAR_LABEL_GAP = DEFAULT_SIZE * 0.58
+const TIME_YEAR_LABEL_ALTITUDE_OFFSET = DEFAULT_SIZE * 0.5
+const TIME_YEAR_LABEL_STACK_OFFSET = DEFAULT_SIZE * 0.42
 const FALLBACK_LINE_INDEX = LINE_ORDER.length
 export const TIME_STACK_BASELINES = {
   CENTERED: "centered",
@@ -189,15 +190,19 @@ export function createArtworkTimeYearLabels(
 
   return groups.map(({ group, label, x, year }) => {
     const stackCenterOffset = (group.length - 1) * TIME_STACK_GAP * 0.5
-    const topZ =
+    const stackTopZ =
       timeStackBaseline === TIME_STACK_BASELINES.ZERO_DOWN
         ? 0
         : stackCenterOffset
 
     return {
+      key: `year:${Number.isFinite(year) ? year : "unknown"}`,
       label,
-      position: [x, DEFAULT_ALTITUDE, topZ + TIME_YEAR_LABEL_GAP],
-      year,
+      position: [
+        x,
+        DEFAULT_ALTITUDE + TIME_YEAR_LABEL_ALTITUDE_OFFSET,
+        stackTopZ + TIME_YEAR_LABEL_STACK_OFFSET,
+      ],
     }
   })
 }

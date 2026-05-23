@@ -8,12 +8,12 @@ import {
 } from "react"
 import { useFrame, useThree } from "@react-three/fiber"
 import { useMap } from "react-three-map/maplibre"
-import FluidSimulation from "@/lib/FluidSim"
-import MouseTrail from "@/lib/MouseTrail"
+import { folder, useControls } from "leva"
+import FluidSimulation from "@/lib/fluidSim"
+import MouseTrail from "@/lib/mouseTrail"
 
 const MIN_SIM_SIZE = 1
 const DEFAULT_RESOLUTION_SCALE = 1
-const FLUID_SETTLE_FRAMES = 90
 
 function getRenderSize(size, dpr, resolutionScale) {
   return {
@@ -40,8 +40,8 @@ function getPointerFromEvent(event, canvas) {
 const FluidSim = forwardRef(function FluidSim(
   {
     children,
-    enabled = true,
-    resolutionScale = DEFAULT_RESOLUTION_SCALE,
+    enabled: defaultEnabled = true,
+    resolutionScale: defaultResolutionScale = DEFAULT_RESOLUTION_SCALE,
     onTexture,
   },
   ref
@@ -52,6 +52,92 @@ const FluidSim = forwardRef(function FluidSim(
   const map = useMap()
   const pointerRef = useRef(null)
   const settleFramesRef = useRef(0)
+
+  const {
+    enabled,
+    resolutionScale,
+    trailSize,
+    minTrailSize,
+    lerpSpeed,
+    fadeInSpeed,
+    fadeOutSpeed,
+    moveThreshold,
+    noiseScale,
+    displacementStrength,
+    fadeAmount,
+    settleFrames,
+  } = useControls({
+    "fluid sim": folder({
+      enabled: defaultEnabled,
+      resolutionScale: {
+        value: defaultResolutionScale,
+        min: 0.25,
+        max: 1.5,
+        step: 0.05,
+      },
+      trailSize: {
+        // value: 0.2,
+        value: 0.05,
+        min: 0.02,
+        max: 0.6,
+        step: 0.01,
+      },
+      minTrailSize: {
+        value: 100,
+        min: 1,
+        max: 400,
+        step: 1,
+      },
+      lerpSpeed: {
+        value: 0.075,
+        min: 0.01,
+        max: 0.5,
+        step: 0.005,
+      },
+      fadeInSpeed: {
+        value: 0.1,
+        min: 0.01,
+        max: 0.5,
+        step: 0.01,
+      },
+      fadeOutSpeed: {
+        value: 0.1,
+        min: 0.01,
+        max: 0.5,
+        step: 0.01,
+      },
+      moveThreshold: {
+        value: 0.5,
+        min: 0,
+        max: 10,
+        step: 0.1,
+      },
+      noiseScale: {
+        value: 20,
+        min: 1,
+        max: 80,
+        step: 1,
+      },
+      displacementStrength: {
+        value: 0.01,
+        min: 0,
+        max: 0.08,
+        step: 0.001,
+      },
+      fadeAmount: {
+        value: 0.015,
+        min: 0.001,
+        max: 0.08,
+        step: 0.001,
+      },
+      settleFrames: {
+        value: 90,
+        min: 0,
+        max: 240,
+        step: 1,
+      },
+    }),
+  })
 
   const dpr = viewportDpr ?? gl.getPixelRatio?.() ?? window.devicePixelRatio ?? 1
   const renderSize = useMemo(() => {
@@ -70,6 +156,33 @@ const FluidSim = forwardRef(function FluidSim(
   }, [renderSize.height, renderSize.width, sim, trail])
 
   useEffect(() => {
+    sim.setOptions({
+      noiseScale,
+      displacementStrength,
+      fadeAmount,
+    })
+  }, [displacementStrength, fadeAmount, noiseScale, sim])
+
+  useEffect(() => {
+    trail.setOptions({
+      trailSize,
+      minTrailSize,
+      lerpSpeed,
+      fadeInSpeed,
+      fadeOutSpeed,
+      moveThreshold,
+    })
+  }, [
+    fadeInSpeed,
+    fadeOutSpeed,
+    lerpSpeed,
+    minTrailSize,
+    moveThreshold,
+    trail,
+    trailSize,
+  ])
+
+  useEffect(() => {
     onTexture?.(sim.texture)
   }, [onTexture, sim])
 
@@ -81,7 +194,7 @@ const FluidSim = forwardRef(function FluidSim(
       if (!enabled) return
 
       pointerRef.current = getPointerFromEvent(event, canvas)
-      settleFramesRef.current = FLUID_SETTLE_FRAMES
+      settleFramesRef.current = settleFrames
       map?.triggerRepaint?.()
     }
 
@@ -96,7 +209,7 @@ const FluidSim = forwardRef(function FluidSim(
       eventTarget.removeEventListener("pointermove", handlePointerMove)
       eventTarget.removeEventListener("pointerleave", handlePointerLeave)
     }
-  }, [enabled, gl, map])
+  }, [enabled, gl, map, settleFrames])
 
   useImperativeHandle(
     ref,
