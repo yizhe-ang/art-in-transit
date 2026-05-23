@@ -1,4 +1,6 @@
 import Map from "@/components/map/map"
+import Steps from "@/components/steps"
+import ScrollyIntro from "@/components/scrolly-intro"
 import ArtworkDialog from "@/components/interface/artwork-dialog"
 import AboutDialog from "@/components/interface/about-dialog"
 import LayoutControls from "@/components/interface/layout-controls"
@@ -12,6 +14,10 @@ export function App() {
       <div className="fixed inset-0">
         <Map />
       </div>
+
+      <Steps />
+
+      <ScrollyIntro />
 
       <ArtworkDialog />
       <div className="pointer-events-none fixed inset-x-0 bottom-5 z-20 flex justify-center px-4 sm:bottom-6">
