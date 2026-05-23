@@ -76,8 +76,8 @@ const LAYOUT_TRANSITION_EPSILON = 0.001
 const MAX_LAYOUT_TRANSITION_DELTA = 1 / 30
 const NO_HOVERED_ARTWORK_ID = -1
 const CAMERA_FOCUS_DURATION = 650
-// const CAMERA_FOCUS_ZOOM = 12.5
-const CAMERA_FOCUS_ZOOM = 14
+const MAP_CAMERA_FOCUS_ZOOM = 14
+const ORGANIZED_CAMERA_FOCUS_ZOOM = 12.5
 const FALLBACK_LINE_INDEX = LINE_ORDER.length
 const FALLBACK_LINE_COLOR = "#748477"
 const LAYOUT_TARGETS = {
@@ -199,6 +199,12 @@ function shouldReduceCameraMotion() {
   return (
     window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false
   )
+}
+
+function getCameraFocusZoom(artworkLayout) {
+  return artworkLayout === "map"
+    ? MAP_CAMERA_FOCUS_ZOOM
+    : ORGANIZED_CAMERA_FOCUS_ZOOM
 }
 
 function getArtworkClusterKey(artwork) {
@@ -700,7 +706,7 @@ const Artworks = () => {
       center: [targetCoords.longitude, targetCoords.latitude],
       duration,
       easing: (time) => 1 - Math.pow(1 - time, 3),
-      zoom: CAMERA_FOCUS_ZOOM,
+      zoom: getCameraFocusZoom(artworkLayout),
     })
   }, [
     artworkCameraFocusRequest,
