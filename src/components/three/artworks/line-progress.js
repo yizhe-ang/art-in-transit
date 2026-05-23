@@ -2,6 +2,8 @@ import { LINE_ORDER, getPointAtDistance } from "@/components/three/rail-routes"
 import { MathUtils, Vector3 } from "three"
 
 const RAIL_PROGRESS_END = 0.9
+const LAST_ANIMATED_LINE_NAME = "North South Line"
+const LAST_ANIMATED_LINE_INDEX = LINE_ORDER.indexOf(LAST_ANIMATED_LINE_NAME)
 
 export function getLineProgress(progress, lineIndex, lineStagger, lineCount) {
   if (lineIndex < 0) {
@@ -14,6 +16,22 @@ export function getLineProgress(progress, lineIndex, lineStagger, lineCount) {
   const lineDuration = 1 - (lineCount - 1) * stagger
 
   return MathUtils.clamp((progress - lineStart) / lineDuration, 0, 1)
+}
+
+function getAnimationLineIndex(lineIndex) {
+  if (lineIndex < 0 || LAST_ANIMATED_LINE_INDEX < 0) {
+    return lineIndex
+  }
+
+  if (lineIndex === LAST_ANIMATED_LINE_INDEX) {
+    return LINE_ORDER.length - 1
+  }
+
+  if (lineIndex > LAST_ANIMATED_LINE_INDEX) {
+    return lineIndex - 1
+  }
+
+  return lineIndex
 }
 
 function setPositionAt(array, index, position) {
@@ -48,9 +66,10 @@ export function updateArtworkLineProgress({
   const renderedPosition = new Vector3()
 
   artworkRoutes.forEach((artworkRoute, index) => {
+    const animationLineIndex = getAnimationLineIndex(artworkRoute.lineIndex)
     const lineProgress = getLineProgress(
       progress,
-      artworkRoute.lineIndex,
+      animationLineIndex,
       lineStagger,
       LINE_ORDER.length
     )
