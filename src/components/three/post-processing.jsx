@@ -31,7 +31,7 @@ const PostProcessing = ({ fluidMaskNode }) => {
   const scene = useThree((state) => state.scene)
   const camera = useThree((state) => state.camera)
 
-  // const paperTexture = useTexture("/textures/paper.jpg")
+  // const paperTexture = useTexture("/textures/paper.webp")
 
   const {
     enabled,

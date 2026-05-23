@@ -17,3 +17,13 @@ declare module "@/components/map/map" {
   const Map: () => import("react").JSX.Element
   export default Map
 }
+
+declare module "@/components/steps" {
+  const Steps: () => import("react").JSX.Element
+  export default Steps
+}
+
+declare module "@/components/scrolly-intro" {
+  const ScrollyIntro: () => import("react").JSX.Element
+  export default ScrollyIntro
+}

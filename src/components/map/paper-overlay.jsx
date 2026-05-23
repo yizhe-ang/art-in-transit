@@ -32,7 +32,7 @@ const PaperOverlay = () => {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 bg-[url('/textures/paper.jpg')] bg-cover bg-center bg-no-repeat"
+      className="pointer-events-none absolute inset-0 bg-[url('/textures/paper.webp')] bg-cover bg-center bg-no-repeat"
       style={{
         display: enabled ? undefined : "none",
         opacity,

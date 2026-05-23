@@ -8,7 +8,7 @@ import {
   ZoomOutIcon,
 } from "lucide-react"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch"
 
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -63,20 +63,40 @@ const artworkDetailsVariants = {
   }),
 }
 
+const LOADING_OVERLAY_DELAY_MS = 180
+
 const ArtworkImageViewer = ({ imageAlt, imageUrl, stopPointerPropagation }) => {
   const imageRef = useRef(null)
+  const shouldReduceMotion = useReducedMotion()
   const [isImageLoading, setIsImageLoading] = useState(true)
   const [hasImageError, setHasImageError] = useState(false)
+  const [showLoadingOverlay, setShowLoadingOverlay] = useState(false)
 
   const handleImageLoad = () => {
     setIsImageLoading(false)
     setHasImageError(false)
+    setShowLoadingOverlay(false)
   }
 
   const handleImageError = () => {
     setIsImageLoading(false)
     setHasImageError(true)
+    setShowLoadingOverlay(true)
   }
+
+  useEffect(() => {
+    if (!isImageLoading || hasImageError) {
+      return
+    }
+
+    const overlayDelay = window.setTimeout(() => {
+      setShowLoadingOverlay(true)
+    }, LOADING_OVERLAY_DELAY_MS)
+
+    return () => {
+      window.clearTimeout(overlayDelay)
+    }
+  }, [hasImageError, isImageLoading, imageUrl])
 
   const handleViewerPointerDown = (event) => {
     const imageBounds = imageRef.current?.getBoundingClientRect()
@@ -172,27 +192,39 @@ const ArtworkImageViewer = ({ imageAlt, imageUrl, stopPointerPropagation }) => {
               </DialogClose>
             </div>
 
-            {(isImageLoading || hasImageError) && (
-              <div className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center">
-                <div className="flex items-center gap-3 rounded-lg bg-background/85 px-4 py-3 text-sm text-muted-foreground shadow-sm ring-1 ring-foreground/10 backdrop-blur">
-                  {isImageLoading ? (
-                    <>
-                      <span
-                        className="size-4 animate-spin rounded-full border-2 border-foreground/20 border-t-foreground"
-                        aria-hidden="true"
-                      />
+            <AnimatePresence>
+              {(showLoadingOverlay || hasImageError) && (
+                <motion.div
+                  className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center bg-black/55 backdrop-blur-[1px]"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={
+                    shouldReduceMotion
+                      ? { duration: 0.06, ease: "linear" }
+                      : { duration: 0.16, ease: "easeOut" }
+                  }
+                >
+                  <div className="flex min-w-56 items-center justify-center gap-4 rounded-lg bg-background px-5 py-4 text-base font-medium text-foreground shadow-xl ring-1 ring-white/30">
+                    {isImageLoading ? (
+                      <>
+                        <span
+                          className="size-7 animate-spin rounded-full border-3 border-foreground/20 border-t-lta-yellow"
+                          aria-hidden="true"
+                        />
+                        <span role="status" aria-live="polite">
+                          Loading artwork image
+                        </span>
+                      </>
+                    ) : (
                       <span role="status" aria-live="polite">
-                        Loading artwork
+                        Artwork image could not be loaded
                       </span>
-                    </>
-                  ) : (
-                    <span role="status" aria-live="polite">
-                      Artwork image could not be loaded
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <TransformComponent
               wrapperClass="size-full cursor-grab active:cursor-grabbing"

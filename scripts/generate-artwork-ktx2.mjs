@@ -8,9 +8,10 @@ const ROOT_DIR = path.resolve(fileURLToPath(new URL("..", import.meta.url)))
 const DATA_PATH = path.join(ROOT_DIR, "src/data/bloomberg-art-in-transit-gallery.json")
 const MANIFEST_PATH = path.join(ROOT_DIR, "src/data/artwork-texture-manifest.json")
 const ARTWORKS_DIR = path.join(ROOT_DIR, "public/artworks")
-const SOURCE_DIR = path.join(ARTWORKS_DIR, "source")
+const ARTWORKS_CACHE_DIR = path.join(ROOT_DIR, ".cache/artworks")
+const SOURCE_DIR = path.join(ARTWORKS_CACHE_DIR, "source")
 const OUTPUT_PATH = path.join(ARTWORKS_DIR, "artworks.ktx2")
-const FILE_LIST_PATH = path.join(ARTWORKS_DIR, "artworks-files.txt")
+const FILE_LIST_PATH = path.join(ARTWORKS_CACHE_DIR, "artworks-files.txt")
 const PLACEHOLDER_PATH = path.join(SOURCE_DIR, "placeholder.ppm")
 const TILE_SIZE = 512
 const MAX_RETRIES = 3
@@ -370,6 +371,7 @@ async function main() {
   console.log(`Stats: ${downloadedCount} downloaded, ${cachedCount} cached, ${placeholderCount} placeholder`)
   console.log(`Wrote ${path.relative(ROOT_DIR, MANIFEST_PATH)}`)
   console.log(`Artwork asset directory now contains: ${generatedFiles.sort().join(", ")}`)
+  console.log(`Artwork source cache: ${path.relative(ROOT_DIR, SOURCE_DIR)}`)
 
   if (placeholderCount > 0) {
     console.warn(`${placeholderCount} layer(s) used the placeholder. See manifest errors for details.`)
