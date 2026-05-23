@@ -9,4 +9,13 @@ export const useStore = create((set) => ({
 
   selectedArtwork: null,
   setSelectedArtwork: (selectedArtwork) => set({ selectedArtwork }),
+
+  artworkCameraFocusRequest: null,
+  requestArtworkCameraFocus: (artwork) =>
+    set((state) => ({
+      artworkCameraFocusRequest: {
+        artwork,
+        id: (state.artworkCameraFocusRequest?.id ?? 0) + 1,
+      },
+    })),
 }))

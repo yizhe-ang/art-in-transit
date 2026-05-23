@@ -29,7 +29,11 @@ import {
 } from "@/components/three/artworks/zoom-scale"
 import LineLayoutGuides from "@/components/three/artworks/line-layout-guides"
 import TimeYearLabels from "@/components/three/artworks/time-year-labels"
-import { coordsToVector3, useMap } from "react-three-map/maplibre"
+import {
+  coordsToVector3,
+  useMap,
+  vector3ToCoords,
+} from "react-three-map/maplibre"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import * as THREE from "three/webgpu"
 import { useFrame, useLoader, useThree } from "@react-three/fiber"
@@ -71,6 +75,8 @@ const LAYOUT_TRANSITION_DAMPING = 5.5
 const LAYOUT_TRANSITION_EPSILON = 0.001
 const MAX_LAYOUT_TRANSITION_DELTA = 1 / 30
 const NO_HOVERED_ARTWORK_ID = -1
+const CAMERA_FOCUS_DURATION = 650
+const CAMERA_FOCUS_ZOOM = 12.5
 const FALLBACK_LINE_INDEX = LINE_ORDER.length
 const FALLBACK_LINE_COLOR = "#748477"
 const LAYOUT_TARGETS = {
@@ -137,6 +143,60 @@ function getArtworkPosition(artwork) {
       },
       origin
     )
+  )
+}
+
+function getArtworkKey(artwork) {
+  return artwork?.itemUrl ?? artwork?.sourceTitle ?? artwork?.artworkTitle
+}
+
+function getPositionFromArray(array, index, target) {
+  const offset = index * 3
+
+  return target.set(array[offset], array[offset + 1], array[offset + 2])
+}
+
+function getCurrentArtworkLayoutPosition({
+  embeddingLayoutPositions,
+  index,
+  lineRowPositions,
+  renderPositions,
+  target,
+  timePositions,
+}) {
+  const rowPosition = new THREE.Vector3()
+  const timePosition = new THREE.Vector3()
+  const snappedEmbeddingPosition = new THREE.Vector3()
+  const rawEmbeddingPosition = new THREE.Vector3()
+  const embeddingOffset = index * 4
+
+  getPositionFromArray(renderPositions, index, target)
+  getPositionFromArray(lineRowPositions, index, rowPosition)
+  target.lerp(rowPosition, lineLayoutProgressUniform.value)
+
+  getPositionFromArray(timePositions, index, timePosition)
+  target.lerp(timePosition, timeLayoutProgressUniform.value)
+
+  snappedEmbeddingPosition.set(
+    embeddingLayoutPositions[embeddingOffset],
+    ALTITUDE,
+    embeddingLayoutPositions[embeddingOffset + 1]
+  )
+  target.lerp(snappedEmbeddingPosition, embeddingLayoutProgressUniform.value)
+
+  rawEmbeddingPosition.set(
+    embeddingLayoutPositions[embeddingOffset + 2],
+    ALTITUDE,
+    embeddingLayoutPositions[embeddingOffset + 3]
+  )
+  target.lerp(rawEmbeddingPosition, embeddingRawLayoutProgressUniform.value)
+
+  return target
+}
+
+function shouldReduceCameraMotion() {
+  return (
+    window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false
   )
 }
 
@@ -228,6 +288,9 @@ const Artworks = () => {
   const invalidate = useThree((state) => state.invalidate)
   const map = useMap()
   const artworkLayout = useStore((state) => state.artworkLayout)
+  const artworkCameraFocusRequest = useStore(
+    (state) => state.artworkCameraFocusRequest
+  )
   const setOpenArtworkDialog = useStore((state) => state.setOpenArtworkDialog)
   const setSelectedArtwork = useStore((state) => state.setSelectedArtwork)
   const hoverAnimationActiveRef = useRef(false)
@@ -486,6 +549,12 @@ const Artworks = () => {
     return { artworkRoutes: artworkRouteItems, lineBorderColors }
   }, [])
 
+  const artworkIndexByKey = useMemo(() => {
+    return new Map(
+      data.artworks.map((artwork, index) => [getArtworkKey(artwork), index])
+    )
+  }, [])
+
   const animatedPositions = useMemo(() => {
     const array = createArtworkLinePositionArray(artworkRoutes)
     return instancedArray(array, "vec3")
@@ -594,6 +663,45 @@ const Artworks = () => {
     )
     return instancedArray(array, "vec4")
   }, [artworkRoutes, aspectRatios])
+
+  useEffect(() => {
+    if (!map || !artworkCameraFocusRequest?.artwork) {
+      return
+    }
+
+    const artworkKey = getArtworkKey(artworkCameraFocusRequest.artwork)
+    const artworkIndex = artworkIndexByKey.get(artworkKey)
+
+    if (artworkIndex === undefined) {
+      return
+    }
+
+    const targetPosition = getCurrentArtworkLayoutPosition({
+      embeddingLayoutPositions: embeddingLayoutPositions.value.array,
+      index: artworkIndex,
+      lineRowPositions: lineRowLayout.positions,
+      renderPositions: renderPositionsRef.current.value.array,
+      target: new THREE.Vector3(),
+      timePositions: timePositions.value.array,
+    })
+    const targetCoords = vector3ToCoords(targetPosition.toArray(), origin)
+    const duration = shouldReduceCameraMotion() ? 0 : CAMERA_FOCUS_DURATION
+
+    map.stop?.()
+    map.easeTo({
+      center: [targetCoords.longitude, targetCoords.latitude],
+      duration,
+      easing: (time) => 1 - Math.pow(1 - time, 3),
+      zoom: CAMERA_FOCUS_ZOOM,
+    })
+  }, [
+    artworkCameraFocusRequest,
+    artworkIndexByKey,
+    embeddingLayoutPositions,
+    lineRowLayout.positions,
+    map,
+    timePositions,
+  ])
 
   const timeYearLabels = useMemo(() => {
     return createArtworkTimeYearLabels(

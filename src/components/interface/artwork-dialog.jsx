@@ -240,6 +240,40 @@ function getArtworkLineName(artwork) {
   return getLineNameForStationCode(getArtworkStationCode(artwork))
 }
 
+function getStationCodeParts(artwork) {
+  const stationCode = getArtworkStationCode(artwork)
+  const match = stationCode?.match(/^([A-Z]+)(\d+)([A-Z]?)$/)
+
+  if (!match) {
+    return null
+  }
+
+  return {
+    prefix: match[1],
+    number: Number(match[2]),
+    suffix: match[3],
+  }
+}
+
+function compareArtworkStationCodes(a, b) {
+  const aParts = getStationCodeParts(a)
+  const bParts = getStationCodeParts(b)
+
+  if (!aParts || !bParts) {
+    return aParts ? -1 : bParts ? 1 : 0
+  }
+
+  if (aParts.prefix !== bParts.prefix) {
+    return aParts.prefix.localeCompare(bParts.prefix)
+  }
+
+  if (aParts.number !== bParts.number) {
+    return aParts.number - bParts.number
+  }
+
+  return aParts.suffix.localeCompare(bParts.suffix)
+}
+
 function getLineArtworkSequence() {
   const artworksByLine = LINE_ORDER.reduce((groups, lineName) => {
     groups.set(lineName, [])
@@ -255,7 +289,11 @@ function getLineArtworkSequence() {
     }
   })
 
-  return LINE_ORDER.flatMap((lineName) => artworksByLine.get(lineName) ?? [])
+  return LINE_ORDER.flatMap((lineName) => {
+    return [...(artworksByLine.get(lineName) ?? [])].sort(
+      compareArtworkStationCodes
+    )
+  })
 }
 
 const ArtworkDialog = () => {
@@ -263,6 +301,9 @@ const ArtworkDialog = () => {
   const setOpenArtworkDialog = useStore((state) => state.setOpenArtworkDialog)
   const storedSelectedArtwork = useStore((state) => state.selectedArtwork)
   const setSelectedArtwork = useStore((state) => state.setSelectedArtwork)
+  const requestArtworkCameraFocus = useStore(
+    (state) => state.requestArtworkCameraFocus
+  )
   const shouldReduceMotion = useReducedMotion()
   const [navigationDirection, setNavigationDirection] = useState(1)
   const artworkSequence = useMemo(() => getLineArtworkSequence(), [])
@@ -307,9 +348,11 @@ const ArtworkDialog = () => {
     const nextIndex =
       (currentIndex + direction + artworkSequence.length) %
       artworkSequence.length
+    const nextArtwork = artworkSequence[nextIndex]
 
     setNavigationDirection(direction)
-    setSelectedArtwork(artworkSequence[nextIndex])
+    setSelectedArtwork(nextArtwork)
+    requestArtworkCameraFocus(nextArtwork)
   }
 
   const handlePreviousArtworkPointerDown = (event) => {
