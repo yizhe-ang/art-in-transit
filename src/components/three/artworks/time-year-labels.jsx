@@ -1,71 +1,145 @@
-import { Html } from "@react-three/drei"
-import { useFrame } from "@react-three/fiber"
-import { useEffect, useRef } from "react"
+import { useFrame, useLoader } from "@react-three/fiber"
+import { useEffect, useMemo, useRef, useState } from "react"
 import * as THREE from "three/webgpu"
+import {
+  MSDFTextGeometry,
+  MSDFTextNodeMaterial,
+} from "three-msdf-text-utils/webgpu"
 
-const TIME_YEAR_LABEL_DISTANCE_FACTOR = 4000
-const TIME_YEAR_LABEL_STYLE = {
-  color: "rgba(255, 255, 255, 0.94)",
-  fontFamily: "var(--font-heading), var(--font-sans), sans-serif",
-  fontSize: "24px",
-  fontWeight: 600,
-  letterSpacing: "0",
-  lineHeight: 1,
-  opacity: 0,
-  pointerEvents: "none",
-  textShadow: "0 2px 12px rgba(0, 0, 0, 0.78)",
-  userSelect: "none",
-  whiteSpace: "nowrap",
-  willChange: "opacity",
+const TIME_YEAR_LABEL_ATLAS_PATH =
+  "/fonts/msdf/LTAIdentity.Medium-msdf-atlas.png"
+const TIME_YEAR_LABEL_FONT_PATH = "/fonts/msdf/LTAIdentity.Medium-msdf.json"
+const TIME_YEAR_LABEL_SCALE = 18
+const TIME_YEAR_LABEL_COLOR = "rgba(255, 255, 255, 0.94)"
+const TIME_YEAR_LABEL_STROKE_COLOR = "rgba(0, 0, 0, 0.78)"
+
+function configureTimeYearLabelAtlas(texture) {
+  texture.wrapS = THREE.ClampToEdgeWrapping
+  texture.wrapT = THREE.ClampToEdgeWrapping
+  texture.minFilter = THREE.LinearFilter
+  texture.magFilter = THREE.LinearFilter
+  texture.colorSpace = THREE.NoColorSpace
+  texture.needsUpdate = true
+
+  return texture
+}
+
+function createTimeYearLabelGeometry(label, font) {
+  const geometry = new MSDFTextGeometry({
+    text: label,
+    font,
+    align: "center",
+    mode: "nowrap",
+    letterSpacing: 0,
+  })
+
+  geometry.computeBoundingBox()
+  geometry.translate(-geometry.layout.width * 0.5, -geometry.layout.height * 0.5, 0)
+
+  return geometry
 }
 
 function TimeYearLabels({ labels, timeLayoutProgressUniform }) {
+  const atlasTexture = useLoader(THREE.TextureLoader, TIME_YEAR_LABEL_ATLAS_PATH)
+  const materialRef = useRef(null)
   const labelRefs = useRef([])
-  const initialOpacity = THREE.MathUtils.clamp(
-    timeLayoutProgressUniform.value,
-    0,
-    1
-  ).toFixed(3)
+  const [font, setFont] = useState(null)
 
   useEffect(() => {
-    labelRefs.current.length = labels.length
-  }, [labels.length])
+    let cancelled = false
 
-  useFrame(() => {
+    fetch(TIME_YEAR_LABEL_FONT_PATH)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to load MSDF font: ${response.status}`)
+        }
+
+        return response.json()
+      })
+      .then((fontData) => {
+        if (!cancelled) setFont(fontData)
+      })
+      .catch((error) => {
+        if (!cancelled) console.error(error)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    configureTimeYearLabelAtlas(atlasTexture)
+  }, [atlasTexture])
+
+  const material = useMemo(() => {
+    return new MSDFTextNodeMaterial({
+      map: atlasTexture,
+      transparent: true,
+      alphaTest: 0.01,
+      opacity: 0,
+      color: TIME_YEAR_LABEL_COLOR,
+      strokeColor: TIME_YEAR_LABEL_STROKE_COLOR,
+      strokeOutsetWidth: 0.08,
+      strokeInsetWidth: 0.24,
+    })
+  }, [atlasTexture])
+
+  useEffect(() => {
+    materialRef.current = material
+
+    return () => {
+      material.dispose()
+    }
+  }, [material])
+
+  const geometries = useMemo(() => {
+    if (!font) return []
+
+    return labels.map((label) => ({
+      key: label.year,
+      label,
+      geometry: createTimeYearLabelGeometry(label.label, font),
+    }))
+  }, [font, labels])
+
+  useEffect(() => {
+    labelRefs.current.length = geometries.length
+
+    return () => {
+      geometries.forEach(({ geometry }) => {
+        geometry.dispose()
+      })
+    }
+  }, [geometries])
+
+  useFrame(({ camera }) => {
     const opacity = THREE.MathUtils.clamp(timeLayoutProgressUniform.value, 0, 1)
-    const opacityValue = opacity.toFixed(3)
 
-    labelRefs.current.forEach((element) => {
-      if (!element || element.style.opacity === opacityValue) return
+    if (materialRef.current) {
+      materialRef.current.opacity.value = opacity
+    }
 
-      element.style.opacity = opacityValue
+    labelRefs.current.forEach((label) => {
+      label?.quaternion.copy(camera.quaternion)
     })
   })
 
+  if (!font) return null
+
   return (
     <group>
-      {labels.map((label, index) => (
-        <Html
-          key={label.year}
-          center
-          distanceFactor={TIME_YEAR_LABEL_DISTANCE_FACTOR}
+      {geometries.map(({ key, label, geometry }, index) => (
+        <group
+          key={key}
           position={label.position}
-          sprite
-          style={{ pointerEvents: "none" }}
-          transform
+          ref={(element) => {
+            labelRefs.current[index] = element
+          }}
+          scale={TIME_YEAR_LABEL_SCALE}
         >
-          <div
-            ref={(element) => {
-              labelRefs.current[index] = element
-            }}
-            style={{
-              ...TIME_YEAR_LABEL_STYLE,
-              opacity: initialOpacity,
-            }}
-          >
-            {label.label}
-          </div>
-        </Html>
+          <mesh geometry={geometry} material={material} frustumCulled={false} />
+        </group>
       ))}
     </group>
   )

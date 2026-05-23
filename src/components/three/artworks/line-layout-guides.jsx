@@ -53,11 +53,19 @@ const LineLayoutGuide = ({ guide }) => {
   )
 }
 
-const LineLayoutGuides = ({ guides, lineLayoutProgressUniform }) => {
+const LineLayoutGuides = ({
+  guides,
+  lineLayoutProgressUniform,
+  timeLayoutProgressUniform,
+}) => {
   const invalidate = useThree((state) => state.invalidate)
 
   useFrame(() => {
-    const nextOpacity = lineLayoutProgressUniform.value
+    const nextOpacity = THREE.MathUtils.clamp(
+      lineLayoutProgressUniform.value * (1 - timeLayoutProgressUniform.value),
+      0,
+      1
+    )
 
     if (guideOpacityUniform.value !== nextOpacity) {
       guideOpacityUniform.value = nextOpacity

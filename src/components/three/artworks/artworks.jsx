@@ -752,6 +752,7 @@ const Artworks = () => {
       <LineLayoutGuides
         guides={lineRowLayout.guides}
         lineLayoutProgressUniform={lineLayoutProgressUniform}
+        timeLayoutProgressUniform={timeLayoutProgressUniform}
       />
       <instancedMesh
         args={[geometry, undefined, COUNT]}
