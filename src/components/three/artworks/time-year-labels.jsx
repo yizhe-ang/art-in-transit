@@ -3,17 +3,17 @@ import { useFrame } from "@react-three/fiber"
 import { useEffect, useRef } from "react"
 import * as THREE from "three/webgpu"
 
-const TIME_YEAR_LABEL_DISTANCE_FACTOR = 12000
+const TIME_YEAR_LABEL_DISTANCE_FACTOR = 4000
 const TIME_YEAR_LABEL_STYLE = {
   color: "rgba(255, 255, 255, 0.94)",
   fontFamily: "var(--font-heading), var(--font-sans), sans-serif",
-  fontSize: "13px",
-  fontWeight: 500,
+  fontSize: "24px",
+  fontWeight: 600,
   letterSpacing: "0",
   lineHeight: 1,
   opacity: 0,
   pointerEvents: "none",
-  textShadow: "0 1px 8px rgba(0, 0, 0, 0.72)",
+  textShadow: "0 2px 12px rgba(0, 0, 0, 0.78)",
   userSelect: "none",
   whiteSpace: "nowrap",
   willChange: "opacity",
