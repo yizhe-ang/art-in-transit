@@ -190,7 +190,7 @@ const Rail = () => {
         <Layer {...linesLabel} />
         <Layer {...stationsPoint} />
         <Layer {...stationsPointLabel} />
-        <Layer {...stationsLabelNonEn} />
+        {/* <Layer {...stationsLabelNonEn} /> */}
         <Layer {...stationsLabel} />
       </Source>
     </>
