@@ -101,6 +101,25 @@ export function getArtworkStationCode(artwork) {
   return stationCode ?? null
 }
 
+export function getArtworkStationCodes(artwork) {
+  if (!artwork) {
+    return []
+  }
+
+  const stationCodePattern = /\b(?:CC|CE|DT|EW|NE|NS|TE)\d+[A-Z]?\b/gi
+  const stationCodes = [
+    artwork.stationCode,
+    artwork.stationLabel,
+    artwork.stationName,
+  ].flatMap((value) => {
+    return value?.match(stationCodePattern) ?? []
+  })
+
+  return [
+    ...new Set(stationCodes.map((stationCode) => stationCode.toUpperCase())),
+  ]
+}
+
 export function formatStationName(stationName) {
   return stationName
     ?.replace(/^(?:\/\s*)?(?:CC|CE|DT|EW|NE|NS|TE)\d+[A-Z]?\s*:?\s*/i, "")

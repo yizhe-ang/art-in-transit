@@ -72,21 +72,22 @@ function TransitBadge({
   return (
     <div
       data-slot="transit-badge"
-      className={cn(
-        "inline-flex items-center gap-1.5 whitespace-nowrap",
-        className
-      )}
+      className={cn("inline-flex items-center whitespace-nowrap", className)}
       {...props}
     >
-      {segments.map((segment) => {
+      {segments.map((segment, index) => {
         const lineStyle = getLineStyle(segment)
+        const isFirst = index === 0
+        const isLast = index === segments.length - 1
 
         return (
           <span
             key={segment}
             className={cn(
-              "inline-flex shrink-0 items-center justify-center rounded-[0.48em] bg-clip-padding font-heading font-bold leading-none tracking-[0.015em] text-white ring-white/95 select-none",
-              sizeClasses[size]
+              "inline-flex shrink-0 items-center justify-center rounded-[0.48em] bg-clip-padding font-heading leading-none font-bold tracking-[0.015em] text-white ring-white/95 select-none",
+              sizeClasses[size],
+              !isFirst && "rounded-l-none",
+              !isLast && "rounded-r-none"
             )}
             style={{
               backgroundColor: lineStyle.backgroundColor,

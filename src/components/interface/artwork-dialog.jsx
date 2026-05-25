@@ -23,6 +23,7 @@ import {
   LINE_ORDER,
   formatStationName,
   getArtworkStationCode,
+  getArtworkStationCodes,
   getLineNameForStationCode,
 } from "@/components/three/rail-routes"
 import { useStore } from "@/store"
@@ -465,9 +466,21 @@ const ArtworkDialog = () => {
   const artist = visibleArtwork?.artist
   const year = getArtworkYear(visibleArtwork)
   const stationCode = visibleArtwork?.stationCode
+  const stationCodes = getArtworkStationCodes(visibleArtwork)
+  const stationBadgeCode = stationCodes.join("-") || stationCode
   const stationName = visibleArtwork?.stationName
   const readMoreUrl = visibleArtwork?.itemUrl
   const credits = visibleArtwork?.credits
+  const imageAlt =
+    visibleArtwork?.imageAlt ??
+    ([
+      title,
+      artist ? `by ${artist}` : null,
+      stationName ? `at ${stationName} station` : null,
+    ]
+      .filter(Boolean)
+      .join(" ") ||
+      "Artwork")
 
   useEffect(() => {
     if (
@@ -637,7 +650,7 @@ const ArtworkDialog = () => {
                   >
                     <ArtworkImageViewer
                       key={imageUrl}
-                      imageAlt={visibleArtwork.imageAlt ?? title ?? "Artwork"}
+                      imageAlt={imageAlt}
                       imageUrl={imageUrl}
                       onZoomControlsChange={handleZoomControlsChange}
                       stopPointerPropagation={stopPointerPropagation}
@@ -700,7 +713,12 @@ const ArtworkDialog = () => {
                       </p>
                     )} */}
                     <div className="flex max-w-full flex-wrap items-center justify-center gap-2 justify-self-center text-sm">
-                      <TransitBadge stationCode={stationCode} size="sm" />
+                      {stationBadgeCode && (
+                        <TransitBadge
+                          stationCode={stationBadgeCode}
+                          size="sm"
+                        />
+                      )}
                       <div className="max-w-full min-w-0 truncate text-muted-foreground">
                         {stationName}
                       </div>

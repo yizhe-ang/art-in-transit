@@ -2,8 +2,92 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Art in Transit Singapore - Interactive MRT Public Art Map</title>
+    <meta
+      name="description"
+      content="Explore Singapore's LTA Art in Transit programme through an interactive MRT public art map featuring stations, artists, and more than 100 artworks across the rail network."
+    />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#004851" />
+    <link rel="canonical" href="https://yizhe-ang.github.io/art-in-transit/" />
+    <link rel="icon" href="%BASE_URL%favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="%BASE_URL%icon-192.png" />
+    <link rel="manifest" href="%BASE_URL%site.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:title"
+      content="Art in Transit Singapore - Interactive MRT Public Art Map"
+    />
+    <meta
+      property="og:description"
+      content="Explore Singapore's LTA Art in Transit programme through an interactive MRT public art map featuring stations, artists, and more than 500 artworks."
+    />
+    <meta
+      property="og:url"
+      content="https://yizhe-ang.github.io/art-in-transit/"
+    />
+    <meta
+      property="og:image"
+      content="https://yizhe-ang.github.io/art-in-transit/thumbnail.webp"
+    />
+    <meta property="og:image:width" content="1086" />
+    <meta property="og:image:height" content="624" />
+    <meta
+      property="og:image:alt"
+      content="Art in Transit Singapore interactive MRT public art map preview"
+    />
+    <meta property="og:site_name" content="Art in Transit Singapore" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Art in Transit Singapore - Interactive MRT Public Art Map"
+    />
+    <meta
+      name="twitter:description"
+      content="Explore Singapore's LTA Art in Transit programme through an interactive MRT public art map featuring stations, artists, and more than 500 artworks."
+    />
+    <meta
+      name="twitter:image"
+      content="https://yizhe-ang.github.io/art-in-transit/thumbnail.webp"
+    />
+    <meta
+      name="twitter:image:alt"
+      content="Art in Transit Singapore interactive MRT public art map preview"
+    />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "CreativeWork",
+        "name": "Art in Transit Singapore",
+        "headline": "Art in Transit Singapore - Interactive MRT Public Art Map",
+        "description": "A personal and unofficial interactive map showcasing Singapore's Land Transport Authority Art in Transit programme, including MRT stations, artists, and more than 500 public artworks.",
+        "url": "https://yizhe-ang.github.io/art-in-transit/",
+        "image": "https://yizhe-ang.github.io/art-in-transit/thumbnail.webp",
+        "inLanguage": "en",
+        "isAccessibleForFree": true,
+        "author": {
+          "@type": "Person",
+          "name": "Yi Zhe Ang",
+          "url": "https://yizhe-ang.github.io/"
+        },
+        "about": [
+          "Singapore MRT public art",
+          "LTA Art in Transit",
+          "interactive transit map",
+          "Singapore public transport",
+          "station artworks"
+        ],
+        "sameAs": [
+          "https://www.lta.gov.sg/content/ltagov/en/getting_around/public_transport/a_better_public_transport_experience/art_in_public_transport/art_in_transit.html",
+          "https://guides.bloombergconnects.org/en-US/guide/artInTransit",
+          "https://www.artoutreachsingapore.org/art-in-transit-virtual-tour"
+        ]
+      }
+    </script>
     <script>
       if ("scrollRestoration" in history) {
         history.scrollRestoration = "manual"
@@ -11,10 +95,47 @@
 
       window.scrollTo(0, 0)
     </script>
-    <title>Art in Transit</title>
+    <style>
+      .seo-fallback {
+        display: none;
+      }
+    </style>
+    <noscript>
+      <style>
+        .seo-fallback {
+          display: block;
+        }
+      </style>
+    </noscript>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main class="seo-fallback">
+        <h1>Art in Transit Singapore</h1>
+        <p>
+          A personal and unofficial interactive project showcasing Singapore's
+          Land Transport Authority Art in Transit programme across the MRT
+          network.
+        </p>
+        <p>
+          Explore 112 stations, 119 artists, and more than 500 artworks through
+          a visual public art map of Singapore's rail system.
+        </p>
+        <nav aria-label="Project references">
+          <a
+            href="https://www.lta.gov.sg/content/ltagov/en/getting_around/public_transport/a_better_public_transport_experience/art_in_public_transport/art_in_transit.html"
+            >Official LTA Art in Transit</a
+          >
+          <a href="https://guides.bloombergconnects.org/en-US/guide/artInTransit"
+            >Bloomberg Connects Art in Transit guide</a
+          >
+          <a href="https://www.artoutreachsingapore.org/art-in-transit-virtual-tour"
+            >Art Outreach virtual tours</a
+          >
+          <a href="https://yizhe-ang.github.io/">Yi Zhe Ang</a>
+        </nav>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

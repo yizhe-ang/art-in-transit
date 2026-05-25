@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://yizhe-ang.github.io/art-in-transit/sitemap.xml
