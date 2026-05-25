@@ -18,6 +18,26 @@ const scrollZoomOptions = {
   around: "center",
 }
 
+const MOBILE_BREAKPOINT = 768
+const MOBILE_BOUNDS_INSET_RATIO = 0.06
+
+const getInitialBounds = () => {
+  if (typeof window === "undefined" || window.innerWidth >= MOBILE_BREAKPOINT) {
+    return bounds
+  }
+
+  const [west, south, east, north] = bounds
+  const longitudeInset = (east - west) * MOBILE_BOUNDS_INSET_RATIO
+  const latitudeInset = (north - south) * MOBILE_BOUNDS_INSET_RATIO
+
+  return [
+    west + longitudeInset,
+    south + latitudeInset,
+    east - longitudeInset,
+    north - latitudeInset,
+  ]
+}
+
 const enableMapInteractions = (map) => {
   map.dragPan.enable(dragPanOptions)
   map.scrollZoom.enable(scrollZoomOptions)
@@ -43,6 +63,7 @@ const Map = () => {
   const mapRef = useRef(null)
   const setMap = useStore((state) => state.setMap)
   const setMapImagesReady = useStore((state) => state.setMapImagesReady)
+  const [initialBounds] = useState(getInitialBounds)
 
   useEffect(() => {
     setMapImagesReady(false)
@@ -74,8 +95,6 @@ const Map = () => {
     })
   }, [])
 
-  console.log(bounds)
-
   return (
     <>
       <MapImpl
@@ -83,7 +102,7 @@ const Map = () => {
           antialias: true,
         }}
         initialViewState={{
-          bounds,
+          bounds: initialBounds,
         }}
         // minZoom={4}
         // maxBounds={[103.05, 0.52, 104.18, 1.98]}

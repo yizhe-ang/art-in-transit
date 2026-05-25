@@ -110,7 +110,7 @@ const InitialLoadingOverlay = () => {
           <span className="initial-route-train" />
         </div>
 
-        <p className="font-heading text-[clamp(2.4rem,9vw,5.6rem)] leading-[0.8] tracking-normal text-balance drop-shadow-[0_1px_0_rgba(255,255,255,0.72)]">
+        <p className="font-heading text-[clamp(2.4rem,9vw,5.6rem)] leading-[1] tracking-normal text-balance drop-shadow-[0_1px_0_rgba(255,255,255,0.72)]">
           Loading Art in Transit
         </p>
 

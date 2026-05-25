@@ -141,7 +141,7 @@ const HeroTitle = () => {
       className="pointer-events-none fixed inset-x-0 top-0 z-10 flex min-h-[100svh] items-start px-5 pt-[clamp(5rem,13vh,8rem)] sm:px-8 lg:px-12"
       aria-label="Art in Transit project statistics"
     >
-      <div className="max-w-[min(36rem,calc(100vw-2.5rem))] text-lta-dark-green [text-shadow:0_1px_0_rgba(255,255,255,0.82),0_18px_44px_rgba(0,72,81,0.24)]">
+      <div className="max-w-[min(36rem,calc(100vw-2.5rem))] text-lta-dark-green [-webkit-text-stroke:4px_rgba(255,255,255,0.92)] [paint-order:stroke_fill] [text-shadow:0_1px_0_rgba(255,255,255,0.82),0_18px_44px_rgba(0,72,81,0.24)]">
         <h1 className="hero-title-line hero-heading text-[clamp(4.2rem,11vw,9.6rem)] leading-[0.86] tracking-normal text-balance">
           Art in Transit
         </h1>
