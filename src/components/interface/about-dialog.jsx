@@ -42,7 +42,7 @@ const AboutDialog = () => {
         <Info className="size-5 stroke-3" />
       </DialogTrigger>
 
-      <DialogContent className="max-w-[calc(100%-2rem)] gap-5 rounded-lg border border-white/60 bg-white/95 p-5 font-inter text-lta-dark-green shadow-[0_22px_70px_rgba(0,72,81,0.22)] backdrop-blur-md sm:max-w-md">
+      <DialogContent className="max-w-[calc(100%-2rem)] gap-5 rounded-lg border border-white/60 bg-white/95 p-5 font-inter text-lta-dark-green shadow-[0_22px_70px_rgba(0,72,81,0.22)] backdrop-blur-md sm:max-w-lg lg:max-w-2xl">
         <div className="grid gap-2 pr-8">
           <DialogTitle className="text-2xl leading-none">About</DialogTitle>
           {/* <DialogDescription className="text-sm leading-6 text-lta-dark-green/75">
@@ -51,7 +51,7 @@ const AboutDialog = () => {
           </DialogDescription> */}
         </div>
 
-        <div className="grid gap-3 text-sm leading-normal text-lta-dark-green/80">
+        <div className="grid gap-3 text-sm leading-normal text-lta-dark-green/80 sm:text-base sm:leading-relaxed">
           <p>
             This is a personal and unofficial project showcasing Singapore's{" "}
             <span className="font-bold">Land Transport Authority's</span> (LTA){" "}
