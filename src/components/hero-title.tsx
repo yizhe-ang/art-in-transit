@@ -142,11 +142,11 @@ const HeroTitle = () => {
       aria-label="Art in Transit project statistics"
     >
       <div className="max-w-[min(36rem,calc(100vw-2.5rem))] text-lta-dark-green [text-shadow:0_1px_0_rgba(255,255,255,0.82),0_18px_44px_rgba(0,72,81,0.24)]">
-        <h1 className="hero-title-line hero-heading text-[clamp(4.2rem,11vw,9.6rem)] leading-33 tracking-normal text-balance">
+        <h1 className="hero-title-line hero-heading text-[clamp(4.2rem,11vw,9.6rem)] leading-[0.86] tracking-normal text-balance">
           Art in Transit
         </h1>
 
-        <div className="mt-6 grid gap-1.5 text-[clamp(1.45rem,3.3vw,3.5rem)] leading-12 tracking-normal sm:mt-7 sm:gap-2">
+        <div className="mt-6 grid gap-1.5 text-[clamp(1.45rem,3.3vw,3.5rem)] leading-[0.96] tracking-normal sm:mt-7 sm:gap-2">
           {heroStats.map((stat) => (
             <p key={stat} className="hero-title-line hero-stat-line">
               {stat}
