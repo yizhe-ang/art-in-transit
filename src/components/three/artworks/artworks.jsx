@@ -39,6 +39,7 @@ import {
   useArtworkTransitions,
 } from "@/components/three/artworks/use-artwork-transitions"
 import LineLayoutGuides from "@/components/three/artworks/line-layout-guides"
+import StationNameLabels from "@/components/three/artworks/station-name-labels"
 import TimeYearLabels from "@/components/three/artworks/time-year-labels"
 import { useMap } from "react-three-map/maplibre"
 import { useCallback, useEffect, useMemo, useRef } from "react"
@@ -404,6 +405,15 @@ const Artworks = () => {
         labels={timeYearLabels}
         timeLayoutProgressUniform={timeLayoutProgressUniform}
       />
+      {artworkLayout === "line" && (
+        <StationNameLabels
+          embeddingLayoutProgressUniform={embeddingLayoutProgressUniform}
+          embeddingRawLayoutProgressUniform={embeddingRawLayoutProgressUniform}
+          labels={lineRowLayout.stationLabels}
+          lineLayoutProgressUniform={lineLayoutProgressUniform}
+          timeLayoutProgressUniform={timeLayoutProgressUniform}
+        />
+      )}
     </>
   )
 }

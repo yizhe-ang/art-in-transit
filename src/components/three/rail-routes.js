@@ -20,6 +20,13 @@ export const STATION_PREFIX_TO_LINE = {
   TE: "Thomson-East Coast Line",
 }
 
+const ARTWORK_STATION_CODE_CORRECTIONS_BY_ITEM_URL = new Map([
+  [
+    "https://guides.bloombergconnects.org/en-US/guide/artInTransit/item/656f896b-3749-40af-8d93-31c5b1554341",
+    "CC2",
+  ],
+])
+
 export function getLineParts(feature) {
   if (feature.geometry.type === "LineString") {
     return [feature.geometry.coordinates]
@@ -93,6 +100,13 @@ export function buildRailRoutes({ altitude = 8, lineNames } = {}) {
 }
 
 export function getArtworkStationCode(artwork) {
+  const correctedStationCode =
+    ARTWORK_STATION_CODE_CORRECTIONS_BY_ITEM_URL.get(artwork?.itemUrl)
+
+  if (correctedStationCode) {
+    return correctedStationCode
+  }
+
   const stationCode =
     artwork.stationCode ||
     artwork.stationLabel?.match(/\b(?:CC|CE|DT|NE|NS|TE)\d+[A-Z]?\b/)?.[0] ||
@@ -104,6 +118,13 @@ export function getArtworkStationCode(artwork) {
 export function getArtworkStationCodes(artwork) {
   if (!artwork) {
     return []
+  }
+
+  const correctedStationCode =
+    ARTWORK_STATION_CODE_CORRECTIONS_BY_ITEM_URL.get(artwork.itemUrl)
+
+  if (correctedStationCode) {
+    return [correctedStationCode]
   }
 
   const stationCodePattern = /\b(?:CC|CE|DT|EW|NE|NS|TE)\d+[A-Z]?\b/gi

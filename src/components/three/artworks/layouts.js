@@ -1,8 +1,15 @@
-import { LINE_ORDER } from "@/components/three/rail-routes"
+import rail from "@/data/sg-rail.geo.json"
+import {
+  formatStationName,
+  LINE_ORDER,
+  STATION_PREFIX_TO_LINE,
+} from "@/components/three/rail-routes"
 
 const DEFAULT_ALTITUDE = 20
 const DEFAULT_SIZE = 1800
 const LINE_ROW_COLUMN_GAP = DEFAULT_SIZE * 1.98
+const LINE_ROW_DUPLICATE_FAN_X_GAP = DEFAULT_SIZE * 0.42
+const LINE_ROW_DUPLICATE_FAN_Z_GAP = DEFAULT_SIZE * 0.28
 const LINE_ROW_GAP = DEFAULT_SIZE * 1.45
 const LINE_ROW_GUIDE_PADDING = DEFAULT_SIZE * 0.5
 const TIME_COLUMN_GAP = DEFAULT_SIZE * 1.98
@@ -14,6 +21,7 @@ const FALLBACK_LINE_INDEX = LINE_ORDER.length
 const EMBEDDING_RAW_SCALE = 1.5
 const EMBEDDING_RAW_PADDING = DEFAULT_SIZE * 0.04
 const EMBEDDING_RAW_RELAXATION_ITERATIONS = 400
+const STATION_CODE_PATTERN = /\b(?:CC|CE|DT|NE|NS|TE)\d+[A-Z]?\b/gi
 export const TIME_STACK_BASELINES = {
   CENTERED: "centered",
   ZERO_DOWN: "zero-down",
@@ -38,20 +46,80 @@ function getStationPrefix(stationCode) {
   return stationCode?.match(/^[A-Z]+/)?.[0] ?? null
 }
 
+function getLineNameForStationCode(stationCode) {
+  return STATION_PREFIX_TO_LINE[getStationPrefix(stationCode)] ?? null
+}
+
 function getStationPrefixLayoutOrder(stationCode) {
   const prefix = getStationPrefix(stationCode)
   return STATION_PREFIX_LAYOUT_ORDER[prefix] ?? Number.MAX_SAFE_INTEGER
 }
 
+function compareStationCodes(a, b) {
+  return (
+    getStationPrefixLayoutOrder(a) - getStationPrefixLayoutOrder(b) ||
+    getStationSortNumber(a) - getStationSortNumber(b) ||
+    (a ?? "").localeCompare(b ?? "")
+  )
+}
+
 function compareArtworkStations(a, b) {
   return (
-    getStationPrefixLayoutOrder(a.stationCode) -
-      getStationPrefixLayoutOrder(b.stationCode) ||
-    getStationSortNumber(a.stationCode) - getStationSortNumber(b.stationCode) ||
-    (a.stationCode ?? "").localeCompare(b.stationCode ?? "") ||
+    compareStationCodes(a.stationCode, b.stationCode) ||
     a.originalIndex - b.originalIndex
   )
 }
+
+function getCenteredStackOffset(index, count, gap) {
+  return (index - (count - 1) * 0.5) * gap
+}
+
+function getStationCodes(value) {
+  return [
+    ...new Set(
+      value?.match(STATION_CODE_PATTERN)?.map((code) => {
+        return code.toUpperCase()
+      }) ?? []
+    ),
+  ]
+}
+
+function createLineStationSlots() {
+  const stationCodesByLine = LINE_ORDER.reduce((groups, lineName) => {
+    groups.set(lineName, new Set())
+    return groups
+  }, new Map())
+  const stationNameByCode = new Map()
+
+  rail.features.forEach((feature) => {
+    if (feature.properties?.stop_type !== "station") {
+      return
+    }
+
+    getStationCodes(feature.properties?.station_codes).forEach(
+      (stationCode) => {
+        const lineName = getLineNameForStationCode(stationCode)
+
+        stationCodesByLine.get(lineName)?.add(stationCode)
+        stationNameByCode.set(stationCode, feature.properties?.name)
+      }
+    )
+  })
+
+  return {
+    stationNameByCode,
+    stationSlotsByLine: LINE_ORDER.map((lineName) => {
+      return [...(stationCodesByLine.get(lineName) ?? [])].sort(
+        compareStationCodes
+      )
+    }),
+  }
+}
+
+const {
+  stationNameByCode: LINE_STATION_NAME_BY_CODE,
+  stationSlotsByLine: LINE_STATION_SLOTS,
+} = createLineStationSlots()
 
 function compareArtworkTimeStackItems(artworkRoutes, aIndex, bIndex) {
   const a = artworkRoutes[aIndex]
@@ -224,10 +292,12 @@ export function createArtworkFinalPositionArray(artworkRoutes) {
 export function createArtworkLineRowLayout(artworkRoutes, lineColors = []) {
   const array = new Float32Array(artworkRoutes.length * 3)
   const guides = []
+  const stationLabels = []
   const rows = LINE_ORDER.map((lineName, lineIndex) => ({
     lineIndex,
     lineName,
     items: [],
+    stationSlots: LINE_STATION_SLOTS[lineIndex] ?? [],
   }))
   const fallbackRow = {
     lineIndex: FALLBACK_LINE_INDEX,
@@ -251,24 +321,100 @@ export function createArtworkLineRowLayout(artworkRoutes, lineColors = []) {
 
   rows.forEach((row, rowIndex) => {
     const sortedItems = [...row.items].sort(compareArtworkStations)
+    const usesStationSlots = row.lineIndex !== FALLBACK_LINE_INDEX
+    const rowStationCodes = new Set(row.stationSlots)
+    const missingStationCodes = new Set()
+
+    if (usesStationSlots) {
+      sortedItems.forEach((item) => {
+        if (item.stationCode && !rowStationCodes.has(item.stationCode)) {
+          missingStationCodes.add(item.stationCode)
+        }
+      })
+    }
+
+    const stationSlots = [
+      ...row.stationSlots,
+      ...[...missingStationCodes].sort(compareStationCodes),
+    ]
+    const stationColumnByCode = new Map(
+      stationSlots.map((stationCode, columnIndex) => [stationCode, columnIndex])
+    )
+    const duplicateStationGroups = new Map()
+    const columnCount = usesStationSlots
+      ? stationSlots.length
+      : sortedItems.length
     const columnCenterOffset =
-      (sortedItems.length - 1) * LINE_ROW_COLUMN_GAP * 0.5
+      (columnCount - 1) * LINE_ROW_COLUMN_GAP * 0.5
     const z = rowIndex * LINE_ROW_GAP - rowCenterOffset
 
+    if (usesStationSlots) {
+      stationSlots.forEach((stationCode, columnIndex) => {
+        const stationName = LINE_STATION_NAME_BY_CODE.get(stationCode)
+        const label = formatStationName(stationName) ?? stationCode
+
+        stationLabels.push({
+          key: `station:${row.lineIndex}:${stationCode}`,
+          label,
+          position: [
+            columnIndex * LINE_ROW_COLUMN_GAP - columnCenterOffset,
+            DEFAULT_ALTITUDE,
+            z,
+          ],
+        })
+      })
+    }
+
+    if (usesStationSlots) {
+      sortedItems.forEach((item) => {
+        if (!item.stationCode) return
+
+        const group = duplicateStationGroups.get(item.stationCode) ?? []
+
+        group.push(item.originalIndex)
+        duplicateStationGroups.set(item.stationCode, group)
+      })
+    }
+
     sortedItems.forEach((artworkRoute, columnIndex) => {
+      const stationColumnIndex = stationColumnByCode.get(
+        artworkRoute.stationCode
+      )
+      const duplicateGroup = duplicateStationGroups.get(artworkRoute.stationCode)
+      const duplicateIndex =
+        duplicateGroup?.indexOf(artworkRoute.originalIndex) ?? 0
+      const duplicateXOffset =
+        duplicateGroup && duplicateGroup.length > 1
+          ? getCenteredStackOffset(
+              duplicateIndex,
+              duplicateGroup.length,
+              LINE_ROW_DUPLICATE_FAN_X_GAP
+            )
+          : 0
+      const duplicateZOffset =
+        duplicateGroup && duplicateGroup.length > 1
+          ? getCenteredStackOffset(
+              duplicateIndex,
+              duplicateGroup.length,
+              LINE_ROW_DUPLICATE_FAN_Z_GAP
+            )
+          : 0
+
       setPositionAt(
         array,
         artworkRoute.originalIndex,
-        columnIndex * LINE_ROW_COLUMN_GAP - columnCenterOffset,
+        (stationColumnIndex ?? columnIndex) * LINE_ROW_COLUMN_GAP -
+          columnCenterOffset +
+          duplicateXOffset,
         DEFAULT_ALTITUDE,
-        z
+        z + duplicateZOffset
       )
     })
 
-    if (sortedItems.length > 0) {
+    if (columnCount > 0) {
       const startX = -columnCenterOffset - LINE_ROW_GUIDE_PADDING
       const endX =
-        (sortedItems.length - 1) * LINE_ROW_COLUMN_GAP -
+        (columnCount - 1) * LINE_ROW_COLUMN_GAP -
         columnCenterOffset +
         LINE_ROW_GUIDE_PADDING
 
@@ -286,6 +432,7 @@ export function createArtworkLineRowLayout(artworkRoutes, lineColors = []) {
   return {
     guides,
     positions: array,
+    stationLabels,
   }
 }
 

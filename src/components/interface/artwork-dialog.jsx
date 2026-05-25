@@ -350,7 +350,7 @@ function normalizeArtworkStation(artwork) {
 
   return {
     ...artwork,
-    stationCode: artwork.stationCode ?? getArtworkStationCode(artwork),
+    stationCode: getArtworkStationCode(artwork),
     stationName: formatStationName(artwork.stationName),
   }
 }
