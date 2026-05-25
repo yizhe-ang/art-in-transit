@@ -19,7 +19,7 @@ const scrollZoomOptions = {
 }
 
 const MOBILE_BREAKPOINT = 768
-const MOBILE_BOUNDS_INSET_RATIO = 0.06
+const MOBILE_BOUNDS_INSET_RATIO = 0.2
 
 const getInitialBounds = () => {
   if (typeof window === "undefined" || window.innerWidth >= MOBILE_BREAKPOINT) {
@@ -63,7 +63,7 @@ const Map = () => {
   const mapRef = useRef(null)
   const setMap = useStore((state) => state.setMap)
   const setMapImagesReady = useStore((state) => state.setMapImagesReady)
-  const [initialBounds] = useState(getInitialBounds)
+  const initialBounds = getInitialBounds()
 
   useEffect(() => {
     setMapImagesReady(false)
