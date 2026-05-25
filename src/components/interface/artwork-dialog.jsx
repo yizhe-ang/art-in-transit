@@ -8,7 +8,7 @@ import {
   ZoomOutIcon,
 } from "lucide-react"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch"
 
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -110,7 +110,79 @@ function preloadArtworkImages(urls) {
   })
 }
 
-const ArtworkImageViewer = ({ imageAlt, imageUrl, stopPointerPropagation }) => {
+const ArtworkZoomControls = ({ controlsRef, stopPointerPropagation }) => {
+  const getControls = () => controlsRef.current
+
+  return (
+    <div
+      className="artwork-zoom-controls absolute top-3 right-3 z-20 flex gap-2"
+      onPointerDown={stopPointerPropagation}
+    >
+      <div className="flex gap-1 rounded-lg bg-background/80 p-1 shadow-sm ring-1 ring-foreground/10 backdrop-blur">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Zoom in"
+          onClick={() => getControls()?.zoomIn()}
+        >
+          <ZoomInIcon />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Zoom out"
+          onClick={() => getControls()?.zoomOut()}
+        >
+          <ZoomOutIcon />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Reset zoom"
+          onClick={() => getControls()?.resetTransform()}
+        >
+          <RotateCcwIcon />
+        </Button>
+      </div>
+
+      <DialogClose
+        render={
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-lg"
+            aria-label="Close artwork"
+            className="bg-lta-yellow shadow ring-1 ring-foreground/10 backdrop-blur hover:bg-destructive/10 hover:text-destructive hover:[&_svg]:stroke-white"
+          />
+        }
+      >
+        <XIcon className="stroke-black stroke-6" />
+      </DialogClose>
+    </div>
+  )
+}
+
+const ArtworkZoomControlsSync = ({ controls, onZoomControlsChange }) => {
+  useEffect(() => {
+    onZoomControlsChange(controls)
+
+    return () => {
+      onZoomControlsChange(null, controls)
+    }
+  }, [controls, onZoomControlsChange])
+
+  return null
+}
+
+const ArtworkImageViewer = ({
+  imageAlt,
+  imageUrl,
+  onZoomControlsChange,
+  stopPointerPropagation,
+}) => {
   const imageRef = useRef(null)
   const shouldReduceMotion = useReducedMotion()
   const [isImageLoading, setIsImageLoading] = useState(true)
@@ -186,56 +258,12 @@ const ArtworkImageViewer = ({ imageAlt, imageUrl, stopPointerPropagation }) => {
           excluded: ["artwork-zoom-controls"],
         }}
       >
-        {({ zoomIn, zoomOut, resetTransform }) => (
+        {(controls) => (
           <>
-            <div
-              className="artwork-zoom-controls absolute top-3 right-3 z-10 flex gap-2"
-              onPointerDown={stopPointerPropagation}
-            >
-              <div className="flex gap-1 rounded-lg bg-background/80 p-1 shadow-sm ring-1 ring-foreground/10 backdrop-blur">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Zoom in"
-                  onClick={() => zoomIn()}
-                >
-                  <ZoomInIcon />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Zoom out"
-                  onClick={() => zoomOut()}
-                >
-                  <ZoomOutIcon />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Reset zoom"
-                  onClick={() => resetTransform()}
-                >
-                  <RotateCcwIcon />
-                </Button>
-              </div>
-
-              <DialogClose
-                render={
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-lg"
-                    aria-label="Close artwork"
-                    className="bg-lta-yellow shadow ring-1 ring-foreground/10 backdrop-blur hover:bg-destructive/10 hover:text-destructive hover:[&_svg]:stroke-white"
-                  />
-                }
-              >
-                <XIcon className="stroke-black stroke-6" />
-              </DialogClose>
-            </div>
+            <ArtworkZoomControlsSync
+              controls={controls}
+              onZoomControlsChange={onZoomControlsChange}
+            />
 
             <AnimatePresence>
               {(showLoadingOverlay || hasImageError) && (
@@ -420,6 +448,7 @@ const ArtworkDialog = () => {
     (state) => state.clearArtworkCameraFocusRequest
   )
   const shouldReduceMotion = useReducedMotion()
+  const zoomControlsRef = useRef(null)
   const [navigationDirection, setNavigationDirection] = useState(1)
   const [displayedArtwork, setDisplayedArtwork] = useState(null)
   const artworkSequence = useMemo(() => getLineArtworkSequence(), [])
@@ -484,6 +513,14 @@ const ArtworkDialog = () => {
     event.stopPropagation()
   }
 
+  const handleZoomControlsChange = useCallback((controls, previousControls) => {
+    if (!controls && zoomControlsRef.current !== previousControls) {
+      return
+    }
+
+    zoomControlsRef.current = controls
+  }, [])
+
   const handleNavigateArtwork = (direction) => {
     if (!selectedArtwork || artworkSequence.length === 0) {
       return
@@ -526,16 +563,21 @@ const ArtworkDialog = () => {
     <Dialog open={openArtworkDialog} onOpenChange={handleOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] gap-0 overflow-visible rounded-lg bg-transparent p-0 sm:max-w-[calc(100vw-2rem)]"
+        className="h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] gap-0 overflow-visible rounded-lg bg-transparent p-0 sm:max-w-[calc(100vw-2rem)]"
         onAnimationEnd={handleDialogAnimationEnd}
       >
         {visibleArtwork && (
           <div
-            className="flex min-h-0 flex-1 flex-col"
+            className="relative flex min-h-0 flex-1 flex-col"
             onPointerDown={handleBackgroundPointerDown}
           >
             {imageUrl && (
               <div className="relative flex min-h-0 flex-1 overflow-visible">
+                <ArtworkZoomControls
+                  controlsRef={zoomControlsRef}
+                  stopPointerPropagation={stopPointerPropagation}
+                />
+
                 <AnimatePresence
                   custom={animationCustom}
                   initial={false}
@@ -556,38 +598,39 @@ const ArtworkDialog = () => {
                       key={imageUrl}
                       imageAlt={visibleArtwork.imageAlt ?? title ?? "Artwork"}
                       imageUrl={imageUrl}
+                      onZoomControlsChange={handleZoomControlsChange}
                       stopPointerPropagation={stopPointerPropagation}
                     />
                   </motion.div>
                 </AnimatePresence>
+              </div>
+            )}
 
-                {artworkSequence.length > 1 && (
-                  <div
-                    className="pointer-events-none absolute inset-x-3 inset-y-0 z-10 sm:inset-x-5"
-                    aria-label="Artwork navigation"
-                  >
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="icon-lg"
-                      aria-label="Previous artwork"
-                      className="pointer-events-auto absolute top-1/2 left-0 size-12 -translate-y-1/2 rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur active:!translate-y-[calc(-50%+0.5px)]"
-                      onPointerDown={handlePreviousArtworkPointerDown}
-                    >
-                      <ArrowLeft className="size-7 stroke-3" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="icon-lg"
-                      aria-label="Next artwork"
-                      className="pointer-events-auto absolute top-1/2 right-0 size-12 -translate-y-1/2 rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur active:!translate-y-[calc(-50%+0.5px)]"
-                      onPointerDown={handleNextArtworkPointerDown}
-                    >
-                      <ArrowRight className="size-7 stroke-3" />
-                    </Button>
-                  </div>
-                )}
+            {artworkSequence.length > 1 && (
+              <div
+                className="pointer-events-none absolute inset-x-3 inset-y-0 z-10 sm:inset-x-5"
+                aria-label="Artwork navigation"
+              >
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="icon-lg"
+                  aria-label="Previous artwork"
+                  className="pointer-events-auto absolute top-1/2 left-0 size-10 -translate-y-1/2 rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur active:!translate-y-[calc(-50%+0.5px)] sm:size-12"
+                  onPointerDown={handlePreviousArtworkPointerDown}
+                >
+                  <ArrowLeft className="size-5 stroke-3 sm:size-7" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="icon-lg"
+                  aria-label="Next artwork"
+                  className="pointer-events-auto absolute top-1/2 right-0 size-10 -translate-y-1/2 rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur active:!translate-y-[calc(-50%+0.5px)] sm:size-12"
+                  onPointerDown={handleNextArtworkPointerDown}
+                >
+                  <ArrowRight className="size-5 stroke-3 sm:size-7" />
+                </Button>
               </div>
             )}
 
@@ -605,7 +648,7 @@ const ArtworkDialog = () => {
                   animate="center"
                   exit="exit"
                   transition={detailsTransition}
-                  className="grid w-[min(calc(100vw-2rem),32rem)] max-w-[calc(100vw-2rem)] gap-5 rounded bg-muted px-7 py-3"
+                  className="grid w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] gap-3 rounded bg-muted/95 px-4 py-3 shadow-lg ring-1 ring-foreground/10 backdrop-blur sm:w-[min(calc(100vw-2rem),32rem)] sm:gap-5 sm:bg-muted sm:px-7 sm:py-3"
                   style={{ willChange: "transform, opacity" }}
                   onPointerDown={stopPointerPropagation}
                 >
@@ -615,27 +658,31 @@ const ArtworkDialog = () => {
                         {station}
                       </p>
                     )} */}
-                    <div className="flex items-center gap-2 justify-self-center">
+                    <div className="flex max-w-full flex-wrap items-center justify-center gap-2 justify-self-center text-sm">
                       <TransitBadge stationCode={stationCode} size="sm" />
-                      <div className="text-muted-foreground">{stationName}</div>
+                      <div className="min-w-0 max-w-full truncate text-muted-foreground">
+                        {stationName}
+                      </div>
                     </div>
 
-                    <DialogTitle className="mt-1 text-xl leading-tight">
+                    <DialogTitle className="mt-1 text-lg leading-tight sm:text-xl">
                       {title}
                     </DialogTitle>
 
                     {artist && (
-                      <p className="text-base text-muted-foreground">
+                      <p className="text-sm text-muted-foreground sm:text-base">
                         {artist}
                       </p>
                     )}
 
                     {year && (
-                      <p className="text-base text-muted-foreground">{year}</p>
+                      <p className="text-sm text-muted-foreground sm:text-base">
+                        {year}
+                      </p>
                     )}
 
                     {credits && (
-                      <p className="text-right text-xs whitespace-pre-line text-muted-foreground">
+                      <p className="text-right text-[0.7rem] whitespace-pre-line text-muted-foreground sm:text-xs">
                         {credits}
                       </p>
                     )}
@@ -664,7 +711,7 @@ const ArtworkDialog = () => {
                       rel="noreferrer"
                       className={buttonVariants({
                         className:
-                          "-mt-3 w-fit justify-self-end bg-lta-yellow!",
+                          "-mt-1 w-full bg-lta-yellow! sm:-mt-3 sm:w-fit sm:justify-self-end",
                       })}
                     >
                       Read more
