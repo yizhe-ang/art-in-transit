@@ -6,6 +6,7 @@ import {
 } from "@/components/three/rail-routes"
 
 const DEFAULT_ALTITUDE = 20
+const STATION_LABEL_ALTITUDE = DEFAULT_ALTITUDE + 60
 const DEFAULT_SIZE = 1800
 const LINE_ROW_COLUMN_GAP = DEFAULT_SIZE * 1.98
 const LINE_ROW_DUPLICATE_FAN_X_GAP = DEFAULT_SIZE * 0.42
@@ -358,7 +359,7 @@ export function createArtworkLineRowLayout(artworkRoutes, lineColors = []) {
           label,
           position: [
             columnIndex * LINE_ROW_COLUMN_GAP - columnCenterOffset,
-            DEFAULT_ALTITUDE,
+            STATION_LABEL_ALTITUDE,
             z,
           ],
         })

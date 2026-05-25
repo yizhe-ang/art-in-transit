@@ -16,7 +16,8 @@ const LABEL_STROKE_COLOR = "#f7f1df"
 const LABEL_STROKE_OUTSET_WIDTH = 0.75
 const LABEL_STROKE_INSET_WIDTH = 0
 const LABEL_ALPHA_TEST = 0.01
-const LABEL_RENDER_ORDER = 1001
+const LABEL_OUTLINE_RENDER_ORDER = 0
+const LABEL_FILL_RENDER_ORDER = 1
 const LABEL_LOCAL_Y_OFFSET = 180
 const labelOpacityUniform = uniform(1)
 
@@ -83,14 +84,14 @@ const StationNameLabel = ({
         geometry={geometry}
         material={outlineMaterial}
         position={centeredPosition}
-        renderOrder={LABEL_RENDER_ORDER - 1}
+        renderOrder={LABEL_OUTLINE_RENDER_ORDER}
       />
       <mesh
         frustumCulled={false}
         geometry={geometry}
         material={fillMaterial}
         position={centeredPosition}
-        renderOrder={LABEL_RENDER_ORDER}
+        renderOrder={LABEL_FILL_RENDER_ORDER}
       />
     </group>
   )
@@ -112,7 +113,7 @@ const StationNameLabels = ({
     const material = new MSDFTextNodeMaterial({
       alphaTest: LABEL_ALPHA_TEST,
       color: LABEL_COLOR,
-      depthTest: false,
+      depthTest: true,
       depthWrite: false,
       map: atlasTexture,
       opacity: 1,
@@ -122,7 +123,7 @@ const StationNameLabels = ({
       transparent: true,
     })
 
-    material.depthTest = false
+    material.depthTest = true
     material.depthWrite = false
     material.opacityNode = labelOpacityUniform.mul(material.opacityNode)
     material.side = THREE.DoubleSide
@@ -133,7 +134,7 @@ const StationNameLabels = ({
     const material = new MSDFTextNodeMaterial({
       alphaTest: LABEL_ALPHA_TEST,
       color: LABEL_STROKE_COLOR,
-      depthTest: false,
+      depthTest: true,
       depthWrite: false,
       map: atlasTexture,
       opacity: 1,
@@ -143,7 +144,7 @@ const StationNameLabels = ({
       transparent: true,
     })
 
-    material.depthTest = false
+    material.depthTest = true
     material.depthWrite = false
     material.opacityNode = labelOpacityUniform.mul(material.opacityNode)
     material.side = THREE.DoubleSide
