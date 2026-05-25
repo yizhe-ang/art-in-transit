@@ -87,16 +87,35 @@ const AboutDialog = () => {
             also has a set of virtual tours where you can learn more about the
             stories and artists behind these artworks.
           </p>
+
+          <hr className="border-0 border-t border-lta-dark-green/15" />
           <p>
             Made by{" "}
             <AboutLink href={"https://yizhe-ang.github.io/"}>
               Yi Zhe Ang
-            </AboutLink>.
+            </AboutLink>
+            .
           </p>
 
-          <p>
-
+          <p className="mt-4">
+            Many thanks to these projects in which this site is built upon:
           </p>
+          <ul className="list-disc space-y-1 pl-5">
+            <li>
+              Chee Aun's{" "}
+              <AboutLink href={"https://github.com/cheeaun/railrouter-sg"}>
+                RailRouter SG
+              </AboutLink>
+              , for its Singapore's rail data and map layers.
+            </li>
+            <li>
+              Reconstruction of the{" "}
+              <AboutLink href="https://github.com/jglim/IdentityFont">
+                LTAIdentity font
+              </AboutLink>{" "}
+              by JinGen Lim.
+            </li>
+          </ul>
         </div>
       </DialogContent>
     </Dialog>
