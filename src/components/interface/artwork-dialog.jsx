@@ -64,6 +64,51 @@ const artworkDetailsVariants = {
 }
 
 const LOADING_OVERLAY_DELAY_MS = 180
+const PRELOAD_ARTWORK_OFFSETS = [0, -1, 1, -2, 2]
+const preloadedArtworkImages = new Map()
+
+function getArtworkImageUrl(artwork) {
+  return artwork?.imageUrls?.[0] ?? artwork?.thumbnailUrl
+}
+
+function preloadArtworkImages(urls) {
+  if (typeof window === "undefined") {
+    return
+  }
+
+  urls.forEach((url) => {
+    if (!url || preloadedArtworkImages.has(url)) {
+      return
+    }
+
+    const image = new window.Image()
+    const preload = { image, status: "loading" }
+
+    preloadedArtworkImages.set(url, preload)
+
+    image.decoding = "async"
+    image.onload = () => {
+      preload.status = "loaded"
+    }
+    image.onerror = () => {
+      preload.status = "error"
+    }
+    image.src = url
+
+    if (typeof image.decode === "function") {
+      image
+        .decode()
+        .then(() => {
+          preload.status = "loaded"
+        })
+        .catch(() => {
+          if (preload.status === "loading") {
+            preload.status = "error"
+          }
+        })
+    }
+  })
+}
 
 const ArtworkImageViewer = ({ imageAlt, imageUrl, stopPointerPropagation }) => {
   const imageRef = useRef(null)
@@ -256,6 +301,18 @@ function getArtworkKey(artwork) {
   return artwork?.itemUrl ?? artwork?.sourceTitle ?? artwork?.artworkTitle
 }
 
+function getArtworkIndex(artworkSequence, artwork) {
+  const artworkKey = getArtworkKey(artwork)
+
+  if (!artworkKey) {
+    return -1
+  }
+
+  return artworkSequence.findIndex((sequenceArtwork) => {
+    return getArtworkKey(sequenceArtwork) === artworkKey
+  })
+}
+
 function normalizeArtworkStation(artwork) {
   if (!artwork) {
     return null
@@ -365,11 +422,13 @@ const ArtworkDialog = () => {
   const [displayedArtwork, setDisplayedArtwork] = useState(null)
   const artworkSequence = useMemo(() => getLineArtworkSequence(), [])
   const selectedArtwork = normalizeArtworkStation(storedSelectedArtwork)
-  const visibleArtwork = normalizeArtworkStation(displayedArtwork)
+  const visibleArtwork = normalizeArtworkStation(
+    selectedArtwork ?? displayedArtwork
+  )
 
   const selectedArtworkKey = getArtworkKey(visibleArtwork)
-  const imageUrl =
-    visibleArtwork?.imageUrls?.[0] ?? visibleArtwork?.thumbnailUrl
+  const imageUrl = getArtworkImageUrl(visibleArtwork)
+  const visibleArtworkIndex = getArtworkIndex(artworkSequence, visibleArtwork)
   const title = visibleArtwork?.artworkTitle
   const artist = visibleArtwork?.artist
   const year = getArtworkYear(visibleArtwork)
@@ -379,15 +438,31 @@ const ArtworkDialog = () => {
   const credits = visibleArtwork?.credits
 
   useEffect(() => {
-    if (openArtworkDialog && storedSelectedArtwork) {
-      setDisplayedArtwork(normalizeArtworkStation(storedSelectedArtwork))
+    if (
+      !openArtworkDialog ||
+      !imageUrl ||
+      visibleArtworkIndex === -1 ||
+      artworkSequence.length === 0
+    ) {
+      return
     }
-  }, [openArtworkDialog, storedSelectedArtwork])
+
+    const preloadUrls = PRELOAD_ARTWORK_OFFSETS.map((offset) => {
+      const artworkIndex =
+        (visibleArtworkIndex + offset + artworkSequence.length) %
+        artworkSequence.length
+
+      return getArtworkImageUrl(artworkSequence[artworkIndex])
+    }).filter(Boolean)
+
+    preloadArtworkImages([...new Set(preloadUrls)])
+  }, [artworkSequence, imageUrl, openArtworkDialog, visibleArtworkIndex])
 
   const handleOpenChange = (open) => {
     setOpenArtworkDialog(open)
 
     if (!open) {
+      setDisplayedArtwork(visibleArtwork)
       setSelectedArtwork(null)
       clearArtworkCameraFocusRequest()
     }
@@ -412,10 +487,7 @@ const ArtworkDialog = () => {
       return
     }
 
-    const selectedArtworkKey = getArtworkKey(selectedArtwork)
-    const selectedIndex = artworkSequence.findIndex((artwork) => {
-      return getArtworkKey(artwork) === selectedArtworkKey
-    })
+    const selectedIndex = getArtworkIndex(artworkSequence, selectedArtwork)
     const currentIndex = selectedIndex === -1 ? 0 : selectedIndex
     const nextIndex =
       (currentIndex + direction + artworkSequence.length) %
