@@ -3,8 +3,7 @@ import { useFrame } from "@react-three/fiber"
 import { useMap } from "react-three-map/maplibre"
 import * as THREE from "three/webgpu"
 import { uniform } from "three/tsl"
-
-const MIN_ZOOM_SCALE = 0.25
+import { MIN_ZOOM_SCALE } from "@/components/three/artworks/constants"
 
 export const artworkZoomScale = uniform(1)
 
