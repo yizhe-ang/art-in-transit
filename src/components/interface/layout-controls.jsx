@@ -19,30 +19,37 @@ const LayoutControls = () => {
   const shouldReduceMotion = useReducedMotion()
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="popLayout">
       {isMapInteractionUnlocked && (
         <motion.div
+          layout={shouldReduceMotion ? false : "position"}
           className="flex max-w-full items-center gap-1 rounded-lg border border-white/55 bg-white/82 p-1 shadow-[0_10px_35px_rgba(0,72,81,0.18)] backdrop-blur-md"
           initial={
             shouldReduceMotion
               ? { opacity: 0 }
-              : { opacity: 0, transform: "translateY(12px)" }
+              : { opacity: 0, y: 12 }
           }
           animate={
             shouldReduceMotion
               ? { opacity: 1 }
-              : { opacity: 1, transform: "translateY(0px)" }
+              : { opacity: 1, y: 0 }
           }
           exit={
             shouldReduceMotion
               ? { opacity: 0 }
-              : { opacity: 0, transform: "translateY(8px)" }
+              : { opacity: 0, y: 8 }
           }
           transition={
             shouldReduceMotion
               ? { duration: 0.06, ease: "linear" }
-              : { type: "spring", bounce: 0.16, visualDuration: 0.36 }
+              : {
+                  type: "spring",
+                  bounce: 0.16,
+                  visualDuration: 0.36,
+                  layout: { bounce: 0.14, visualDuration: 0.32 },
+                }
           }
+          style={{ willChange: "transform, opacity" }}
         >
           {LAYOUTS.map((layout) => {
             const active = artworkLayout === layout.id

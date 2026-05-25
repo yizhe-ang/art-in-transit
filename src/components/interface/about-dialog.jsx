@@ -26,7 +26,7 @@ const AboutDialog = () => {
         <Info className="size-5 stroke-3" />
       </DialogTrigger>
 
-      <DialogContent className="max-w-[calc(100%-2rem)] gap-5 rounded-lg border border-white/60 bg-white/95 p-5 text-lta-dark-green shadow-[0_22px_70px_rgba(0,72,81,0.22)] backdrop-blur-md sm:max-w-md font-inter">
+      <DialogContent className="max-w-[calc(100%-2rem)] gap-5 rounded-lg border border-white/60 bg-white/95 p-5 font-inter text-lta-dark-green shadow-[0_22px_70px_rgba(0,72,81,0.22)] backdrop-blur-md sm:max-w-md">
         <div className="grid gap-2 pr-8">
           <DialogTitle className="text-2xl leading-none">About</DialogTitle>
           {/* <DialogDescription className="text-sm leading-6 text-lta-dark-green/75">
@@ -35,15 +35,15 @@ const AboutDialog = () => {
           </DialogDescription> */}
         </div>
 
-        <div className="grid gap-3 text-sm text-lta-dark-green/80">
+        <div className="grid gap-3 text-sm leading-normal text-lta-dark-green/80">
           <p>
-            This is a personal and unofficial project showing Singapore's Land Transport Authority's (LTA) Art in Transit (AIT) programme.
+            This is a personal and unofficial project showcasing Singapore's{" "}
+            <span className="font-bold">Land Transport Authority's</span> (LTA){" "}
+            <span className="font-bold">Art in Transit</span> (AIT) programme in
+            a more exploratory, interactive and visual fashion.
           </p>
-          <p>
-            This is placeholder About copy for now. Replace it with project
-            notes, data details, or curatorial context when the final text is
-            ready.
-          </p>
+          <p>Do visit the official information for more information.</p>
+          <p>Made by Yi Zhe Ang.</p>
         </div>
 
         <div className="grid gap-2 rounded-md border border-lta-light-green/45 bg-lta-light-green/12 p-3 text-sm text-lta-dark-green">
