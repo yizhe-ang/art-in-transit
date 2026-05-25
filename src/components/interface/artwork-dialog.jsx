@@ -563,7 +563,7 @@ const ArtworkDialog = () => {
     <Dialog open={openArtworkDialog} onOpenChange={handleOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] gap-0 overflow-visible rounded-lg bg-transparent p-0 sm:max-w-[calc(100vw-2rem)]"
+        className="h-[calc(100dvh-0.5rem)] max-h-[calc(100dvh-0.5rem)] w-[calc(100vw-0.5rem)] max-w-[calc(100vw-0.5rem)] gap-0 overflow-visible rounded-lg bg-transparent p-0 sm:w-[calc(100vw-1rem)] sm:max-w-[calc(100vw-1rem)]"
         onAnimationEnd={handleDialogAnimationEnd}
       >
         {visibleArtwork && (
@@ -608,7 +608,7 @@ const ArtworkDialog = () => {
 
             {artworkSequence.length > 1 && (
               <div
-                className="pointer-events-none absolute inset-x-3 inset-y-0 z-30 sm:inset-x-5"
+                className="pointer-events-none absolute inset-x-1 inset-y-0 z-30 sm:inset-x-2"
                 aria-label="Artwork navigation"
               >
                 <Button
@@ -648,7 +648,7 @@ const ArtworkDialog = () => {
                   animate="center"
                   exit="exit"
                   transition={detailsTransition}
-                  className="grid w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] gap-3 rounded bg-muted/95 px-4 py-3 shadow-lg ring-1 ring-foreground/10 backdrop-blur sm:w-[min(calc(100vw-2rem),32rem)] sm:gap-5 sm:bg-muted sm:px-7 sm:py-3"
+                  className="grid w-full max-w-full gap-3 rounded bg-muted/95 px-3 py-2 shadow-lg ring-1 ring-foreground/10 backdrop-blur sm:w-[min(100%,32rem)] sm:gap-3 sm:bg-muted sm:px-5 sm:py-2"
                   style={{ willChange: "transform, opacity" }}
                   onPointerDown={stopPointerPropagation}
                 >
@@ -660,7 +660,7 @@ const ArtworkDialog = () => {
                     )} */}
                     <div className="flex max-w-full flex-wrap items-center justify-center gap-2 justify-self-center text-sm">
                       <TransitBadge stationCode={stationCode} size="sm" />
-                      <div className="min-w-0 max-w-full truncate text-muted-foreground">
+                      <div className="max-w-full min-w-0 truncate text-muted-foreground">
                         {stationName}
                       </div>
                     </div>
@@ -688,22 +688,6 @@ const ArtworkDialog = () => {
                     )}
                   </div>
 
-                  {/* <div className="grid gap-3 text-sm">
-                    {artist && (
-                      <div className="grid grid-cols-[5.5rem_1fr] gap-3">
-                        <span className="text-muted-foreground">Artist</span>
-                        <span>{artist}</span>
-                      </div>
-                    )}
-
-                    {station && (
-                      <div className="grid grid-cols-[5.5rem_1fr] gap-3">
-                        <span className="text-muted-foreground">Station</span>
-                        <span>{station}</span>
-                      </div>
-                    )}
-                  </div> */}
-
                   {readMoreUrl && (
                     <a
                       href={readMoreUrl}
@@ -711,7 +695,7 @@ const ArtworkDialog = () => {
                       rel="noreferrer"
                       className={buttonVariants({
                         className:
-                          "-mt-1 w-full bg-lta-yellow! sm:-mt-3 sm:w-fit sm:justify-self-end",
+                          "w-full bg-lta-yellow! sm:-mt-1 sm:w-fit sm:justify-self-end",
                       })}
                     >
                       Read more
