@@ -572,7 +572,7 @@ const ArtworkDialog = () => {
             onPointerDown={handleBackgroundPointerDown}
           >
             {imageUrl && (
-              <div className="relative flex min-h-0 flex-1 overflow-visible">
+              <div className="relative z-20 flex min-h-0 flex-1 overflow-visible">
                 <ArtworkZoomControls
                   controlsRef={zoomControlsRef}
                   stopPointerPropagation={stopPointerPropagation}
@@ -608,7 +608,7 @@ const ArtworkDialog = () => {
 
             {artworkSequence.length > 1 && (
               <div
-                className="pointer-events-none absolute inset-x-3 inset-y-0 z-10 sm:inset-x-5"
+                className="pointer-events-none absolute inset-x-3 inset-y-0 z-30 sm:inset-x-5"
                 aria-label="Artwork navigation"
               >
                 <Button
@@ -634,7 +634,7 @@ const ArtworkDialog = () => {
               </div>
             )}
 
-            <div className="flex shrink-0 justify-center overflow-hidden">
+            <div className="relative z-0 flex shrink-0 justify-center overflow-hidden">
               <AnimatePresence
                 custom={animationCustom}
                 initial={false}
