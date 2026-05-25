@@ -11,7 +11,7 @@ const Steps = () => {
       aria-hidden={isMapInteractionUnlocked}
       className={isMapInteractionUnlocked ? "pointer-events-none" : undefined}
     >
-      <Step id="step-1" className="h-[300vh]"></Step>
+      <Step id="step-1" className="h-[400vh]"></Step>
     </div>
   )
 }
