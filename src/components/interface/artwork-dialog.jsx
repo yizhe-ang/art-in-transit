@@ -522,22 +522,62 @@ const ArtworkDialog = () => {
     zoomControlsRef.current = controls
   }, [])
 
-  const handleNavigateArtwork = (direction) => {
-    if (!selectedArtwork || artworkSequence.length === 0) {
+  const handleNavigateArtwork = useCallback(
+    (direction) => {
+      if (!selectedArtwork || artworkSequence.length === 0) {
+        return
+      }
+
+      const selectedIndex = getArtworkIndex(artworkSequence, selectedArtwork)
+      const currentIndex = selectedIndex === -1 ? 0 : selectedIndex
+      const nextIndex =
+        (currentIndex + direction + artworkSequence.length) %
+        artworkSequence.length
+      const nextArtwork = artworkSequence[nextIndex]
+
+      setNavigationDirection(direction)
+      setSelectedArtwork(nextArtwork)
+      requestArtworkCameraFocus(nextArtwork)
+    },
+    [
+      artworkSequence,
+      requestArtworkCameraFocus,
+      selectedArtwork,
+      setSelectedArtwork,
+    ]
+  )
+
+  useEffect(() => {
+    if (!openArtworkDialog || artworkSequence.length <= 1) {
       return
     }
 
-    const selectedIndex = getArtworkIndex(artworkSequence, selectedArtwork)
-    const currentIndex = selectedIndex === -1 ? 0 : selectedIndex
-    const nextIndex =
-      (currentIndex + direction + artworkSequence.length) %
-      artworkSequence.length
-    const nextArtwork = artworkSequence[nextIndex]
+    const handleArtworkNavigationKeyDown = (event) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) {
+        return
+      }
 
-    setNavigationDirection(direction)
-    setSelectedArtwork(nextArtwork)
-    requestArtworkCameraFocus(nextArtwork)
-  }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault()
+        handleNavigateArtwork(-1)
+      }
+
+      if (event.key === "ArrowRight") {
+        event.preventDefault()
+        handleNavigateArtwork(1)
+      }
+    }
+
+    window.addEventListener("keydown", handleArtworkNavigationKeyDown, {
+      capture: true,
+    })
+
+    return () => {
+      window.removeEventListener("keydown", handleArtworkNavigationKeyDown, {
+        capture: true,
+      })
+    }
+  }, [artworkSequence.length, handleNavigateArtwork, openArtworkDialog])
 
   const handlePreviousArtworkPointerDown = (event) => {
     stopPointerPropagation(event)
