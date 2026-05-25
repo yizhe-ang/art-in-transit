@@ -7,11 +7,15 @@ import ArtworkDialog from "@/components/interface/artwork-dialog"
 import AboutDialog from "@/components/interface/about-dialog"
 import LayoutControls from "@/components/interface/layout-controls"
 import InitialLoadingOverlay from "@/components/interface/initial-loading-overlay"
+import { useStore } from "@/store"
 import { Leva } from "leva"
 import { LayoutGroup, motion, useReducedMotion } from "motion/react"
 
 export function App() {
   const shouldReduceMotion = useReducedMotion()
+  const isMapInteractionUnlocked = useStore(
+    (state) => state.isMapInteractionUnlocked
+  )
   const footerLayoutTransition = shouldReduceMotion
     ? ({ duration: 0.06, ease: "linear" } as const)
     : ({ type: "spring", bounce: 0.14, visualDuration: 0.32 } as const)
@@ -36,17 +40,23 @@ export function App() {
         <LayoutGroup id="footer-controls">
           <motion.div
             layout={shouldReduceMotion ? false : "position"}
+            layoutDependency={isMapInteractionUnlocked}
             transition={{ layout: footerLayoutTransition }}
             className="pointer-events-auto flex max-w-full items-center gap-2"
           >
             <motion.div
               layout={shouldReduceMotion ? false : "position"}
+              layoutDependency={isMapInteractionUnlocked}
               transition={{ layout: footerLayoutTransition }}
               className="shrink-0"
             >
               <AboutDialog />
             </motion.div>
-            <LayoutControls />
+            <LayoutControls
+              isMapInteractionUnlocked={isMapInteractionUnlocked}
+              layoutDependency={isMapInteractionUnlocked}
+              layoutTransition={footerLayoutTransition}
+            />
           </motion.div>
         </LayoutGroup>
       </div>

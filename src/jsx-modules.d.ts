@@ -9,7 +9,11 @@ declare module "@/components/interface/about-dialog" {
 }
 
 declare module "@/components/interface/layout-controls" {
-  const LayoutControls: () => import("react").JSX.Element
+  const LayoutControls: (props?: {
+    isMapInteractionUnlocked?: boolean
+    layoutDependency?: boolean
+    layoutTransition?: unknown
+  }) => import("react").JSX.Element
   export default LayoutControls
 }
 
@@ -36,6 +40,7 @@ declare module "@/components/scrolly-intro" {
 declare module "@/store" {
   type AppStoreState = {
     isInitialOverlayDismissing: boolean
+    isMapInteractionUnlocked: boolean
     [key: string]: unknown
   }
 
