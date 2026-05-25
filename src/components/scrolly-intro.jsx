@@ -331,13 +331,35 @@ const ScrollyIntro = () => {
           <Button
             type="button"
             size="lg"
-            className="pointer-events-auto gap-2 bg-lta-dark-green px-5 text-white shadow-[0_12px_36px_rgba(0,72,81,0.24)] ring-1 ring-white/70 hover:bg-lta-dark-green/92"
+            className="pointer-events-auto relative h-auto overflow-visible rounded-full border border-white/75 bg-white/72 px-4 py-2.5 text-lta-dark-green shadow-[0_20px_56px_rgba(0,72,81,0.28)] ring-1 ring-lta-dark-green/12 backdrop-blur-md hover:bg-white/82 focus-visible:ring-lta-dark-green/35 active:translate-y-px sm:px-5 sm:py-3"
             onClick={() => {
               setMapInteractionUnlocked(true)
             }}
           >
-            Explore the map
-            <ArrowRight aria-hidden="true" />
+            <motion.span
+              className="pointer-events-none absolute inset-0 rounded-full border border-lta-dark-green/35"
+              initial={false}
+              animate={
+                shouldReduceMotion
+                  ? { opacity: 0.38, scale: 1 }
+                  : { opacity: [0.42, 0], scale: [0.94, 1.28] }
+              }
+              transition={
+                shouldReduceMotion
+                  ? { duration: 0 }
+                  : {
+                      duration: 1.2,
+                      ease: "easeOut",
+                      repeat: Infinity,
+                    }
+              }
+            />
+            <span className="relative whitespace-nowrap text-sm font-semibold uppercase tracking-[0.18em] [text-shadow:0_1px_0_rgba(255,255,255,0.9)] sm:text-base">
+              Explore the map
+            </span>
+            <span className="relative grid size-8 place-items-center rounded-full bg-lta-yellow text-lta-dark-green shadow-[inset_0_0_0_1px_rgba(0,72,81,0.14),0_8px_18px_rgba(0,72,81,0.18)] transition-transform duration-200 ease-out group-hover/button:translate-x-0.5 group-focus-visible/button:translate-x-0.5 sm:size-9">
+              <ArrowRight className="size-4 stroke-[2.7] sm:size-5" aria-hidden="true" />
+            </span>
           </Button>
         </motion.div>
       )}

@@ -16,10 +16,9 @@
 }
 
 @theme inline {
-  /* --font-heading: var(--font-sans);
-  --font-sans: "Inter Variable", sans-serif; */
   --font-heading: "LTA Identity", var(--font-sans);
   --font-sans: "LTA Identity", "Inter Variable", sans-serif;
+  --font-inter: "Inter Variable", sans-serif;
 
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -161,7 +160,13 @@
       linear-gradient(rgba(0, 72, 81, 0.2) 1px, transparent 1px),
       linear-gradient(90deg, rgba(0, 72, 81, 0.2) 1px, transparent 1px);
     background-size: 46px 46px;
-    mask-image: linear-gradient(to bottom, transparent, black 18%, black 82%, transparent);
+    mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      black 18%,
+      black 82%,
+      transparent
+    );
   }
 
   .initial-route {
@@ -182,11 +187,20 @@
   .initial-route-track {
     background:
       linear-gradient(90deg, rgba(0, 72, 81, 0.16), rgba(0, 72, 81, 0.06)),
-      repeating-linear-gradient(90deg, transparent 0 13px, rgba(0, 72, 81, 0.24) 13px 16px);
+      repeating-linear-gradient(
+        90deg,
+        transparent 0 13px,
+        rgba(0, 72, 81, 0.24) 13px 16px
+      );
   }
 
   .initial-route-progress {
-    background: linear-gradient(90deg, var(--lta-yellow), var(--lta-light-green), var(--lta-dark-green));
+    background: linear-gradient(
+      90deg,
+      var(--lta-yellow),
+      var(--lta-light-green),
+      var(--lta-dark-green)
+    );
     transform: translateY(-50%) scaleX(0);
     transform-origin: left center;
     animation: initial-route-draw 1.6s cubic-bezier(0.72, 0, 0.24, 1) infinite;
