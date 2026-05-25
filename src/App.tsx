@@ -22,7 +22,8 @@ export function App() {
 
   return (
     <>
-      <Leva collapsed hidden={import.meta.env.PROD} />
+      {/* <Leva collapsed hidden={import.meta.env.PROD} /> */}
+      <Leva collapsed hidden={true} />
 
       <div className="fixed inset-0">
         <Map />
