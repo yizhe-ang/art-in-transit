@@ -74,6 +74,8 @@ const Map = () => {
     })
   }, [])
 
+  console.log(bounds)
+
   return (
     <>
       <MapImpl
@@ -83,6 +85,8 @@ const Map = () => {
         initialViewState={{
           bounds,
         }}
+        // minZoom={4}
+        // maxBounds={[103.05, 0.52, 104.18, 1.98]}
         dragPan={dragPanOptions}
         scrollZoom={scrollZoomOptions}
         mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
