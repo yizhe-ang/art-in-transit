@@ -7,7 +7,6 @@ import Three from "@/components/three/three"
 import { bounds } from "@/components/map/constants"
 import { useStore } from "@/store"
 import PaperOverlay from "@/components/map/paper-overlay"
-import MapLightenOverlay from "@/components/map/map-lighten-overlay"
 
 const dragPanOptions = {
   linearity: 0.3,
@@ -136,8 +135,6 @@ const Map = () => {
         }}
       >
         {imagesLoaded && <Rail />}
-
-        <MapLightenOverlay />
 
         <PaperOverlay />
 

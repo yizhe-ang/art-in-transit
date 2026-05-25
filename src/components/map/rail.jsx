@@ -2,6 +2,7 @@ import { Source, Layer } from "react-map-gl/maplibre"
 import rail from "@/data/sg-rail.geo.json"
 import { lineColors } from "@/components/map/constants"
 import { RAIL_DRAW_LAYERS } from "@/components/map/rail-reveal"
+import MapLightenOverlay from "@/components/map/map-lighten-overlay"
 
 // TODO: Tune beforeId
 
@@ -188,6 +189,7 @@ const Rail = () => {
         <Layer {...stationsPointLabel} />
         <Layer {...stationsLabel} />
       </Source>
+      <MapLightenOverlay />
     </>
   )
 }
