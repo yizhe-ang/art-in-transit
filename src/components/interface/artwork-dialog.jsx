@@ -648,7 +648,7 @@ const ArtworkDialog = () => {
                   animate="center"
                   exit="exit"
                   transition={detailsTransition}
-                  className="grid w-full max-w-full gap-3 rounded bg-muted/95 px-3 py-2 shadow-lg ring-1 ring-foreground/10 backdrop-blur sm:w-[min(100%,32rem)] sm:gap-3 sm:bg-muted sm:px-5 sm:py-2"
+                  className="grid w-full max-w-full gap-3 rounded bg-muted/95 px-3 py-2 shadow-lg ring-1 ring-foreground/10 backdrop-blur sm:w-[min(100%,32rem)] sm:gap-3 sm:bg-muted sm:px-5 sm:py-4"
                   style={{ willChange: "transform, opacity" }}
                   onPointerDown={stopPointerPropagation}
                 >
