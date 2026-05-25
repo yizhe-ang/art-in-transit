@@ -13,6 +13,7 @@
   font-weight: 500;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0000-0025, U+0027-10FFFF;
 }
 
 @theme inline {
