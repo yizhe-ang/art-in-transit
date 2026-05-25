@@ -21,6 +21,7 @@ import {
 import data from "@/data/bloomberg-art-in-transit-gallery.json"
 import {
   LINE_ORDER,
+  formatStationName,
   getArtworkStationCode,
   getLineNameForStationCode,
 } from "@/components/three/rail-routes"
@@ -349,7 +350,7 @@ function normalizeArtworkStation(artwork) {
   return {
     ...artwork,
     stationCode: artwork.stationCode ?? getArtworkStationCode(artwork),
-    stationName: artwork.stationName,
+    stationName: formatStationName(artwork.stationName),
   }
 }
 

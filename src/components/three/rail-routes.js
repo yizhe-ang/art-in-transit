@@ -101,6 +101,12 @@ export function getArtworkStationCode(artwork) {
   return stationCode ?? null
 }
 
+export function formatStationName(stationName) {
+  return stationName
+    ?.replace(/^(?:\/\s*)?(?:CC|CE|DT|EW|NE|NS|TE)\d+[A-Z]?\s*:?\s*/i, "")
+    .trim()
+}
+
 export function getLineNameForStationCode(stationCode) {
   const prefix = stationCode?.match(/^[A-Z]+/)?.[0]
   return STATION_PREFIX_TO_LINE[prefix] ?? null
