@@ -663,7 +663,7 @@ const ArtworkDialog = () => {
                       target="_blank"
                       rel="noreferrer"
                       className={buttonVariants({
-                        className: "w-fit justify-self-end bg-lta-yellow!",
+                        className: "w-fit justify-self-end bg-lta-yellow! -mt-2",
                       })}
                     >
                       Read more
