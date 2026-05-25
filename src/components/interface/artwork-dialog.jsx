@@ -330,7 +330,9 @@ function getArtworkLineName(artwork) {
 }
 
 function getArtworkYear(artwork) {
-  return artwork?.year ?? artwork?.description?.match(/\bYear:\s*(\d{4})\b/)?.[1]
+  return (
+    artwork?.year ?? artwork?.description?.match(/\bYear:\s*(\d{4})\b/)?.[1]
+  )
 }
 
 function getStationCodeParts(artwork) {
@@ -569,7 +571,7 @@ const ArtworkDialog = () => {
                       variant="secondary"
                       size="icon-lg"
                       aria-label="Previous artwork"
-                      className="pointer-events-auto absolute left-0 top-1/2 size-12 -translate-y-1/2 rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur active:translate-y-[calc(-50%+1px)]"
+                      className="pointer-events-auto absolute top-1/2 left-0 size-12 -translate-y-1/2 rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur active:translate-y-[calc(-50%+1px)]"
                       onPointerDown={handlePreviousArtworkPointerDown}
                     >
                       <ArrowLeft className="size-7 stroke-3" />
@@ -579,7 +581,7 @@ const ArtworkDialog = () => {
                       variant="secondary"
                       size="icon-lg"
                       aria-label="Next artwork"
-                      className="pointer-events-auto absolute right-0 top-1/2 size-12 -translate-y-1/2 rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur active:translate-y-[calc(-50%+1px)]"
+                      className="pointer-events-auto absolute top-1/2 right-0 size-12 -translate-y-1/2 rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur active:translate-y-[calc(-50%+1px)]"
                       onPointerDown={handleNextArtworkPointerDown}
                     >
                       <ArrowRight className="size-7 stroke-3" />
@@ -629,9 +631,7 @@ const ArtworkDialog = () => {
                     )}
 
                     {year && (
-                      <p className="text-base text-muted-foreground">
-                        {year}
-                      </p>
+                      <p className="text-base text-muted-foreground">{year}</p>
                     )}
 
                     {credits && (
