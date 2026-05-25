@@ -6,6 +6,7 @@ const LINE_ROW_COLUMN_GAP = DEFAULT_SIZE * 1.98
 const LINE_ROW_GAP = DEFAULT_SIZE * 1.45
 const LINE_ROW_GUIDE_PADDING = DEFAULT_SIZE * 0.5
 const TIME_COLUMN_GAP = DEFAULT_SIZE * 1.98
+const TIME_LAYOUT_Z_OFFSET = 3000
 const TIME_STACK_GAP = DEFAULT_SIZE * 1.25
 const TIME_YEAR_LABEL_ALTITUDE = 0
 const TIME_YEAR_LABEL_STACK_GAP = DEFAULT_SIZE * 0.42
@@ -309,7 +310,13 @@ export function createArtworkTimePositionArray(
           ? -stackIndex * TIME_STACK_GAP
           : stackCenterOffset - stackIndex * TIME_STACK_GAP
 
-      setPositionAt(array, originalIndex, x, DEFAULT_ALTITUDE, z)
+      setPositionAt(
+        array,
+        originalIndex,
+        x,
+        DEFAULT_ALTITUDE,
+        z + TIME_LAYOUT_Z_OFFSET
+      )
     })
   })
 
@@ -372,7 +379,7 @@ export function createArtworkTimeYearLabels(
       position: [
         x,
         TIME_YEAR_LABEL_ALTITUDE,
-        labelStackEdgeZ + TIME_YEAR_LABEL_STACK_GAP,
+        labelStackEdgeZ + TIME_YEAR_LABEL_STACK_GAP + TIME_LAYOUT_Z_OFFSET,
       ],
     }
   })
