@@ -331,18 +331,36 @@ const ScrollyIntro = () => {
           <Button
             type="button"
             size="lg"
-            className="pointer-events-auto relative h-auto overflow-visible rounded-full border border-white/75 bg-white/72 px-4 py-2.5 text-lta-dark-green shadow-[0_20px_56px_rgba(0,72,81,0.28)] ring-1 ring-lta-dark-green/12 backdrop-blur-md hover:bg-white/82 focus-visible:ring-lta-dark-green/35 active:translate-y-px sm:px-5 sm:py-3"
+            className="pointer-events-auto relative h-auto overflow-visible rounded-full border border-white/70 bg-lta-dark-green px-4 py-2.5 text-white shadow-[0_20px_56px_rgba(0,72,81,0.42),0_0_34px_rgba(241,194,50,0.28)] ring-1 ring-lta-yellow/32 backdrop-blur-md hover:bg-lta-dark-green/92 focus-visible:ring-lta-yellow/45 active:translate-y-px sm:px-5 sm:py-3"
             onClick={() => {
               setMapInteractionUnlocked(true)
             }}
           >
             <motion.span
-              className="pointer-events-none absolute inset-0 rounded-full border border-lta-dark-green/35"
+              className="pointer-events-none absolute -inset-2 rounded-full bg-lta-yellow/30 blur-xl"
               initial={false}
               animate={
                 shouldReduceMotion
-                  ? { opacity: 0.38, scale: 1 }
-                  : { opacity: [0.42, 0], scale: [0.94, 1.28] }
+                  ? { opacity: 0.32, scale: 1 }
+                  : { opacity: [0.18, 0.45, 0.18], scale: [0.96, 1.08, 0.96] }
+              }
+              transition={
+                shouldReduceMotion
+                  ? { duration: 0 }
+                  : {
+                      duration: 1.65,
+                      ease: "easeInOut",
+                      repeat: Infinity,
+                    }
+              }
+            />
+            <motion.span
+              className="pointer-events-none absolute inset-0 rounded-full border border-lta-yellow/55"
+              initial={false}
+              animate={
+                shouldReduceMotion
+                  ? { opacity: 0.42, scale: 1 }
+                  : { opacity: [0.5, 0], scale: [0.94, 1.28] }
               }
               transition={
                 shouldReduceMotion
@@ -354,7 +372,7 @@ const ScrollyIntro = () => {
                     }
               }
             />
-            <span className="relative whitespace-nowrap text-sm font-semibold uppercase tracking-[0.18em] [text-shadow:0_1px_0_rgba(255,255,255,0.9)] sm:text-base">
+            <span className="relative whitespace-nowrap text-sm font-semibold uppercase tracking-[0.18em] [text-shadow:0_1px_0_rgba(0,0,0,0.22)] sm:text-base">
               Explore the map
             </span>
             <span className="relative grid size-8 place-items-center rounded-full bg-lta-yellow text-lta-dark-green shadow-[inset_0_0_0_1px_rgba(0,72,81,0.14),0_8px_18px_rgba(0,72,81,0.18)] transition-transform duration-200 ease-out group-hover/button:translate-x-0.5 group-focus-visible/button:translate-x-0.5 sm:size-9">

@@ -26,20 +26,18 @@ const AboutDialog = () => {
         <Info className="size-5 stroke-3" />
       </DialogTrigger>
 
-      <DialogContent className="max-w-[calc(100%-2rem)] gap-5 rounded-lg border border-white/60 bg-white/95 p-5 text-lta-dark-green shadow-[0_22px_70px_rgba(0,72,81,0.22)] backdrop-blur-md sm:max-w-md">
+      <DialogContent className="max-w-[calc(100%-2rem)] gap-5 rounded-lg border border-white/60 bg-white/95 p-5 text-lta-dark-green shadow-[0_22px_70px_rgba(0,72,81,0.22)] backdrop-blur-md sm:max-w-md font-inter">
         <div className="grid gap-2 pr-8">
           <DialogTitle className="text-2xl leading-none">About</DialogTitle>
-          <DialogDescription className="text-sm leading-6 text-lta-dark-green/75">
+          {/* <DialogDescription className="text-sm leading-6 text-lta-dark-green/75">
             An interactive transit-art map for moving through station geography,
             artwork imagery, and collection layouts in one shared view.
-          </DialogDescription>
+          </DialogDescription> */}
         </div>
 
-        <div className="grid gap-3 text-sm leading-6 text-lta-dark-green/80">
+        <div className="grid gap-3 text-sm text-lta-dark-green/80">
           <p>
-            The experience combines a rail network, public-art records, and
-            switchable map, line, and time layouts so the collection can be read
-            spatially and visually.
+            This is a personal and unofficial project showing Singapore's Land Transport Authority's (LTA) Art in Transit (AIT) programme.
           </p>
           <p>
             This is placeholder About copy for now. Replace it with project
