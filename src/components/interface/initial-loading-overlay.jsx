@@ -97,7 +97,7 @@ const InitialLoadingOverlay = () => {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_16%,rgba(254,209,65,0.38),transparent_31%),radial-gradient(circle_at_82%_74%,rgba(154,190,170,0.36),transparent_34%),linear-gradient(135deg,rgba(0,72,81,0.08),transparent_42%)]" />
       <div className="initial-loading-grid absolute inset-0 opacity-[0.18]" />
 
-      <div className="relative flex w-[min(28rem,calc(100vw-2.5rem))] flex-col items-center text-center">
+      <div className="relative flex w-[min(42rem,calc(100vw-2.5rem))] flex-col items-center text-center">
         <div
           className="initial-route mb-7 h-16 w-full max-w-80"
           aria-hidden="true"
@@ -111,7 +111,8 @@ const InitialLoadingOverlay = () => {
         </div>
 
         <p className="font-heading text-[clamp(2.4rem,9vw,5.6rem)] leading-[1] tracking-normal text-balance drop-shadow-[0_1px_0_rgba(255,255,255,0.72)]">
-          Loading Art in Transit
+          <span className="block">Loading</span>
+          <span className="block whitespace-nowrap">Art in Transit</span>
         </p>
 
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
