@@ -571,7 +571,7 @@ const ArtworkDialog = () => {
                       variant="secondary"
                       size="icon-lg"
                       aria-label="Previous artwork"
-                      className="pointer-events-auto absolute top-1/2 left-0 size-12 -translate-y-1/2 rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur active:translate-y-[calc(-50%+1px)]"
+                      className="pointer-events-auto absolute top-1/2 left-0 size-12 -translate-y-1/2 rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur active:!translate-y-[calc(-50%+0.5px)]"
                       onPointerDown={handlePreviousArtworkPointerDown}
                     >
                       <ArrowLeft className="size-7 stroke-3" />
@@ -581,7 +581,7 @@ const ArtworkDialog = () => {
                       variant="secondary"
                       size="icon-lg"
                       aria-label="Next artwork"
-                      className="pointer-events-auto absolute top-1/2 right-0 size-12 -translate-y-1/2 rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur active:translate-y-[calc(-50%+1px)]"
+                      className="pointer-events-auto absolute top-1/2 right-0 size-12 -translate-y-1/2 rounded-full bg-background/85 shadow-sm ring-1 ring-foreground/10 backdrop-blur active:!translate-y-[calc(-50%+0.5px)]"
                       onPointerDown={handleNextArtworkPointerDown}
                     >
                       <ArrowRight className="size-7 stroke-3" />
@@ -663,7 +663,8 @@ const ArtworkDialog = () => {
                       target="_blank"
                       rel="noreferrer"
                       className={buttonVariants({
-                        className: "w-fit justify-self-end bg-lta-yellow! -mt-2",
+                        className:
+                          "-mt-3 w-fit justify-self-end bg-lta-yellow!",
                       })}
                     >
                       Read more
