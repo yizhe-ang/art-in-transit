@@ -1,13 +1,29 @@
-import { Info } from "lucide-react"
+import { ExternalLinkIcon, Info } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+
+const LTA_ART_IN_TRANSIT_URL =
+  "https://www.lta.gov.sg/content/ltagov/en/getting_around/public_transport/a_better_public_transport_experience/art_in_public_transport/art_in_transit.html"
+
+const AboutLink = ({ children, href }) => {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="inline font-medium text-lta-dark-green underline decoration-lta-yellow decoration-2 underline-offset-3 transition-colors hover:text-lta-dark-green/78 hover:decoration-lta-dark-green focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-lta-dark-green/25 focus-visible:outline-none"
+    >
+      {children}
+      <ExternalLinkIcon className="mb-0.5 ml-0.5 inline size-3.5" />
+    </a>
+  )
+}
 
 const AboutDialog = () => {
   return (
@@ -40,17 +56,46 @@ const AboutDialog = () => {
             This is a personal and unofficial project showcasing Singapore's{" "}
             <span className="font-bold">Land Transport Authority's</span> (LTA){" "}
             <span className="font-bold">Art in Transit</span> (AIT) programme in
-            a more exploratory, interactive and visual fashion.
+            a more exploratory, interactive and visual manner.
           </p>
-          <p>Do visit the official information for more information.</p>
-          <p>Made by Yi Zhe Ang.</p>
-        </div>
+          <p>
+            Do visit the{" "}
+            <AboutLink href={LTA_ART_IN_TRANSIT_URL}>
+              Official LTA Art in Transit
+            </AboutLink>{" "}
+            page for more information!
+          </p>
+          <p>
+            The images and information about the artworks are scraped from the{" "}
+            <AboutLink
+              href={
+                "https://guides.bloombergconnects.org/en-US/guide/artInTransit"
+              }
+            >
+              Bloomberg Connects
+            </AboutLink>{" "}
+            page about the programme.
+          </p>
+          <p>
+            <AboutLink
+              href={
+                "https://www.artoutreachsingapore.org/art-in-transit-virtual-tour"
+              }
+            >
+              Art Outreach
+            </AboutLink>{" "}
+            also has a set of virtual tours where you can learn more about the
+            stories and artists behind these artworks.
+          </p>
+          <p>
+            Made by{" "}
+            <AboutLink href={"https://yizhe-ang.github.io/"}>
+              Yi Zhe Ang
+            </AboutLink>.
+          </p>
 
-        <div className="grid gap-2 rounded-md border border-lta-light-green/45 bg-lta-light-green/12 p-3 text-sm text-lta-dark-green">
-          <h2 className="font-heading text-base leading-none">Credits</h2>
-          <p className="text-lta-dark-green/75">
-            Artwork data, station context, and implementation credits can be
-            added here.
+          <p>
+
           </p>
         </div>
       </DialogContent>
