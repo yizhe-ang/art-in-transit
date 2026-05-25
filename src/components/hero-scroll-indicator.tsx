@@ -91,7 +91,7 @@ const HeroScrollIndicator = () => {
           {
             y: -4,
             filter: "blur(0px)",
-            duration: 1.2,
+            duration: 1.0,
             repeat: -1,
             yoyo: true,
             ease: "sine.inOut",
@@ -106,7 +106,7 @@ const HeroScrollIndicator = () => {
           {
             autoAlpha: 0,
             scale: 1.28,
-            duration: 1.45,
+            duration: 1.25,
             repeat: -1,
             ease: "power2.out",
           }
