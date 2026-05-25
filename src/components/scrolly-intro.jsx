@@ -125,7 +125,8 @@ const ScrollyIntro = () => {
   const { brushFlowDistance } = useControls({
     "scrolly intro": folder({
       brushFlowDistance: {
-        value: 1.5,
+        // value: 1.5,
+        value: 2,
         min: 0,
         max: 8,
         step: 0.05,
